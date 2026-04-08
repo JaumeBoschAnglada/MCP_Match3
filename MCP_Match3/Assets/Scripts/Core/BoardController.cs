@@ -14,10 +14,42 @@ namespace Match3.Core
         public int Width => GRID_WIDTH;
         public int Height => GRID_HEIGHT;
 
-        public void Initialize()
+        public void Initialize(int levelNumber = 1)
         {
             grid = new PieceData[GRID_WIDTH, GRID_HEIGHT];
-            FillInitialBoard();
+            LoadLevel(levelNumber);
+        }
+
+        /// <summary>
+        /// Loads a specific level from JSON.
+        /// Falls back to random board if level not found.
+        /// </summary>
+        private void LoadLevel(int levelNumber)
+        {
+            LevelData levelData = LevelLoader.LoadLevel(levelNumber);
+            
+            if (levelData != null)
+            {
+                Debug.Log($"[BoardController] Loading level {levelNumber}");
+                PopulateGridFromLevelData(levelData);
+            }
+            else
+            {
+                Debug.Log($"[BoardController] Level {levelNumber} not found, generating random board instead");
+                FillInitialBoard();
+            }
+        }
+
+        /// <summary>
+        /// Populates grid from loaded LevelData.
+        /// </summary>
+        private void PopulateGridFromLevelData(LevelData levelData)
+        {
+            foreach (var pieceEntry in levelData.pieces)
+            {
+                PieceType type = pieceEntry.GetPieceType();
+                grid[pieceEntry.x, pieceEntry.y] = new PieceData(pieceEntry.x, pieceEntry.y, type);
+            }
         }
 
         private void FillInitialBoard()
