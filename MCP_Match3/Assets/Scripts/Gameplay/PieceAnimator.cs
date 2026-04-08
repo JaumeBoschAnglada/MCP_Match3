@@ -5,291 +5,287 @@ using Match3.Gameplay;
 
 namespace Match3.Animation
 {
+    // Used for tween-based animations (swap, pop, spawn)
+    public class PieceAnimation
+    {
+        public enum AnimationType { Swap, Pop, Spawn }
+
+        public AnimationType type;
+        public Piece piece;
+        public float elapsed;
+        public float duration;
+        public Vector3 startPos;
+        public Vector3 endPos;
+        public Piece otherPiece;
+        public Vector3 otherStartPos;
+        public Vector3 otherEndPos;
+        public Vector3 originalScale;
+
+        public bool IsComplete => elapsed >= duration;
+    }
+
     public class PieceAnimator : MonoBehaviour
     {
+        [Header("Tween Durations")]
         [SerializeField] private float swapDuration = 0.2f;
-        [SerializeField] private float fallDuration = 0.3f;
         [SerializeField] private float popDuration = 0.4f;
+        [SerializeField] private float spawnDuration = 0.25f;
 
-        public float GetFallDuration() => fallDuration;
+        [Header("Spring Physics (Fall/Movement)")]
+        [SerializeField] private float springStiffness = 100f;  // Higher = faster, stiffer
+        [SerializeField] private float springDamping = 14f;     // Higher = less bounce (critical at ~20)
 
-        public IEnumerator PlaySwapAnimation(Piece piece1, Piece piece2)
+        // Spring state per piece
+        private class SpringState
+        {
+            public Vector3 velocity;
+            public Vector3 targetPos;
+            public bool settled;
+        }
+
+        private readonly Dictionary<Piece, SpringState> springStates = new Dictionary<Piece, SpringState>();
+        private readonly List<PieceAnimation> activeAnimations = new List<PieceAnimation>();
+
+        // ==================== UNITY LOOP ====================
+
+        private void Update()
+        {
+            UpdateSpringPhysics();
+            UpdateTweenAnimations();
+        }
+
+        private void UpdateSpringPhysics()
+        {
+            foreach (var kvp in springStates)
+            {
+                SpringState state = kvp.Value;
+                if (state.settled) continue;
+
+                Piece piece = kvp.Key;
+                if (piece == null || !piece.gameObject.activeSelf) continue;
+
+                Vector3 currentPos = piece.transform.localPosition;
+                Vector3 displacement = state.targetPos - currentPos;
+
+                // Spring-damper: acceleration = stiffness * displacement - damping * velocity
+                Vector3 acceleration = displacement * springStiffness - state.velocity * springDamping;
+                state.velocity += acceleration * Time.deltaTime;
+                piece.transform.localPosition = currentPos + state.velocity * Time.deltaTime;
+
+                // Settle when position and velocity are negligible
+                if (displacement.sqrMagnitude < 0.0001f && state.velocity.sqrMagnitude < 0.0001f)
+                {
+                    piece.transform.localPosition = state.targetPos;
+                    piece.UpdatePosition();
+                    state.velocity = Vector3.zero;
+                    state.settled = true;
+                    piece.SetAnimating(false);
+                }
+            }
+        }
+
+        private void UpdateTweenAnimations()
+        {
+            for (int i = activeAnimations.Count - 1; i >= 0; i--)
+            {
+                PieceAnimation anim = activeAnimations[i];
+                anim.elapsed += Time.deltaTime;
+                if (anim.elapsed > anim.duration) anim.elapsed = anim.duration;
+
+                float t = anim.elapsed / anim.duration;
+                switch (anim.type)
+                {
+                    case PieceAnimation.AnimationType.Swap:  UpdateSwapAnimation(anim, t);  break;
+                    case PieceAnimation.AnimationType.Pop:   UpdatePopAnimation(anim, t);   break;
+                    case PieceAnimation.AnimationType.Spawn: UpdateSpawnAnimation(anim, t); break;
+                }
+
+                if (anim.IsComplete) activeAnimations.RemoveAt(i);
+            }
+        }
+
+        // ==================== SPRING API ====================
+
+        /// <summary>
+        /// Start moving a piece toward toPos using spring physics.
+        /// Resets velocity — use this for explicit falls (gravity, fill).
+        /// </summary>
+        public void PlayFallAnimation(Piece piece, Vector3 fromPos, Vector3 toPos)
+        {
+            piece.transform.localPosition = fromPos;
+            piece.SetAnimating(true);
+
+            if (!springStates.TryGetValue(piece, out var state))
+            {
+                state = new SpringState();
+                springStates[piece] = state;
+            }
+            state.velocity = Vector3.zero;
+            state.targetPos = toPos;
+            state.settled = false;
+        }
+
+        /// <summary>
+        /// Register a piece for spring tracking without resetting velocity.
+        /// Only triggers movement if the target differs from the current one.
+        /// Use this from Update() for idle correction.
+        /// </summary>
+        public void EnsureTracked(Piece piece, Vector3 targetPos)
+        {
+            if (!springStates.TryGetValue(piece, out var state))
+            {
+                // New piece: register as settled at current position; spring doesn't move it yet
+                state = new SpringState { targetPos = targetPos, settled = true };
+                springStates[piece] = state;
+                return;
+            }
+
+            // If target has changed significantly, unsettling the spring
+            if (Vector3.Distance(state.targetPos, targetPos) > 0.05f)
+            {
+                state.targetPos = targetPos;
+                state.settled = false;
+                piece.SetAnimating(true);
+            }
+        }
+
+        /// <summary>Remove a piece from spring tracking (call when returning to pool).</summary>
+        public void UnregisterPiece(Piece piece)
+        {
+            springStates.Remove(piece);
+        }
+
+        /// <summary>True when all tracked springs have settled.</summary>
+        public bool IsAllSettled()
+        {
+            foreach (var state in springStates.Values)
+                if (!state.settled) return false;
+            return true;
+        }
+
+        /// <summary>True when this specific piece's spring has settled (or piece is untracked).</summary>
+        public bool IsSettled(Piece piece)
+        {
+            return !springStates.ContainsKey(piece) || springStates[piece].settled;
+        }
+
+        // ==================== TWEEN API ====================
+
+        public void PlaySwapAnimation(Piece piece1, Piece piece2)
         {
             piece1.SetAnimating(true);
             piece2.SetAnimating(true);
 
-            Vector3 pos1 = piece1.transform.localPosition;
-            Vector3 pos2 = piece2.transform.localPosition;
-            float elapsed = 0;
-
-            while (elapsed < swapDuration)
+            activeAnimations.Add(new PieceAnimation
             {
-                elapsed += Time.deltaTime;
-                float t = elapsed / swapDuration;
-                
-                // Smooth ease-in-out cubic
-                float easeT = t < 0.5f
-                    ? 4f * t * t * t
-                    : 1f - Mathf.Pow(-2f * t + 2f, 3f) / 2f;
-                
-                piece1.transform.localPosition = Vector3.Lerp(pos1, pos2, easeT);
-                piece2.transform.localPosition = Vector3.Lerp(pos2, pos1, easeT);
-                
-                yield return null;
-            }
-
-            piece1.transform.localPosition = pos2;
-            piece2.transform.localPosition = pos1;
-            piece1.UpdatePosition();
-            piece2.UpdatePosition();
-
-            piece1.SetAnimating(false);
-            piece2.SetAnimating(false);
+                type = PieceAnimation.AnimationType.Swap,
+                piece = piece1,
+                otherPiece = piece2,
+                startPos = piece1.transform.localPosition,
+                endPos = piece2.transform.localPosition,
+                otherStartPos = piece2.transform.localPosition,
+                otherEndPos = piece1.transform.localPosition,
+                duration = swapDuration,
+                elapsed = 0f
+            });
         }
 
-        public IEnumerator PlayFallAnimation(Piece piece, Vector3 fromPos, Vector3 toPos)
+        public void PlayPopAnimation(Piece piece)
         {
             piece.SetAnimating(true);
-            piece.transform.localPosition = fromPos;
-            float elapsed = 0;
-
-            while (elapsed < fallDuration)
+            activeAnimations.Add(new PieceAnimation
             {
-                elapsed += Time.deltaTime;
-                float t = elapsed / fallDuration;
-                
-                // Ease-out cubic for natural, smooth fall
-                float easeT = 1f - Mathf.Pow(1f - t, 3f);
-                piece.transform.localPosition = Vector3.Lerp(fromPos, toPos, easeT);
-                
-                yield return null;
-            }
-
-            piece.transform.localPosition = toPos;
-            piece.UpdatePosition();
-            piece.SetAnimating(false);
+                type = PieceAnimation.AnimationType.Pop,
+                piece = piece,
+                originalScale = piece.transform.localScale,
+                duration = popDuration,
+                elapsed = 0f
+            });
         }
 
-        public IEnumerator PlayPopAnimation(Piece piece)
+        public void PlaySpawnAnimation(Piece piece)
         {
-            Vector3 originalScale = piece.transform.localScale;
-            float elapsed = 0;
-
-            while (elapsed < popDuration * 0.4f)
+            piece.SetAnimating(true);
+            piece.transform.localScale = Vector3.zero;
+            activeAnimations.Add(new PieceAnimation
             {
-                elapsed += Time.deltaTime;
-                float t = elapsed / (popDuration * 0.4f);
-                piece.transform.localScale = Vector3.Lerp(originalScale, originalScale * 1.2f, t);
-                yield return null;
+                type = PieceAnimation.AnimationType.Spawn,
+                piece = piece,
+                originalScale = piece.transform.localScale,
+                duration = spawnDuration,
+                elapsed = 0f
+            });
+        }
+
+        // ==================== TWEEN IMPLEMENTATIONS ====================
+
+        private void UpdateSwapAnimation(PieceAnimation anim, float t)
+        {
+            float easeT = t < 0.5f
+                ? 4f * t * t * t
+                : 1f - Mathf.Pow(-2f * t + 2f, 3f) / 2f;
+
+            anim.piece.transform.localPosition = Vector3.Lerp(anim.startPos, anim.endPos, easeT);
+            anim.otherPiece.transform.localPosition = Vector3.Lerp(anim.otherStartPos, anim.otherEndPos, easeT);
+
+            if (anim.IsComplete)
+            {
+                anim.piece.transform.localPosition = anim.endPos;
+                anim.otherPiece.transform.localPosition = anim.otherEndPos;
+                anim.piece.UpdatePosition();
+                anim.otherPiece.UpdatePosition();
+                anim.piece.SetAnimating(false);
+                anim.otherPiece.SetAnimating(false);
             }
+        }
 
-            elapsed = 0;
-            Renderer rend = piece.GetComponent<Renderer>();
-            MaterialPropertyBlock block = new MaterialPropertyBlock();
-
-            while (elapsed < popDuration * 0.6f)
+        private void UpdatePopAnimation(PieceAnimation anim, float t)
+        {
+            if (t < 0.4f)
             {
-                elapsed += Time.deltaTime;
-                float t = elapsed / (popDuration * 0.6f);
-                piece.transform.localScale = Vector3.Lerp(originalScale * 1.2f, Vector3.zero, t);
+                float growT = t / 0.4f;
+                anim.piece.transform.localScale = Vector3.Lerp(anim.originalScale, anim.originalScale * 1.2f, growT);
+            }
+            else
+            {
+                float shrinkT = (t - 0.4f) / 0.6f;
+                anim.piece.transform.localScale = Vector3.Lerp(anim.originalScale * 1.2f, Vector3.zero, shrinkT);
 
+                Renderer rend = anim.piece.GetComponent<Renderer>();
                 if (rend != null)
                 {
+                    MaterialPropertyBlock block = new MaterialPropertyBlock();
                     rend.GetPropertyBlock(block);
                     Color c = rend.material.color;
-                    c.a = Mathf.Lerp(1f, 0f, t);
+                    c.a = Mathf.Lerp(1f, 0f, shrinkT);
                     block.SetColor("_Color", c);
                     rend.SetPropertyBlock(block);
                 }
-
-                yield return null;
             }
 
-            // Piece will be returned to pool by GameManager
+            if (anim.IsComplete) anim.piece.SetAnimating(false);
         }
 
-        public IEnumerator PlaySpawnAnimation(Piece piece)
+        private void UpdateSpawnAnimation(PieceAnimation anim, float t)
         {
-            Vector3 targetScale = piece.transform.localScale;
-            piece.transform.localScale = Vector3.zero;
-            float elapsed = 0;
-            float duration = 0.25f;
+            float easeT = 1f + 2.7f * Mathf.Pow(t - 1f, 3f) + 1.7f * Mathf.Pow(t - 1f, 2f);
+            anim.piece.transform.localScale = Vector3.LerpUnclamped(Vector3.zero, anim.originalScale, easeT);
 
-            while (elapsed < duration)
+            if (anim.IsComplete)
             {
-                elapsed += Time.deltaTime;
-                float t = Mathf.Clamp01(elapsed / duration);
-                float easeT = 1f + 2.7f * Mathf.Pow(t - 1f, 3f) + 1.7f * Mathf.Pow(t - 1f, 2f);
-                piece.transform.localScale = Vector3.LerpUnclamped(Vector3.zero, targetScale, easeT);
-                yield return null;
+                anim.piece.transform.localScale = anim.originalScale;
+                anim.piece.SetAnimating(false);
             }
-
-            piece.transform.localScale = targetScale;
         }
 
-        public IEnumerator PlayReactionAnimation(Piece piece, Vector3 direction)
-        {
-            // Reactions disabled - not called anymore
-            yield return null;
-        }
+        // ==================== LEGACY STUBS ====================
 
-        public IEnumerator PlayLandParticle(Vector3 position)
-        {
-            // TODO: Instanciar particle system
-            Debug.Log($"Landing particle at {position}");
-            yield return null;
-        }
-
-        // ==================== NEW FORCE-BASED MOVEMENT SYSTEM ====================
-        // Pieces are attracted to target positions like black holes
-        // External forces (explosions, etc) can affect trajectory but not final destination
-
-        /// <summary>
-        /// Move piece to target using force-based attraction (black hole style)
-        /// Allows external forces to affect trajectory mid-flight
-        /// </summary>
-        public IEnumerator PlayDynamicMovement(Piece piece, Vector3 startPos, Vector3 targetPos, float duration)
-        {
-            piece.SetAnimating(true);
-            piece.transform.localPosition = startPos;
-            
-            Vector3 velocity = Vector3.zero;
-            float elapsed = 0f;
-            float attractionStrength = 2f; // How strongly target "pulls" the piece
-            Vector3 accumulatedExternalForce = Vector3.zero;
-
-            while (elapsed < duration)
-            {
-                elapsed += Time.deltaTime;
-                Vector3 currentPos = piece.transform.localPosition;
-                Vector3 direction = targetPos - currentPos;
-                float distance = direction.magnitude;
-
-                // If very close to target, snap and finish
-                if (distance < 0.05f)
-                {
-                    piece.transform.localPosition = targetPos;
-                    break;
-                }
-
-                // Attraction force (pulls toward target like gravity to a black hole)
-                Vector3 attractionForce = direction.normalized * attractionStrength;
-
-                // Total force = attraction + external forces
-                Vector3 totalForce = attractionForce + accumulatedExternalForce;
-
-                // Update velocity (with damping for stability)
-                float damping = 0.85f;
-                velocity = (velocity + totalForce * Time.deltaTime) * damping;
-
-                // Update position
-                piece.transform.localPosition = currentPos + velocity * Time.deltaTime;
-
-                // Decay external forces over time (they fade out)
-                accumulatedExternalForce *= 0.9f;
-
-                yield return null;
-            }
-
-            piece.transform.localPosition = targetPos;
-            piece.UpdatePosition();
-            piece.SetAnimating(false);
-        }
-
-        /// <summary>
-        /// Apply external force to piece (e.g., from explosion)
-        /// These are non-permanent and decay over time
-        /// </summary>
-        public void ApplySuddenForce(Vector3 force)
-        {
-            // This would be called on the coroutine to affect currently animating pieces
-            // Implementation: would need to store reference to current force being applied
-            // For now, this is a framework placeholder
-            Debug.Log($"Force applied: {force}");
-        }
-
-        /// <summary>
-        /// Updated fall animation using dynamic movement
-        /// Instead of Lerp, uses force-based attraction to destination
-        /// </summary>
-        public IEnumerator PlayFallAnimationDynamic(Piece piece, Vector3 fromPos, Vector3 toPos)
-        {
-            yield return StartCoroutine(PlayDynamicMovement(piece, fromPos, toPos, fallDuration));
-        }
-
-        /// <summary>
-        /// Updated swap using dynamic movement
-        /// Both pieces are attracted to their target positions simultaneously
-        /// </summary>
-        public IEnumerator PlaySwapAnimationDynamic(Piece piece1, Piece piece2)
-        {
-            piece1.SetAnimating(true);
-            piece2.SetAnimating(true);
-
-            Vector3 pos1 = piece1.transform.localPosition;
-            Vector3 pos2 = piece2.transform.localPosition;
-
-            // Run both movements in parallel
-            yield return StartCoroutine(PlayDynamicMovementParallel(piece1, piece2, pos1, pos2, pos2, pos1, swapDuration));
-
-            piece1.SetAnimating(false);
-            piece2.SetAnimating(false);
-        }
-
-        /// <summary>
-        /// Helper to run two pieces' dynamic movements in parallel
-        /// </summary>
-        private IEnumerator PlayDynamicMovementParallel(Piece piece1, Piece piece2, 
-            Vector3 start1, Vector3 start2, Vector3 target1, Vector3 target2, float duration)
-        {
-            Vector3 vel1 = Vector3.zero;
-            Vector3 vel2 = Vector3.zero;
-            float elapsed = 0f;
-            float attractionStrength = 2f;
-            float damping = 0.85f;
-
-            while (elapsed < duration)
-            {
-                elapsed += Time.deltaTime;
-
-                // Piece 1 movement
-                Vector3 pos1 = piece1.transform.localPosition;
-                Vector3 dir1 = target1 - pos1;
-                float dist1 = dir1.magnitude;
-                if (dist1 > 0.05f)
-                {
-                    Vector3 force1 = dir1.normalized * attractionStrength;
-                    vel1 = (vel1 + force1 * Time.deltaTime) * damping;
-                    piece1.transform.localPosition = pos1 + vel1 * Time.deltaTime;
-                }
-                else
-                {
-                    piece1.transform.localPosition = target1;
-                }
-
-                // Piece 2 movement
-                Vector3 pos2 = piece2.transform.localPosition;
-                Vector3 dir2 = target2 - pos2;
-                float dist2 = dir2.magnitude;
-                if (dist2 > 0.05f)
-                {
-                    Vector3 force2 = dir2.normalized * attractionStrength;
-                    vel2 = (vel2 + force2 * Time.deltaTime) * damping;
-                    piece2.transform.localPosition = pos2 + vel2 * Time.deltaTime;
-                }
-                else
-                {
-                    piece2.transform.localPosition = target2;
-                }
-
-                yield return null;
-            }
-
-            piece1.transform.localPosition = target1;
-            piece2.transform.localPosition = target2;
-            piece1.UpdatePosition();
-            piece2.UpdatePosition();
-        }
+        public IEnumerator PlayReactionAnimation(Piece piece, Vector3 direction) { yield return null; }
+        public IEnumerator PlayLandParticle(Vector3 position) { yield return null; }
+        public IEnumerator PlayDynamicMovement(Piece piece, Vector3 startPos, Vector3 targetPos, float duration) { yield return null; }
+        public void ApplySuddenForce(Vector3 force) { }
+        public IEnumerator PlayFallAnimationDynamic(Piece piece, Vector3 fromPos, Vector3 toPos) { yield return null; }
+        public IEnumerator PlaySwapAnimationDynamic(Piece piece1, Piece piece2) { yield return null; }
     }
 }
 

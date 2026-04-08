@@ -3,7 +3,6 @@
 ## Overview
 The Debug UI system has been implemented and is ready for visual testing. It provides:
 1. **Time Scale Control Button** - Toggle gameplay speed (1.0x ↔ 0.1x)
-2. **Grid State Visualization** - Shows current piece positions in the grid
 
 ## What to See in Game View
 
@@ -11,16 +10,6 @@ The Debug UI system has been implemented and is ready for visual testing. It pro
 - ✅ Yellow button labeled "⏱ Speed: 1.0x"
 - When clicked, should change to "⏱ Speed: 0.1x"
 - Game should slow down visibly when toggled
-
-### Top-Right Corner
-- ✅ Grid visualization showing all 36 positions
-- Each piece displays as:
-  - 🟢 Green pieces
-  - 🔵 Blue pieces
-  - 🔴 Red pieces
-  - 🟡 Yellow pieces
-  - ⚫ Empty slots (-30 frames: pieces still falling/animating)
-- Should update continuously as pieces move
 
 ## Testing Procedure
 
@@ -36,23 +25,11 @@ The Debug UI system has been implemented and is ready for visual testing. It pro
 4. Button should show "⏱ Speed: 0.1x"
 5. Click again to return to normal speed (1.0x)
 
-### Test 3: Grid Visualization
-1. Look at top-right corner
-2. Verify grid shows in format:
-   ```
-   🟢 🔵 🟡 🔴 🔵 -
-   🟡 🟡 🔴 🟢 - -
-   ...
-   ```
-3. Verify 36 total positions visible
-4. Confirm piece positions match actual gameplay
-
-### Test 4: Grid Alignment
-1. Move pieces with mouse
-2. Verify grid display updates correctly
-3. Empty slots show as ⚫
-4. Pieces show correct colors
-5. Grid always shows correct 6x6 layout
+### Test 3: Piece Bounce on Landing
+1. Play the game and make moves
+2. When pieces land in their final position after falling, they should have a subtle bounce
+3. When pieces return from an invalid swap, they should gently bounce into place
+4. Bounce should feel elastic but controlled (not overly springy)
 
 ## Implementation Status
 
@@ -60,14 +37,12 @@ The Debug UI system has been implemented and is ready for visual testing. It pro
 - DebugUI component created and auto-initialized
 - OnGUI rendering system working
 - Time.timeScale toggle functional
-- Grid state calculation implemented
 - Console logging for debugging
 
 ### Technical Details
 - **Script**: `Assets/Scripts/UI/DebugUI.cs`
 - **Initialization**: Via `GameManager.SetupDebugUI()` in `Start()`
 - **Rendering**: Uses `OnGUI()` for immediate viewport rendering
-- **Dependencies**: GameManager.GetPieceAt(int x, int y)
 
 ## Troubleshooting
 
@@ -75,16 +50,6 @@ The Debug UI system has been implemented and is ready for visual testing. It pro
 1. Check console for "[DebugUI] Started. Ready for OnGUI controls." message
 2. Verify DebugUI component is added to Canvas in hierarchy
 3. Ensure OnGUI is being called (check console logs)
-
-### If grid doesn't update:
-1. Verify GameManager.GetPieceAt() is returning valid pieces
-2. Check that piece data is being updated when pieces move
-3. Confirm piece.gameObject.activeSelf returns correct value
-
-### If Time.timeScale doesn't change:
-1. Verify button click is registering (add log to ToggleTimeScale)
-2. Check Time.deltaTime in Scene View (should change)
-3. Confirm no other code is overriding Time.timeScale
 
 ## Console Output Expected
 

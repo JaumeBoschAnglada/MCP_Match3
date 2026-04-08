@@ -52,6 +52,19 @@ namespace Match3.Gameplay
             // Disabled: SetupDebugUI(); - Using per-piece position labels instead
         }
 
+        private void Update()
+        {
+            // Keep idle pieces tracked so they spring back if moved manually in the editor
+            if (isProcessing || piecesOnBoard == null) return;
+            foreach (var kvp in piecesOnBoard)
+            {
+                Piece piece = kvp.Value;
+                if (piece == null || !piece.gameObject.activeSelf) continue;
+                Vector3 targetPos = new Vector3(piece.Data.x, piece.Data.y, 0);
+                pieceAnimator.EnsureTracked(piece, targetPos);
+            }
+        }
+
         private void SetupDebugUI()
         {
             Debug.Log("[GameManager] SetupDebugUI() called!");
@@ -174,6 +187,7 @@ namespace Match3.Gameplay
         {
             if (piece == null) return;
             piece.gameObject.SetActive(false);
+            pieceAnimator.UnregisterPiece(piece);
             PieceType type = piece.Data.type;
             if (pool.ContainsKey(type))
                 pool[type].Enqueue(piece);
@@ -205,8 +219,9 @@ namespace Match3.Gameplay
             // Swap data
             boardController.SwapPieces(x1, y1, x2, y2);
             
-            // Animate swap
-            yield return StartCoroutine(pieceAnimator.PlaySwapAnimation(piece1, piece2));
+            // Animate swap (now handled by Update, so we just wait for duration)
+            pieceAnimator.PlaySwapAnimation(piece1, piece2);
+            yield return new WaitForSeconds(0.2f); // swapDuration
             
             // Update visual dictionary
             piecesOnBoard[(x2, y2)] = piece1;
@@ -227,7 +242,8 @@ namespace Match3.Gameplay
             {
                 // Revert swap
                 boardController.SwapPieces(x1, y1, x2, y2);
-                yield return StartCoroutine(pieceAnimator.PlaySwapAnimation(piece1, piece2));
+                pieceAnimator.PlaySwapAnimation(piece1, piece2);
+                yield return new WaitForSeconds(0.2f); // swapDuration
                 
                 piecesOnBoard[(x1, y1)] = piece1;
                 piecesOnBoard[(x2, y2)] = piece2;
@@ -248,17 +264,15 @@ namespace Match3.Gameplay
             {
                 boardController.MarkPiecesForRemoval(matches);
 
-                // Animate pops (all in parallel)
-                var popCoroutines = new List<Coroutine>();
+                // Animate pops (all in parallel via Update)
                 foreach (var data in matches)
                 {
                     if (piecesOnBoard.TryGetValue((data.x, data.y), out Piece piece))
                     {
-                        popCoroutines.Add(StartCoroutine(pieceAnimator.PlayPopAnimation(piece)));
+                        pieceAnimator.PlayPopAnimation(piece);
                     }
                 }
-                foreach (var c in popCoroutines)
-                    yield return c;
+                yield return new WaitForSeconds(0.4f); // popDuration
 
                 // Return popped pieces to pool
                 foreach (var data in matches)
@@ -278,7 +292,7 @@ namespace Match3.Gameplay
 
                 // Fill empty spaces with new pieces
                 var newPieces = boardController.FillEmptySpaces();
-                yield return StartCoroutine(AnimateFill(newPieces));
+                yield return AnimateFill(newPieces);
 
                 // Check for cascade matches
                 matches = boardController.FindMatches();
@@ -301,8 +315,6 @@ namespace Match3.Gameplay
 
         private IEnumerator AnimateGravity(List<(int x, int fromY, int toY)> movements)
         {
-            var coroutines = new List<Coroutine>();
-
             foreach (var (x, fromY, toY) in movements)
             {
                 if (piecesOnBoard.TryGetValue((x, fromY), out Piece piece))
@@ -312,14 +324,11 @@ namespace Match3.Gameplay
 
                     Vector3 from = new Vector3(x, fromY, 0);
                     Vector3 to = new Vector3(x, toY, 0);
-                    coroutines.Add(StartCoroutine(pieceAnimator.PlayFallAnimation(piece, from, to)));
+                    pieceAnimator.PlayFallAnimation(piece, from, to);
                 }
             }
 
-            foreach (var c in coroutines)
-                yield return c;
-
-            // Ensure all pieces in gravity are synchronized
+            yield return new WaitUntil(() => pieceAnimator.IsAllSettled());
             foreach (var (x, fromY, toY) in movements)
             {
                 if (piecesOnBoard.TryGetValue((x, toY), out Piece piece) && piece != null)
@@ -345,12 +354,13 @@ namespace Match3.Gameplay
                 Vector3 targetPos = new Vector3(data.x, data.y, 0);
                 
                 // Start fall animation con delay
-                StartCoroutine(PlayFallAndReactWithDelay(piece, spawnPos, targetPos, data.x, data.y, elapsedDelay));
+                StartCoroutine(PlayFallAndReactWithDelay(piece, spawnPos, targetPos, data.x, data.y, elapsedDelay)); // Keep StartCoroutine here since it's a fire-and-forget cascade
                 elapsedDelay += cascadeDelay;
             }
 
-            // Wait for all pieces to land
-            yield return new WaitForSeconds(elapsedDelay + pieceAnimator.GetFallDuration());
+            // Wait for cascade to fully start, then wait for all springs to settle
+            yield return new WaitForSeconds(elapsedDelay + 0.05f);
+            yield return new WaitUntil(() => pieceAnimator.IsAllSettled());
 
             // Ensure all new pieces are synchronized
             foreach (var data in newPieces)
@@ -365,7 +375,7 @@ namespace Match3.Gameplay
         private IEnumerator PlayFallAndReactWithDelay(Piece piece, Vector3 spawnPos, Vector3 targetPos, int gridX, int gridY, float delay)
         {
             yield return new WaitForSeconds(delay);
-            yield return StartCoroutine(PlayFallAndReact(piece, spawnPos, targetPos, gridX, gridY));
+            yield return PlayFallAndReact(piece, spawnPos, targetPos, gridX, gridY);
         }
 
         private IEnumerator PlayFallAndReact(Piece piece, Vector3 spawnPos, Vector3 targetPos, int gridX, int gridY)
@@ -374,7 +384,8 @@ namespace Match3.Gameplay
             piece.gameObject.SetActive(true);
             
             // Caer - but don't trigger reactions for filling pieces
-            yield return StartCoroutine(pieceAnimator.PlayFallAnimation(piece, spawnPos, targetPos));
+            pieceAnimator.PlayFallAnimation(piece, spawnPos, targetPos);
+            yield return new WaitUntil(() => pieceAnimator.IsSettled(piece));
             
             // Note: NO reactions for pieces during fill - only during gravity from combos
         }
