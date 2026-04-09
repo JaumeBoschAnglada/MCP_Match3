@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Match3.Data;
 using Match3.Core;
@@ -43,6 +44,9 @@ namespace Match3.Gameplay
         private Dictionary<(int, int), Piece> piecesOnBoard;
         private Dictionary<(ColorType, SpecialEffect), Queue<Piece>> pool;
         private bool isProcessing;
+        
+        // Track last swap positions to prioritize special piece placement
+        private (int x1, int y1, int x2, int y2) lastSwapPositions = (-1, -1, -1, -1);
 
         public bool IsProcessing => isProcessing;
 
@@ -314,6 +318,9 @@ namespace Match3.Gameplay
             int y1 = piece1.Data.y;
             int x2 = piece2.Data.x;
             int y2 = piece2.Data.y;
+            
+            // Save swap positions for special piece creation priority
+            lastSwapPositions = (x1, y1, x2, y2);
 
             // Swap data
             boardController.SwapPieces(x1, y1, x2, y2);
@@ -358,11 +365,15 @@ namespace Match3.Gameplay
         private IEnumerator ProcessMatchesLoop()
         {
             List<PieceData> matches = boardController.FindMatches();
+            List<(int x, int y, ColorType color)> specialPiecesToCreate = new List<(int x, int y, ColorType color)>();
+            List<Piece> createdSpecialPieces = new List<Piece>();
 
             while (matches.Count > 0)
             {
                 bool hasExistingSpecialPiece = matches.Exists(p => p.specialEffect != SpecialEffect.None);
                 List<PieceData> piecesToEliminate;
+                specialPiecesToCreate.Clear();
+                createdSpecialPieces.Clear();
 
                 if (hasExistingSpecialPiece)
                 {
@@ -414,24 +425,25 @@ namespace Match3.Gameplay
                 else
                 {
                     // Check if any 4+ match creates a new special piece
-                    List<PieceData> newSpecials;
                     piecesToEliminate = SpecialPieceCreator.CreateSpecialPiecesFromMatches(
                         new List<PieceData>(matches),
                         boardController.Grid,
                         boardController.Width,
                         boardController.Height,
-                        out newSpecials);
+                        lastSwapPositions,
+                        out specialPiecesToCreate);
 
-                    // Swap visual for each newly created special piece
-                    // Pass all matched pieces so we can animate the components converging to center
-                    foreach (var specialData in newSpecials)
-                        yield return StartCoroutine(VisualSwapToSpecialPiece(specialData, matches));
-
-                    // Animate normal pop for pieces that get eliminated
+                    // Mark all pieces for removal
                     boardController.MarkPiecesForRemoval(piecesToEliminate);
+                    
+                    // Animate ALL pieces with pop animation (same animation for all, including center)
                     foreach (var data in piecesToEliminate)
-                        if (piecesOnBoard.TryGetValue((data.x, data.y), out Piece p)) pieceAnimator.PlayPopAnimation(p);
+                    {
+                        if (piecesOnBoard.TryGetValue((data.x, data.y), out Piece p))
+                            pieceAnimator.PlayPopAnimation(p);
+                    }
 
+                    // Wait for pop animations to complete
                     yield return new WaitForSeconds(0.4f);
                 }
 
@@ -452,6 +464,14 @@ namespace Match3.Gameplay
                 }
 
                 boardController.RemoveMarkedPieces();
+                
+                // Create new special pieces AFTER old ones are eliminated
+                foreach (var specialPos in specialPiecesToCreate)
+                {
+                    Piece specialPiece = CreateNewSpecialPiece(specialPos.x, specialPos.y, specialPos.color, matches);
+                    if (specialPiece != null)
+                        createdSpecialPieces.Add(specialPiece);
+                }
 
                 // Synchronize board state after removal
                 SynchronizeAllPieces();
@@ -470,6 +490,10 @@ namespace Match3.Gameplay
                     if (piecesOnBoard.TryGetValue((x, toY), out Piece gp) && gp != null) gp.UpdatePosition();
                 foreach (var data in newPieces)
                     if (piecesOnBoard.TryGetValue((data.x, data.y), out Piece fp) && fp != null) fp.UpdatePosition();
+                
+                // Also update newly created special pieces
+                foreach (var specialPiece in createdSpecialPieces)
+                    if (specialPiece != null) specialPiece.UpdatePosition();
 
                 matches = boardController.FindMatches();
             }
@@ -478,82 +502,77 @@ namespace Match3.Gameplay
             SynchronizeAllPieces();
         }
 
-        private IEnumerator VisualSwapToSpecialPiece(PieceData specialData, List<PieceData> matchedPieces)
+        /// <summary>
+        /// Create a new special piece at the given position
+        /// </summary>
+        private Piece CreateNewSpecialPiece(int x, int y, ColorType colorType, List<PieceData> matchedPieces)
         {
-            Debug.Log($"[GameManager] VisualSwap starting for {specialData.colorType}/{specialData.specialEffect} at ({specialData.x}, {specialData.y})");
-            Vector3 worldPos = new Vector3(specialData.x, specialData.y, 0);
-            Vector3 centerPos = new Vector3(specialData.x, specialData.y, 0);
-
-            // Spawn creation effect
-            if (EffectManager.Instance != null)
-                EffectManager.Instance.SpawnCreationEffect(worldPos, specialData.colorType);
-
-            // Find the OTHER 3 pieces that form this special (not the center piece)
-            List<Piece> componentPieces = new List<Piece>();
-            if (specialData.specialEffect == SpecialEffect.HorizontalRow)
+            Debug.Log($"[GameManager] ✨ Creating new special piece at ({x}, {y}) with color {colorType}");
+            
+            // Determine special effect type (horizontal or vertical)
+            int horizontalCount = 0;
+            int verticalCount = 0;
+            foreach (var p in matchedPieces)
             {
-                // Find other pieces in the same row
-                foreach (var data in matchedPieces)
-                {
-                    if (data.y == specialData.y && !(data.x == specialData.x && data.y == specialData.y))
-                        if (piecesOnBoard.TryGetValue((data.x, data.y), out Piece p) && p != null)
-                            componentPieces.Add(p);
-                }
+                if (p.y == y && p.colorType == colorType)
+                    horizontalCount++;
+                if (p.x == x && p.colorType == colorType)
+                    verticalCount++;
             }
-            else if (specialData.specialEffect == SpecialEffect.VerticalRow)
-            {
-                // Find other pieces in the same column
-                foreach (var data in matchedPieces)
-                {
-                    if (data.x == specialData.x && !(data.x == specialData.x && data.y == specialData.y))
-                        if (piecesOnBoard.TryGetValue((data.x, data.y), out Piece p) && p != null)
-                            componentPieces.Add(p);
-                }
-            }
-
-            // Animate component pieces moving toward center using spring physics
-            float componentAnimDuration = 0.3f;
-            foreach (var componentPiece in componentPieces)
-            {
-                if (componentPiece != null && componentPiece.gameObject.activeSelf)
-                {
-                    Debug.Log($"[GameManager] Moving component piece from ({componentPiece.Data.x}, {componentPiece.Data.y}) to center ({specialData.x}, {specialData.y})");
-                    Vector3 componentStartPos = componentPiece.transform.localPosition;
-                    pieceAnimator.PlayFallAnimation(componentPiece, componentStartPos, centerPos);
-                }
-            }
-
-            // Return old normal piece to pool (no destroy effect)
-            if (piecesOnBoard.TryGetValue((specialData.x, specialData.y), out Piece oldPiece))
-            {
-                Debug.Log($"[GameManager] Found old piece at ({specialData.x}, {specialData.y}): {oldPiece.GetType().Name}");
-                oldPiece.gameObject.SetActive(false);
-                pieceAnimator.UnregisterPiece(oldPiece);
-                var oldKey = (specialData.colorType, SpecialEffect.None);
-                if (pool.ContainsKey(oldKey)) pool[oldKey].Enqueue(oldPiece);
-            }
-            else
-            {
-                Debug.LogWarning($"[GameManager] No old piece found at ({specialData.x}, {specialData.y})");
-            }
-
-            // Spawn new special piece visual
+            
+            SpecialEffect specialEffect = horizontalCount >= verticalCount ? SpecialEffect.HorizontalRow : SpecialEffect.VerticalRow;
+            Debug.Log($"[GameManager] Special effect type: {specialEffect}");
+            
+            // Update grid with color and special effect
+            boardController.SetPiece(x, y, colorType);
+            boardController.Grid[x, y].specialEffect = specialEffect;
+            
+            // IMPORTANT: Use the SAME PieceData from the grid, not a new instance
+            // This ensures that when gravity moves it, piece.Data stays in sync with grid updates
+            PieceData specialData = boardController.Grid[x, y];
             Piece newPiece = GetFromPool(specialData);
+            
             if (newPiece != null)
             {
-                Debug.Log($"[GameManager] Got new piece: {newPiece.GetType().Name}");
                 newPiece.Initialize(specialData);
+                
+                // Explicitly set the visual position BEFORE activating and animating
+                newPiece.transform.localPosition = new Vector3(x, y, 0);
+                newPiece.transform.localScale = new Vector3(1, 1, 1);
+                
                 newPiece.gameObject.SetActive(true);
-                piecesOnBoard[(specialData.x, specialData.y)] = newPiece;
+                piecesOnBoard[(x, y)] = newPiece;
+                
+                // Now play the spawn animation (which will scale from 0 to 1)
                 pieceAnimator.PlaySpawnAnimation(newPiece);
-                Debug.Log($"[GameManager] Swap complete: {newPiece.GetType().Name} at ({specialData.x}, {specialData.y})");
+                Debug.Log($"[GameManager] ✨ Special piece spawned: {newPiece.GetType().Name} at ({x}, {y})");
+                return newPiece;
             }
             else
             {
-                Debug.LogError($"[GameManager] Failed to get new piece for {specialData.colorType}/{specialData.specialEffect}");
+                Debug.LogError($"[GameManager] ❌ Failed to get new special piece from pool for {colorType}/{specialEffect}");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Determine if special effect should be HorizontalRow or VerticalRow based on matched pieces
+        /// </summary>
+        private SpecialEffect DetermineSpecialEffect(PieceData specialData, List<PieceData> matchedPieces)
+        {
+            // Count pieces in the same row and column
+            int horizontalCount = 0;
+            int verticalCount = 0;
+            foreach (var p in matchedPieces)
+            {
+                if (p.y == specialData.y && p.colorType == specialData.colorType)
+                    horizontalCount++;
+                if (p.x == specialData.x && p.colorType == specialData.colorType)
+                    verticalCount++;
             }
 
-            yield return new WaitForSeconds(componentAnimDuration);
+            // Return the one with more matches (or horizontal if equal)
+            return horizontalCount >= verticalCount ? SpecialEffect.HorizontalRow : SpecialEffect.VerticalRow;
         }
 
         private void SynchronizeAllPieces()
@@ -618,8 +637,11 @@ namespace Match3.Gameplay
                 if (piecesOnBoard.TryGetValue((x, fromY), out Piece piece) && piece != null)
                 {
                     piecesOnBoard.Remove((x, fromY));
-                    piecesOnBoard[(x, toY)] = piece;
-                    pieceAnimator.PlayFallAnimation(piece, new Vector3(x, fromY, 0), new Vector3(x, toY, 0));
+                    piecesOnBoard[(x, toY)] = piece;                    
+                    // IMPORTANT: Update the piece's PieceData to match its new position
+                    // so UpdatePosition() at the end uses the correct coordinates
+                    piece.Data.y = toY;
+                                        pieceAnimator.PlayFallAnimation(piece, new Vector3(x, fromY, 0), new Vector3(x, toY, 0));
                     Debug.Log($"[GameManager] 📍 Gravity: ({x},{fromY}) → ({x},{toY}) | {piece.Data.colorType}");
                 }
                 else

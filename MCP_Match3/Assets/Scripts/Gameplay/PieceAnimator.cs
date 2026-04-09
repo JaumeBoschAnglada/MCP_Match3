@@ -8,7 +8,7 @@ namespace Match3.Animation
     // Used for tween-based animations (swap, pop, spawn)
     public class PieceAnimation
     {
-        public enum AnimationType { Swap, Pop, Spawn }
+        public enum AnimationType { Swap, Pop, Spawn, Dissolve }
 
         public AnimationType type;
         public Piece piece;
@@ -105,9 +105,10 @@ namespace Match3.Animation
                 float t = anim.elapsed / anim.duration;
                 switch (anim.type)
                 {
-                    case PieceAnimation.AnimationType.Swap:  UpdateSwapAnimation(anim, t);  break;
-                    case PieceAnimation.AnimationType.Pop:   UpdatePopAnimation(anim, t);   break;
-                    case PieceAnimation.AnimationType.Spawn: UpdateSpawnAnimation(anim, t); break;
+                    case PieceAnimation.AnimationType.Swap:    UpdateSwapAnimation(anim, t);    break;
+                    case PieceAnimation.AnimationType.Pop:     UpdatePopAnimation(anim, t);     break;
+                    case PieceAnimation.AnimationType.Spawn:   UpdateSpawnAnimation(anim, t);   break;
+                    case PieceAnimation.AnimationType.Dissolve: UpdateDissolveAnimation(anim, t); break;
                 }
 
                 if (anim.IsComplete) activeAnimations.RemoveAt(i);
@@ -236,6 +237,31 @@ namespace Match3.Animation
             });
         }
 
+        /// <summary>
+        /// Dissolve animation: scales piece from current scale to 0 in specified duration.
+        /// Unlike Pop, this does NOT grow first - just shrinks directly.
+        /// </summary>
+        public void PlayDissolveAnimation(Piece piece, float duration)
+        {
+            if (piece == null)
+            {
+                Debug.LogError("[PieceAnimator] ❌ PlayDissolveAnimation called with null piece!");
+                return;
+            }
+
+            piece.SetAnimating(true);
+            Debug.Log($"[PieceAnimator] 💨 PlayDissolveAnimation for {piece.Data.colorType} at ({piece.Data.x},{piece.Data.y}), duration={duration}s");
+            
+            activeAnimations.Add(new PieceAnimation
+            {
+                type = PieceAnimation.AnimationType.Dissolve,
+                piece = piece,
+                originalScale = piece.transform.localScale,
+                duration = duration,
+                elapsed = 0f
+            });
+        }
+
         // ==================== TWEEN IMPLEMENTATIONS ====================
 
         private void UpdateSwapAnimation(PieceAnimation anim, float t)
@@ -292,6 +318,19 @@ namespace Match3.Animation
             {
                 anim.piece.transform.localScale = anim.originalScale;
                 anim.piece.SetAnimating(false);
+            }
+        }
+
+        private void UpdateDissolveAnimation(PieceAnimation anim, float t)
+        {
+            // Simple linear scale from original to zero (NO growth phase)
+            anim.piece.transform.localScale = Vector3.Lerp(anim.originalScale, Vector3.zero, t);
+
+            if (anim.IsComplete)
+            {
+                anim.piece.transform.localScale = Vector3.zero;
+                anim.piece.SetAnimating(false);
+                Debug.Log($"[PieceAnimator] ✅ Dissolve animation complete for {anim.piece.Data.colorType} at ({anim.piece.Data.x},{anim.piece.Data.y})");
             }
         }
     }

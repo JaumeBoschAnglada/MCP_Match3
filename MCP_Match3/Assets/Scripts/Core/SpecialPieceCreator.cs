@@ -11,31 +11,27 @@ namespace Match3.Core
     public class SpecialPieceCreator
     {
         /// <summary>
-        /// Scan matched pieces and convert 4+ horizontal/vertical matches to special pieces.
-        /// Returns the updated matched pieces list.
+        /// Scan matched pieces and determine positions where special pieces should be created.
+        /// Returns the list of matched pieces (ALL of them, including those that will become specials).
+        /// Returns positions where specials should be created (centerPiecesPositions).
+        /// Does NOT modify the original PieceData - all pieces get eliminated together.
         /// </summary>
-        public static List<PieceData> CreateSpecialPiecesFromMatches(List<PieceData> matchedPieces, PieceData[,] grid, int gridWidth, int gridHeight, out List<PieceData> newlyCreatedSpecials)
+        public static List<PieceData> CreateSpecialPiecesFromMatches(List<PieceData> matchedPieces, PieceData[,] grid, int gridWidth, int gridHeight, (int x1, int y1, int x2, int y2) swapPositions, out List<(int x, int y, ColorType color)> specialPiecePositions)
         {
-            HashSet<PieceData> centerPiecesConverted = new HashSet<PieceData>();
+            specialPiecePositions = new List<(int x, int y, ColorType color)>();
 
             // Check for horizontal rows (4+ in a row)
-            ProcessHorizontalMatches(matchedPieces, grid, gridWidth, gridHeight, centerPiecesConverted);
+            ProcessHorizontalMatches(matchedPieces, grid, gridWidth, gridHeight, swapPositions, specialPiecePositions);
 
             // Check for vertical rows (4+ in a column)
-            ProcessVerticalMatches(matchedPieces, grid, gridWidth, gridHeight, centerPiecesConverted);
+            ProcessVerticalMatches(matchedPieces, grid, gridWidth, gridHeight, swapPositions, specialPiecePositions);
 
-            newlyCreatedSpecials = new List<PieceData>(centerPiecesConverted);
-
-            // Remove center pieces from elimination list - they stay as special pieces
-            foreach (var centerPiece in centerPiecesConverted)
-            {
-                matchedPieces.Remove(centerPiece);
-            }
-
+            // IMPORTANT: Return ALL matched pieces for elimination (including those that will become specials)
+            // Do NOT remove any pieces from the list - they all get eliminated
             return matchedPieces;
         }
 
-        private static void ProcessHorizontalMatches(List<PieceData> matchedPieces, PieceData[,] grid, int gridWidth, int gridHeight, HashSet<PieceData> centerPiecesConverted)
+        private static void ProcessHorizontalMatches(List<PieceData> matchedPieces, PieceData[,] grid, int gridWidth, int gridHeight, (int x1, int y1, int x2, int y2) swapPositions, List<(int x, int y, ColorType color)> specialPiecePositions)
         {
             // Group by row and check for 4+ consecutive matches
             Dictionary<int, List<PieceData>> rowGroups = new Dictionary<int, List<PieceData>>();
@@ -57,31 +53,46 @@ namespace Match3.Core
                     // Sort by x position
                     piecesInRow.Sort((a, b) => a.x.CompareTo(b.x));
 
-                    // Find the center piece to become HorizontalRow
-                    int centerIndex = (piecesInRow.Count - 1) / 2;
-                    PieceData centerPiece = piecesInRow[centerIndex];
-
-                    // Convert center piece to HorizontalRow - keep color, add effect
-                    grid[centerPiece.x, centerPiece.y].specialEffect = SpecialEffect.HorizontalRow;
-                    centerPiece.specialEffect = SpecialEffect.HorizontalRow;
+                    // Prioritize swap positions if they exist in this row
+                    PieceData centerPiece = null;
                     
-                    centerPiecesConverted.Add(centerPiece);
+                    if (swapPositions.y1 == y)
+                    {
+                        // One of the swap positions is in this row - check if it's in the match
+                        var swapPiece1 = piecesInRow.Find(p => p.x == swapPositions.x1);
+                        if (swapPiece1 != null)
+                            centerPiece = swapPiece1;
+                    }
+                    
+                    if (centerPiece == null && swapPositions.y2 == y)
+                    {
+                        var swapPiece2 = piecesInRow.Find(p => p.x == swapPositions.x2);
+                        if (swapPiece2 != null)
+                            centerPiece = swapPiece2;
+                    }
+                    
+                    // If no swap position found, use mathematical center
+                    if (centerPiece == null)
+                    {
+                        int centerIndex = (piecesInRow.Count - 1) / 2;
+                        centerPiece = piecesInRow[centerIndex];
+                    }
 
-                    Debug.Log($"[SpecialPieceCreator] Created HorizontalRow at ({centerPiece.x}, {centerPiece.y}) with color {centerPiece.colorType} from {piecesInRow.Count} horizontal matches");
+                    // Record the position and color for special piece creation (do NOT modify PieceData)
+                    specialPiecePositions.Add((centerPiece.x, centerPiece.y, centerPiece.colorType));
+
+                    Debug.Log($"[SpecialPieceCreator] Detected HorizontalRow at ({centerPiece.x}, {centerPiece.y}) with color {centerPiece.colorType} - will be created after elimination");
                 }
             }
         }
 
-        private static void ProcessVerticalMatches(List<PieceData> matchedPieces, PieceData[,] grid, int gridWidth, int gridHeight, HashSet<PieceData> centerPiecesConverted)
+        private static void ProcessVerticalMatches(List<PieceData> matchedPieces, PieceData[,] grid, int gridWidth, int gridHeight, (int x1, int y1, int x2, int y2) swapPositions, List<(int x, int y, ColorType color)> specialPiecePositions)
         {
             // Group by column and check for 4+ consecutive matches
             Dictionary<int, List<PieceData>> columnGroups = new Dictionary<int, List<PieceData>>();
 
             foreach (var piece in matchedPieces)
             {
-                if (centerPiecesConverted.Contains(piece))
-                    continue; // Skip if already converted to special
-
                 if (!columnGroups.ContainsKey(piece.x))
                     columnGroups[piece.x] = new List<PieceData>();
                 columnGroups[piece.x].Add(piece);
@@ -97,17 +108,35 @@ namespace Match3.Core
                     // Sort by y position
                     piecesInColumn.Sort((a, b) => a.y.CompareTo(b.y));
 
-                    // Find the center piece to become VerticalRow
-                    int centerIndex = (piecesInColumn.Count - 1) / 2;
-                    PieceData centerPiece = piecesInColumn[centerIndex];
+                    // Prioritize swap positions if they exist in this column
+                    PieceData centerPiece = null;
+                    
+                    if (swapPositions.x1 == x)
+                    {
+                        // One of the swap positions is in this column - check if it's in the match
+                        var swapPiece1 = piecesInColumn.Find(p => p.y == swapPositions.y1);
+                        if (swapPiece1 != null)
+                            centerPiece = swapPiece1;
+                    }
+                    
+                    if (centerPiece == null && swapPositions.x2 == x)
+                    {
+                        var swapPiece2 = piecesInColumn.Find(p => p.y == swapPositions.y2);
+                        if (swapPiece2 != null)
+                            centerPiece = swapPiece2;
+                    }
+                    
+                    // If no swap position found, use mathematical center
+                    if (centerPiece == null)
+                    {
+                        int centerIndex = (piecesInColumn.Count - 1) / 2;
+                        centerPiece = piecesInColumn[centerIndex];
+                    }
 
-                    // Convert center piece to VerticalRow - keep color, add effect
-                    grid[centerPiece.x, centerPiece.y].specialEffect = SpecialEffect.VerticalRow;
-                    centerPiece.specialEffect = SpecialEffect.VerticalRow;
+                    // Record the position and color for special piece creation (do NOT modify PieceData)
+                    specialPiecePositions.Add((centerPiece.x, centerPiece.y, centerPiece.colorType));
 
-                    centerPiecesConverted.Add(centerPiece);
-
-                    Debug.Log($"[SpecialPieceCreator] Created VerticalRow at ({centerPiece.x}, {centerPiece.y}) with color {centerPiece.colorType} from {piecesInColumn.Count} vertical matches");
+                    Debug.Log($"[SpecialPieceCreator] Detected VerticalRow at ({centerPiece.x}, {centerPiece.y}) with color {centerPiece.colorType} - will be created after elimination");
                 }
             }
         }
