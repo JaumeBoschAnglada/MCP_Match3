@@ -192,10 +192,10 @@ namespace Match3.Core
 
         public void MarkPiecesForRemoval(List<PieceData> pieces)
         {
-            // Apply special effects if any matched pieces are special
-            List<PieceData> piecesToRemove = SpecialPieceEffects.ApplySpecialEffects(pieces, grid, GRID_WIDTH, GRID_HEIGHT);
-
-            foreach (var piece in piecesToRemove)
+            // GameManager already handles ApplySpecialEffects before calling this.
+            // Marking only the pieces we're told to mark avoids double-expansion
+            // that leaves orphan entries in piecesOnBoard.
+            foreach (var piece in pieces)
             {
                 piece.MarkForRemoval();
             }

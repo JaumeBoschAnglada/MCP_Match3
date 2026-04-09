@@ -611,10 +611,18 @@ namespace Match3.Gameplay
                 }
             }
 
-            // Remove invalid entries
+            // Remove invalid entries and return orphaned pieces to pool
             foreach (var key in keysToRemove)
             {
-                Debug.Log($"[GameManager] Removing invalid entry at {key}");
+                if (piecesOnBoard.TryGetValue(key, out Piece orphan) && orphan != null && orphan.gameObject.activeSelf)
+                {
+                    Debug.Log($"[GameManager] Removing invalid entry at {key} and returning orphan to pool");
+                    ReturnToPool(orphan);
+                }
+                else
+                {
+                    Debug.Log($"[GameManager] Removing invalid entry at {key}");
+                }
                 piecesOnBoard.Remove(key);
             }
 
