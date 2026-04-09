@@ -8,6 +8,8 @@ Toda la documentación del proyecto está en la carpeta `AgentConfig/`:
 - **[progress-log.md](AgentConfig/progress-log.md)** → Registro cronológico de avances
 - **[architecture.md](AgentConfig/architecture.md)** → Diagrama de dependencias, flujo del core loop, convenciones
 
+**⚠️ IMPORTANTE**: Lee también **[MCP_ASSET_POLICY.md](MCP_ASSET_POLICY.md)** para entender las reglas al trabajar con assets.
+
 ## 🎮 Contexto
 
 Este es un juego **Match 3 para móviles** en **Unity 6000.3.2f1 con URP**. 
@@ -21,6 +23,7 @@ Este es un juego **Match 3 para móviles** en **Unity 6000.3.2f1 con URP**.
 3. **Input System moderno**: Usar `UnityEngine.InputSystem`. NUNCA `UnityEngine.Input` (legacy).
 4. **SerializeField siempre**: Todas las referencias via `[SerializeField]`. No usar `FindObjectOfType`, `GetComponentInChildren`, ni similares.
 5. **Namespace Match3.***: Cada script pertenece a un namespace bajo `Match3`.
+6. **🚫 NUNCA tocar YAML directamente**: Los archivos `.prefab`, `.scene`, `.asset` son formato YAML. **SOLO modificar con MCP**. Si necesitas crear/editar prefabs, escenas, assets, usa las herramientas MCP disponibles (manage_gameobject, manage_scene, manage_asset, etc). Editar YAML manual → rompe referencias y UUID de Unity.
 
 ## 🛠️ Al Trabajar en una Tarea
 

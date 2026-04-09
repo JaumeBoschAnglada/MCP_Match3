@@ -13,6 +13,7 @@ namespace Match3.Core
 
         public int Width => GRID_WIDTH;
         public int Height => GRID_HEIGHT;
+        public PieceData[,] Grid => grid;
 
         public void Initialize(int levelNumber = 1)
         {
@@ -47,8 +48,8 @@ namespace Match3.Core
         {
             foreach (var pieceEntry in levelData.pieces)
             {
-                PieceType type = pieceEntry.GetPieceType();
-                grid[pieceEntry.x, pieceEntry.y] = new PieceData(pieceEntry.x, pieceEntry.y, type);
+                ColorType color = pieceEntry.GetColorType();
+                grid[pieceEntry.x, pieceEntry.y] = new PieceData(pieceEntry.x, pieceEntry.y, color);
             }
         }
 
@@ -58,16 +59,16 @@ namespace Match3.Core
             {
                 for (int y = 0; y < GRID_HEIGHT; y++)
                 {
-                    PieceType type = GetRandomPieceType();
-                    grid[x, y] = new PieceData(x, y, type);
+                    ColorType color = GetRandomColorType();
+                    grid[x, y] = new PieceData(x, y, color);
                 }
             }
         }
 
-        private PieceType GetRandomPieceType()
+        private ColorType GetRandomColorType()
         {
             int random = Random.Range(0, 4);
-            return (PieceType)(random + 1);
+            return (ColorType)(random + 1);
         }
 
         public PieceData GetPiece(int x, int y)
@@ -82,11 +83,11 @@ namespace Match3.Core
             return x >= 0 && x < GRID_WIDTH && y >= 0 && y < GRID_HEIGHT;
         }
 
-        public void SetPiece(int x, int y, PieceType type)
+        public void SetPiece(int x, int y, ColorType color)
         {
             if (IsValidPosition(x, y))
             {
-                grid[x, y].type = type;
+                grid[x, y].colorType = color;
             }
         }
 
@@ -114,7 +115,7 @@ namespace Match3.Core
             {
                 for (int x = 0; x < GRID_WIDTH; x++)
                 {
-                    if (grid[x, y].type == PieceType.Empty)
+                    if (grid[x, y].colorType == ColorType.Empty)
                         continue;
 
                     CheckHorizontalMatch(x, y, matchedPieces);
@@ -126,23 +127,31 @@ namespace Match3.Core
             {
                 for (int y = 0; y < GRID_HEIGHT; y++)
                 {
-                    if (grid[x, y].type == PieceType.Empty)
+                    if (grid[x, y].colorType == ColorType.Empty)
                         continue;
 
                     CheckVerticalMatch(x, y, matchedPieces);
                 }
             }
 
-            return new List<PieceData>(matchedPieces);
+            List<PieceData> matches = new List<PieceData>(matchedPieces);
+
+            // Special piece creation is now handled by GameManager.ProcessMatchesLoop
+            // This keeps the game logic centralized there
+
+            return matches;
         }
 
         private void CheckHorizontalMatch(int startX, int startY, HashSet<PieceData> matches)
         {
-            PieceType type = grid[startX, startY].type;
+            ColorType color = grid[startX, startY].colorType;
+            if (color == ColorType.Empty)
+                return;
+
             int matchCount = 1;
             int x = startX + 1;
 
-            while (x < GRID_WIDTH && grid[x, startY].type == type)
+            while (x < GRID_WIDTH && grid[x, startY].colorType == color)
             {
                 matchCount++;
                 x++;
@@ -159,11 +168,14 @@ namespace Match3.Core
 
         private void CheckVerticalMatch(int startX, int startY, HashSet<PieceData> matches)
         {
-            PieceType type = grid[startX, startY].type;
+            ColorType color = grid[startX, startY].colorType;
+            if (color == ColorType.Empty)
+                return;
+
             int matchCount = 1;
             int y = startY + 1;
 
-            while (y < GRID_HEIGHT && grid[startX, y].type == type)
+            while (y < GRID_HEIGHT && grid[startX, y].colorType == color)
             {
                 matchCount++;
                 y++;
@@ -180,7 +192,10 @@ namespace Match3.Core
 
         public void MarkPiecesForRemoval(List<PieceData> pieces)
         {
-            foreach (var piece in pieces)
+            // Apply special effects if any matched pieces are special
+            List<PieceData> piecesToRemove = SpecialPieceEffects.ApplySpecialEffects(pieces, grid, GRID_WIDTH, GRID_HEIGHT);
+
+            foreach (var piece in piecesToRemove)
             {
                 piece.MarkForRemoval();
             }
@@ -194,7 +209,7 @@ namespace Match3.Core
                 {
                     if (grid[x, y].isMarkedForRemoval)
                     {
-                        grid[x, y] = new PieceData(x, y, PieceType.Empty);
+                        grid[x, y] = new PieceData(x, y, ColorType.Empty);
                     }
                 }
             }
@@ -209,14 +224,14 @@ namespace Match3.Core
                 int writeY = 0;
                 for (int readY = 0; readY < GRID_HEIGHT; readY++)
                 {
-                    if (grid[x, readY].type != PieceType.Empty)
+                    if (grid[x, readY].colorType != ColorType.Empty)
                     {
                         if (readY != writeY)
                         {
                             movements.Add((x, readY, writeY));
                             grid[x, writeY] = grid[x, readY];
                             grid[x, writeY].y = writeY;
-                            grid[x, readY] = new PieceData(x, readY, PieceType.Empty);
+                            grid[x, readY] = new PieceData(x, readY, ColorType.Empty);
                         }
                         writeY++;
                     }
@@ -234,9 +249,9 @@ namespace Match3.Core
             {
                 for (int y = 0; y < GRID_HEIGHT; y++)
                 {
-                    if (grid[x, y].type == PieceType.Empty)
+                    if (grid[x, y].colorType == ColorType.Empty)
                     {
-                        grid[x, y].type = GetRandomPieceType();
+                        grid[x, y].colorType = GetRandomColorType();
                         newPieces.Add(grid[x, y]);
                     }
                 }

@@ -26,19 +26,27 @@ namespace Match3.Data
             public string type;
 
             /// <summary>
-            /// Converts string type to PieceType enum.
+            /// Converts string type to ColorType enum.
             /// </summary>
-            public PieceType GetPieceType()
+            public ColorType GetColorType()
             {
                 return type switch
                 {
-                    "Red" => PieceType.Red,
-                    "Blue" => PieceType.Blue,
-                    "Green" => PieceType.Green,
-                    "Yellow" => PieceType.Yellow,
-                    "Empty" => PieceType.Empty,
-                    _ => PieceType.Empty
+                    "Red" => ColorType.Red,
+                    "Blue" => ColorType.Blue,
+                    "Green" => ColorType.Green,
+                    "Yellow" => ColorType.Yellow,
+                    "Empty" => ColorType.Empty,
+                    _ => ColorType.Empty
                 };
+            }
+
+            /// <summary>
+            /// Legacy method for backward compatibility
+            /// </summary>
+            public PieceType GetPieceType()
+            {
+                return (PieceType)GetColorType();
             }
         }
 

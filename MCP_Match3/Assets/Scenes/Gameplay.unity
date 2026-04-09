@@ -301,6 +301,14 @@ MonoBehaviour:
   bluePiecePrefab: {fileID: 4718194246624601209, guid: de1db9121a8497e489fc4df1b8ff49fb, type: 3}
   greenPiecePrefab: {fileID: 7488235272969505134, guid: 60c82a84c412a80438bd3f07b6472b23, type: 3}
   yellowPiecePrefab: {fileID: 5487074188452501466, guid: bb9590b078920df4b8c1585806c4e19c, type: 3}
+  specialHorizontalRedPrefab: {fileID: 1100000000000001, guid: bff0706301ddb97448ec0f7e335a1fb6, type: 3}
+  specialHorizontalBluePrefab: {fileID: 1200000000000001, guid: 742a38a8d53787c4e86dde75a3a4010e, type: 3}
+  specialHorizontalGreenPrefab: {fileID: 1300000000000001, guid: c8a35bcdb1033154088338bf71e2fa35, type: 3}
+  specialHorizontalYellowPrefab: {fileID: 1400000000000001, guid: 9bb7b4eb8747b2147b68c17bf4dcb8e6, type: 3}
+  specialVerticalRedPrefab: {fileID: 1500000000000001, guid: 364dffa5aa40cf14d84cd71545d1bf2d, type: 3}
+  specialVerticalBluePrefab: {fileID: 1600000000000001, guid: 8115c2e3f45d4094992c0c94156b5d79, type: 3}
+  specialVerticalGreenPrefab: {fileID: 1700000000000001, guid: b22a5116d52adaa46aeaa5a89d686efd, type: 3}
+  specialVerticalYellowPrefab: {fileID: 1800000000000001, guid: 3530dbfd4071c6e43af7b6e32b7e5089, type: 3}
   showGridVisuals: 1
   gridColor: {r: 0, g: 1, b: 0, a: 0.5}
 --- !u!4 &902241264

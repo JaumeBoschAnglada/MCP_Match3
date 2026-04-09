@@ -18,6 +18,10 @@ namespace Match3.Scenes
             {
                 Debug.LogError("HallManager: PlayButton not assigned in Inspector!");
             }
+
+            //Entramos directo.
+            Debug.Log("------------- HallManager: ENTRAMOS DIRECTO A LEVEL!");
+            OnPlayButtonClicked();
         }
 
         private void OnPlayButtonClicked()

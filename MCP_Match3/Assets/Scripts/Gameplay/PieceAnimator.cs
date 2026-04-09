@@ -206,12 +206,13 @@ namespace Match3.Animation
         public void PlaySpawnAnimation(Piece piece)
         {
             piece.SetAnimating(true);
+            Vector3 targetScale = piece.transform.localScale;
             piece.transform.localScale = Vector3.zero;
             activeAnimations.Add(new PieceAnimation
             {
                 type = PieceAnimation.AnimationType.Spawn,
                 piece = piece,
-                originalScale = piece.transform.localScale,
+                originalScale = targetScale,
                 duration = spawnDuration,
                 elapsed = 0f
             });
@@ -250,20 +251,14 @@ namespace Match3.Animation
             {
                 float shrinkT = (t - 0.4f) / 0.6f;
                 anim.piece.transform.localScale = Vector3.Lerp(anim.originalScale * 1.2f, Vector3.zero, shrinkT);
-
-                Renderer rend = anim.piece.GetComponent<Renderer>();
-                if (rend != null)
-                {
-                    MaterialPropertyBlock block = new MaterialPropertyBlock();
-                    rend.GetPropertyBlock(block);
-                    Color c = rend.material.color;
-                    c.a = Mathf.Lerp(1f, 0f, shrinkT);
-                    block.SetColor("_Color", c);
-                    rend.SetPropertyBlock(block);
-                }
+                // Note: Color/alpha effects handled separately
             }
 
-            if (anim.IsComplete) anim.piece.SetAnimating(false);
+            if (anim.IsComplete)
+            {
+                anim.piece.transform.localScale = Vector3.zero;
+                anim.piece.SetAnimating(false);
+            }
         }
 
         private void UpdateSpawnAnimation(PieceAnimation anim, float t)

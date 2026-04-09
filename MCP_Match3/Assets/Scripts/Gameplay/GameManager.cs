@@ -5,6 +5,7 @@ using Match3.Data;
 using Match3.Core;
 using Match3.Animation;
 using Match3.Input;
+using Match3.Effects;
 
 namespace Match3.Gameplay
 {
@@ -17,18 +18,30 @@ namespace Match3.Gameplay
         [SerializeField] private PieceAnimator pieceAnimator;
         [SerializeField] private Transform boardParent;
 
-        [Header("Piece Prefabs (one per type)")]
+        [Header("Piece Prefabs (one per color)")]
         [SerializeField] private GameObject redPiecePrefab;
         [SerializeField] private GameObject bluePiecePrefab;
         [SerializeField] private GameObject greenPiecePrefab;
         [SerializeField] private GameObject yellowPiecePrefab;
+
+        [Header("Special Piece Prefabs (Special_Horizontal per color)")]
+        [SerializeField] private GameObject specialHorizontalRedPrefab;
+        [SerializeField] private GameObject specialHorizontalBluePrefab;
+        [SerializeField] private GameObject specialHorizontalGreenPrefab;
+        [SerializeField] private GameObject specialHorizontalYellowPrefab;
+
+        [Header("Special Piece Prefabs (Special_Vertical per color)")]
+        [SerializeField] private GameObject specialVerticalRedPrefab;
+        [SerializeField] private GameObject specialVerticalBluePrefab;
+        [SerializeField] private GameObject specialVerticalGreenPrefab;
+        [SerializeField] private GameObject specialVerticalYellowPrefab;
 
         [Header("Debug Visualization")]
         [SerializeField] private bool showGridVisuals = true;
         [SerializeField] private Color gridColor = new Color(0, 1, 0, 0.5f);
         
         private Dictionary<(int, int), Piece> piecesOnBoard;
-        private Dictionary<PieceType, Queue<Piece>> pool;
+        private Dictionary<(ColorType, SpecialEffect), Queue<Piece>> pool;
         private bool isProcessing;
 
         public bool IsProcessing => isProcessing;
@@ -76,13 +89,10 @@ namespace Match3.Gameplay
 
             boardController.Initialize(currentLevelNumber);
             piecesOnBoard = new Dictionary<(int, int), Piece>();
-            pool = new Dictionary<PieceType, Queue<Piece>>
-            {
-                { PieceType.Red, new Queue<Piece>() },
-                { PieceType.Blue, new Queue<Piece>() },
-                { PieceType.Green, new Queue<Piece>() },
-                { PieceType.Yellow, new Queue<Piece>() }
-            };
+            pool = new Dictionary<(ColorType, SpecialEffect), Queue<Piece>>();
+            foreach (ColorType color in new[] { ColorType.Red, ColorType.Blue, ColorType.Green, ColorType.Yellow })
+                foreach (SpecialEffect effect in new[] { SpecialEffect.None, SpecialEffect.HorizontalRow, SpecialEffect.VerticalRow })
+                    pool[(color, effect)] = new Queue<Piece>();
             
             SpawnBoard();
         }
@@ -119,53 +129,120 @@ namespace Match3.Gameplay
                 for (int y = 0; y < boardController.Height; y++)
                 {
                     PieceData data = boardController.GetPiece(x, y);
-                    if (data.type != PieceType.Empty)
-                    {
-                        Piece piece = GetFromPool(data.type);
+                    if (data.colorType != ColorType.Empty)
+                    {                      
+                        Piece piece = GetFromPool(data);
                         piece.Initialize(data);
-                        piece.gameObject.SetActive(true); // Make initial pieces visible
+                        piece.gameObject.SetActive(true);
                         piecesOnBoard[(x, y)] = piece;
+                        pieceAnimator.PlaySpawnAnimation(piece);
                     }
                 }
             }
         }
 
-        private GameObject GetPrefabForType(PieceType type)
+        private GameObject GetPrefabForData(PieceData data)
         {
-            return type switch
+            if (data.specialEffect == SpecialEffect.HorizontalRow)
             {
-                PieceType.Red => redPiecePrefab,
-                PieceType.Blue => bluePiecePrefab,
-                PieceType.Green => greenPiecePrefab,
-                PieceType.Yellow => yellowPiecePrefab,
+                var prefab = data.colorType switch
+                {
+                    ColorType.Red    => specialHorizontalRedPrefab,
+                    ColorType.Blue   => specialHorizontalBluePrefab,
+                    ColorType.Green  => specialHorizontalGreenPrefab,
+                    ColorType.Yellow => specialHorizontalYellowPrefab,
+                    _ => null
+                };
+                if (prefab == null)
+                    Debug.LogError($"[GameManager] Special_Horizontal prefab not assigned for color {data.colorType}!");
+                return prefab;
+            }
+
+            if (data.specialEffect == SpecialEffect.VerticalRow)
+            {
+                var prefab = data.colorType switch
+                {
+                    ColorType.Red    => specialVerticalRedPrefab,
+                    ColorType.Blue   => specialVerticalBluePrefab,
+                    ColorType.Green  => specialVerticalGreenPrefab,
+                    ColorType.Yellow => specialVerticalYellowPrefab,
+                    _ => null
+                };
+                if (prefab == null)
+                    Debug.LogError($"[GameManager] Special_Vertical prefab not assigned for color {data.colorType}!");
+                return prefab;
+            }
+
+            return data.colorType switch
+            {
+                ColorType.Red    => redPiecePrefab,
+                ColorType.Blue   => bluePiecePrefab,
+                ColorType.Green  => greenPiecePrefab,
+                ColorType.Yellow => yellowPiecePrefab,
                 _ => null
             };
         }
 
-        private Piece GetFromPool(PieceType type)
+        private Piece GetFromPool(PieceData data)
         {
-            if (pool.TryGetValue(type, out var queue) && queue.Count > 0)
+            var key = (data.colorType, data.specialEffect);
+
+            if (pool.TryGetValue(key, out var queue) && queue.Count > 0)
             {
                 Piece piece = queue.Dequeue();
-                piece.gameObject.SetActive(false); // Invisible until positioned correctly
+                piece.gameObject.SetActive(false);
                 piece.ResetVisuals();
+                Debug.Log($"[GameManager] Got {data.specialEffect} {data.colorType} from pool");
                 return piece;
             }
 
-            GameObject prefab = GetPrefabForType(type);
+            GameObject prefab = GetPrefabForData(data);
+            if (prefab == null)
+            {
+                Debug.LogError($"[GameManager] CRITICAL: No prefab found for {data.colorType}/{data.specialEffect}");
+                return null;
+            }
+
+            Debug.Log($"[GameManager] Instantiating prefab for {data.colorType}/{data.specialEffect}: {prefab.name}");
             GameObject go = Instantiate(prefab, boardParent);
-            go.SetActive(false); // Keep invisible until positioned
-            return go.GetComponent<Piece>();
+            if (go == null)
+            {
+                Debug.LogError($"[GameManager] Instantiate failed for {prefab.name}");
+                return null;
+            }
+            
+            Piece piece2 = go.GetComponent<Piece>();
+            if (piece2 == null)
+            {
+                Debug.LogError($"[GameManager] Instantiated object has no Piece component: {go.name}");
+                return null;
+            }
+            
+            go.SetActive(false);
+            Debug.Log($"[GameManager] Successfully created {piece2.GetType().Name} at {go.name}");
+            return piece2;
         }
 
         private void ReturnToPool(Piece piece)
         {
             if (piece == null) return;
+            
+            // Spawn effect before returning to pool
+            ColorType colorType = piece.Data.colorType;
+            if (colorType != ColorType.Empty)
+            {
+                if (EffectManager.Instance != null)
+                {
+                    Vector3 effectPosition = piece.transform.position;
+                    EffectManager.Instance.SpawnEffect(effectPosition, colorType);
+                }
+            }
+            
             piece.gameObject.SetActive(false);
             pieceAnimator.UnregisterPiece(piece);
-            PieceType type = piece.Data.type;
-            if (pool.ContainsKey(type))
-                pool[type].Enqueue(piece);
+            var key = (piece.Data.colorType, piece.Data.specialEffect);
+            if (pool.ContainsKey(key))
+                pool[key].Enqueue(piece);
         }
 
         public Piece GetPieceAt(int x, int y)
@@ -237,20 +314,64 @@ namespace Match3.Gameplay
 
             while (matches.Count > 0)
             {
-                boardController.MarkPiecesForRemoval(matches);
+                bool hasExistingSpecialPiece = matches.Exists(p => p.specialEffect != SpecialEffect.None);
+                List<PieceData> piecesToEliminate;
 
-                // Animate pops (all in parallel via Update)
-                foreach (var data in matches)
+                if (hasExistingSpecialPiece)
                 {
-                    if (piecesOnBoard.TryGetValue((data.x, data.y), out Piece piece))
-                    {
-                        pieceAnimator.PlayPopAnimation(piece);
-                    }
-                }
-                yield return new WaitForSeconds(0.4f); // popDuration
+                    // Existing special piece activated (row/column sweep)
+                    PieceData specialData = matches.Find(p => p.specialEffect != SpecialEffect.None);
+                    
+                    // Get ALL pieces in the row/column that should be eliminated
+                    piecesToEliminate = SpecialPieceEffects.ApplySpecialEffects(matches, boardController.Grid, boardController.Width, boardController.Height);
+                    
+                    // Get elimination order (from center outward)
+                    List<PieceData> eliminationOrder = SpecialPieceEffects.GetEliminationOrder(piecesToEliminate, specialData);
 
-                // Return popped pieces to pool
-                foreach (var data in matches)
+                    // Collect visual pieces for animation
+                    List<Piece> piecesToAnimate = new List<Piece>();
+                    foreach (var data in eliminationOrder)
+                        if (piecesOnBoard.TryGetValue((data.x, data.y), out Piece p)) piecesToAnimate.Add(p);
+
+                    Piece specialPiece = null;
+                    piecesOnBoard.TryGetValue((specialData.x, specialData.y), out specialPiece);
+
+                    SpecialPieceAnimator specialAnimator = GetComponent<SpecialPieceAnimator>();
+                    if (specialAnimator == null) specialAnimator = gameObject.AddComponent<SpecialPieceAnimator>();
+                    specialAnimator.EliminateGradually(specialPiece, piecesToAnimate);
+
+                    // Total time: delay between each piece + 0.4s for pop duration + extra buffer
+                    float totalAnimationTime = (eliminationOrder.Count - 1) * 0.05f + 0.5f;
+                    yield return new WaitForSeconds(totalAnimationTime);
+
+                    boardController.MarkPiecesForRemoval(piecesToEliminate);
+                }
+                else
+                {
+                    // Check if any 4+ match creates a new special piece
+                    List<PieceData> newSpecials;
+                    piecesToEliminate = SpecialPieceCreator.CreateSpecialPiecesFromMatches(
+                        new List<PieceData>(matches),
+                        boardController.Grid,
+                        boardController.Width,
+                        boardController.Height,
+                        out newSpecials);
+
+                    // Swap visual for each newly created special piece
+                    // Pass all matched pieces so we can animate the components converging to center
+                    foreach (var specialData in newSpecials)
+                        yield return StartCoroutine(VisualSwapToSpecialPiece(specialData, matches));
+
+                    // Animate normal pop for pieces that get eliminated
+                    boardController.MarkPiecesForRemoval(piecesToEliminate);
+                    foreach (var data in piecesToEliminate)
+                        if (piecesOnBoard.TryGetValue((data.x, data.y), out Piece p)) pieceAnimator.PlayPopAnimation(p);
+
+                    yield return new WaitForSeconds(0.4f);
+                }
+
+                // Return eliminated pieces to pool
+                foreach (var data in piecesToEliminate)
                 {
                     if (piecesOnBoard.TryGetValue((data.x, data.y), out Piece piece))
                     {
@@ -261,31 +382,138 @@ namespace Match3.Gameplay
 
                 boardController.RemoveMarkedPieces();
 
-                // Start gravity + fill in the same frame — no pause between them
+                // Synchronize board state after removal
+                SynchronizeAllPieces();
+
+                // Gravity + fill
                 var gravityMoves = boardController.ApplyGravity();
                 StartGravityAnimations(gravityMoves);
 
                 var newPieces = boardController.FillEmptySpaces();
                 StartFillAnimations(newPieces);
 
-                // Wait once for everything to land
                 yield return new WaitUntil(() => pieceAnimator.IsAllSettled());
 
+                // Final synchronization after all animations complete
                 foreach (var (x, fromY, toY) in gravityMoves)
                     if (piecesOnBoard.TryGetValue((x, toY), out Piece gp) && gp != null) gp.UpdatePosition();
                 foreach (var data in newPieces)
                     if (piecesOnBoard.TryGetValue((data.x, data.y), out Piece fp) && fp != null) fp.UpdatePosition();
 
-                // Check for cascade matches
                 matches = boardController.FindMatches();
             }
 
-            // Ensure all pieces are synchronized with grid after processing
+            // Final board synchronization
             SynchronizeAllPieces();
+        }
+
+        private IEnumerator VisualSwapToSpecialPiece(PieceData specialData, List<PieceData> matchedPieces)
+        {
+            Debug.Log($"[GameManager] VisualSwap starting for {specialData.colorType}/{specialData.specialEffect} at ({specialData.x}, {specialData.y})");
+            Vector3 worldPos = new Vector3(specialData.x, specialData.y, 0);
+            Vector3 centerPos = new Vector3(specialData.x, specialData.y, 0);
+
+            // Spawn creation effect
+            if (EffectManager.Instance != null)
+                EffectManager.Instance.SpawnCreationEffect(worldPos, specialData.colorType);
+
+            // Find the OTHER 3 pieces that form this special (not the center piece)
+            List<Piece> componentPieces = new List<Piece>();
+            if (specialData.specialEffect == SpecialEffect.HorizontalRow)
+            {
+                // Find other pieces in the same row
+                foreach (var data in matchedPieces)
+                {
+                    if (data.y == specialData.y && !(data.x == specialData.x && data.y == specialData.y))
+                        if (piecesOnBoard.TryGetValue((data.x, data.y), out Piece p) && p != null)
+                            componentPieces.Add(p);
+                }
+            }
+            else if (specialData.specialEffect == SpecialEffect.VerticalRow)
+            {
+                // Find other pieces in the same column
+                foreach (var data in matchedPieces)
+                {
+                    if (data.x == specialData.x && !(data.x == specialData.x && data.y == specialData.y))
+                        if (piecesOnBoard.TryGetValue((data.x, data.y), out Piece p) && p != null)
+                            componentPieces.Add(p);
+                }
+            }
+
+            // Animate component pieces moving toward center using spring physics
+            float componentAnimDuration = 0.3f;
+            foreach (var componentPiece in componentPieces)
+            {
+                if (componentPiece != null && componentPiece.gameObject.activeSelf)
+                {
+                    Debug.Log($"[GameManager] Moving component piece from ({componentPiece.Data.x}, {componentPiece.Data.y}) to center ({specialData.x}, {specialData.y})");
+                    Vector3 componentStartPos = componentPiece.transform.localPosition;
+                    pieceAnimator.PlayFallAnimation(componentPiece, componentStartPos, centerPos);
+                }
+            }
+
+            // Return old normal piece to pool (no destroy effect)
+            if (piecesOnBoard.TryGetValue((specialData.x, specialData.y), out Piece oldPiece))
+            {
+                Debug.Log($"[GameManager] Found old piece at ({specialData.x}, {specialData.y}): {oldPiece.GetType().Name}");
+                oldPiece.gameObject.SetActive(false);
+                pieceAnimator.UnregisterPiece(oldPiece);
+                var oldKey = (specialData.colorType, SpecialEffect.None);
+                if (pool.ContainsKey(oldKey)) pool[oldKey].Enqueue(oldPiece);
+            }
+            else
+            {
+                Debug.LogWarning($"[GameManager] No old piece found at ({specialData.x}, {specialData.y})");
+            }
+
+            // Spawn new special piece visual
+            Piece newPiece = GetFromPool(specialData);
+            if (newPiece != null)
+            {
+                Debug.Log($"[GameManager] Got new piece: {newPiece.GetType().Name}");
+                newPiece.Initialize(specialData);
+                newPiece.gameObject.SetActive(true);
+                piecesOnBoard[(specialData.x, specialData.y)] = newPiece;
+                pieceAnimator.PlaySpawnAnimation(newPiece);
+                Debug.Log($"[GameManager] Swap complete: {newPiece.GetType().Name} at ({specialData.x}, {specialData.y})");
+            }
+            else
+            {
+                Debug.LogError($"[GameManager] Failed to get new piece for {specialData.colorType}/{specialData.specialEffect}");
+            }
+
+            yield return new WaitForSeconds(componentAnimDuration);
         }
 
         private void SynchronizeAllPieces()
         {
+            // First, remove pieces that no longer exist in grid or are marked as Empty
+            var keysToRemove = new List<(int, int)>();
+            foreach (var kvp in piecesOnBoard)
+            {
+                var (x, y) = kvp.Key;
+                Piece piece = kvp.Value;
+                
+                if (piece == null || !piece.gameObject.activeSelf)
+                {
+                    keysToRemove.Add((x, y));
+                    continue;
+                }
+
+                // Check if this piece still exists in the grid at the expected position
+                PieceData gridData = boardController.GetPiece(x, y);
+                if (gridData.colorType == ColorType.Empty)
+                {
+                    keysToRemove.Add((x, y));
+                    continue;
+                }
+            }
+
+            // Remove invalid entries
+            foreach (var key in keysToRemove)
+                piecesOnBoard.Remove(key);
+
+            // Update position for valid pieces
             foreach (var piece in piecesOnBoard.Values)
             {
                 if (piece != null && piece.gameObject.activeSelf)
@@ -299,11 +527,16 @@ namespace Match3.Gameplay
         {
             foreach (var (x, fromY, toY) in movements)
             {
-                if (piecesOnBoard.TryGetValue((x, fromY), out Piece piece))
+                if (piecesOnBoard.TryGetValue((x, fromY), out Piece piece) && piece != null)
                 {
                     piecesOnBoard.Remove((x, fromY));
                     piecesOnBoard[(x, toY)] = piece;
                     pieceAnimator.PlayFallAnimation(piece, new Vector3(x, fromY, 0), new Vector3(x, toY, 0));
+                    Debug.Log($"[GameManager] Animating gravity: ({x}, {fromY}) → ({x}, {toY})");
+                }
+                else
+                {
+                    Debug.LogWarning($"[GameManager] Gravity movement failed: no piece at ({x}, {fromY})");;
                 }
             }
         }
@@ -312,7 +545,7 @@ namespace Match3.Gameplay
         {
             foreach (var data in newPieces)
             {
-                Piece piece = GetFromPool(data.type);
+                Piece piece = GetFromPool(data);
                 piece.Initialize(data);
                 piecesOnBoard[(data.x, data.y)] = piece;
                 piece.gameObject.SetActive(true);
