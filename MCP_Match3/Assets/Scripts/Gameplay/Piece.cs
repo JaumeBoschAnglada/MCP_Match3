@@ -30,12 +30,7 @@ namespace Match3.Gameplay
 
         public virtual void ResetVisuals()
         {
-            transform.localScale = originalScale;
-            if (pieceRenderer != null)
-            {
-                MaterialPropertyBlock block = new MaterialPropertyBlock();
-                pieceRenderer.SetPropertyBlock(block);
-            }
+            transform.localScale = originalScale;            
         }
 
         public virtual void Initialize(PieceData pieceData)
@@ -59,7 +54,7 @@ namespace Match3.Gameplay
             }
         }
 
-        // Show position as label on the piece during gameplay
+        // Show position and type as label on the piece during gameplay
         private void OnGUI()
         {
             if (data == null || !gameObject.activeSelf)
@@ -72,26 +67,33 @@ namespace Match3.Gameplay
             Vector3 screenPos = mainCam.WorldToScreenPoint(transform.position);
             if (screenPos.z > 0 && screenPos.z < 1000) // Only if in front of camera
             {
-                // Create label style with better readability
+                // Create label style
                 GUIStyle labelStyle = new GUIStyle(GUI.skin.label)
                 {
-                    fontSize = 12,
+                    fontSize = 22,
                     fontStyle = FontStyle.Bold,
                     alignment = TextAnchor.MiddleCenter,
                     normal = { textColor = Color.white }
                 };
 
+                // Prepare text lines
+                string posLine = $"({data.x},{data.y})";
+                string typeLine = $"{data.colorType}";
+                if (data.specialEffect != SpecialEffect.None)
+                    typeLine += $"\n{data.specialEffect}";
+
                 // Draw centered on piece (accounting for screen Y flip)
-                Rect rect = new Rect(screenPos.x - 30, Screen.height - screenPos.y - 15, 60, 20);
+                Rect rect = new Rect(screenPos.x - 50, Screen.height - screenPos.y - 35, 100, 30);
                 
                 // Draw semi-transparent background
                 Color prevColor = GUI.color;
-                GUI.color = new Color(0, 0, 0, 0.5f);
+                GUI.color = new Color(0, 0, 0, 0.6f);
                 GUI.Box(rect, "");
                 GUI.color = prevColor;
 
-                // Draw position label
-                GUI.Label(rect, $"({data.x},{data.y})", labelStyle);
+                // Draw labels
+                GUI.Label(new Rect(screenPos.x - 50, Screen.height - screenPos.y - 35, 100, 15), posLine, labelStyle);
+                GUI.Label(new Rect(screenPos.x - 50, Screen.height - screenPos.y - 20, 100, 15), typeLine, labelStyle);
             }
         }
 
@@ -103,7 +105,7 @@ namespace Match3.Gameplay
 
             // Draw position label in scene view
             Vector3 pos = transform.position;
-            UnityEditor.Handles.Label(pos + Vector3.up * 0.5f, $"({data.x},{data.y})");
+            UnityEditor.Handles.Label(pos, $"({data.x},{data.y})");
             Gizmos.color = Color.green;
             Gizmos.DrawWireSphere(pos, 0.12f);
         }

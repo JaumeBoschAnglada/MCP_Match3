@@ -227,6 +227,15 @@ namespace Match3.Gameplay
         {
             if (piece == null) return;
             
+            Debug.Log($"[GameManager] 🔄 ReturnToPool called for {piece.Data.colorType} at ({piece.Data.x},{piece.Data.y}), IsAnimating={piece.IsAnimating}");
+            
+            // If piece is animating (pop), wait for animation to finish before deactivating
+            if (piece.IsAnimating)
+            {
+                StartCoroutine(ReturnToPoolAfterAnimation(piece));
+                return;
+            }
+            
             // Spawn effect before returning to pool
             ColorType colorType = piece.Data.colorType;
             if (colorType != ColorType.Empty)
@@ -242,7 +251,45 @@ namespace Match3.Gameplay
             pieceAnimator.UnregisterPiece(piece);
             var key = (piece.Data.colorType, piece.Data.specialEffect);
             if (pool.ContainsKey(key))
+            {
                 pool[key].Enqueue(piece);
+                Debug.Log($"[GameManager] ✅ Returned {piece.Data.specialEffect} {piece.Data.colorType} to pool");
+            }
+        }
+
+        private IEnumerator ReturnToPoolAfterAnimation(Piece piece)
+        {
+            Debug.Log($"[GameManager] Waiting for pop animation to complete on {piece.gameObject.name}");
+            
+            // Wait until piece is no longer animating or is inactive
+            float timeout = 1.0f;
+            float elapsed = 0f;
+            while (piece != null && piece.IsAnimating && piece.gameObject.activeSelf && elapsed < timeout)
+            {
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+
+            if (piece != null)
+            {
+                Debug.Log($"[GameManager] Pop animation complete, returning {piece.gameObject.name} to pool");
+                // Now safe to deactivate
+                ColorType colorType = piece.Data.colorType;
+                if (colorType != ColorType.Empty)
+                {
+                    if (EffectManager.Instance != null)
+                    {
+                        Vector3 effectPosition = piece.transform.position;
+                        EffectManager.Instance.SpawnEffect(effectPosition, colorType);
+                    }
+                }
+                
+                piece.gameObject.SetActive(false);
+                pieceAnimator.UnregisterPiece(piece);
+                var key = (piece.Data.colorType, piece.Data.specialEffect);
+                if (pool.ContainsKey(key))
+                    pool[key].Enqueue(piece);
+            }
         }
 
         public Piece GetPieceAt(int x, int y)
@@ -322,28 +369,46 @@ namespace Match3.Gameplay
                     // Existing special piece activated (row/column sweep)
                     PieceData specialData = matches.Find(p => p.specialEffect != SpecialEffect.None);
                     
+                    Debug.Log($"[GameManager] 🔥 Special piece activation at ({specialData.x},{specialData.y}) with type {specialData.specialEffect}");
+                    
                     // Get ALL pieces in the row/column that should be eliminated
                     piecesToEliminate = SpecialPieceEffects.ApplySpecialEffects(matches, boardController.Grid, boardController.Width, boardController.Height);
                     
                     // Get elimination order (from center outward)
                     List<PieceData> eliminationOrder = SpecialPieceEffects.GetEliminationOrder(piecesToEliminate, specialData);
 
+                    Debug.Log($"[GameManager] Elimination order: {eliminationOrder.Count} pieces");
+
                     // Collect visual pieces for animation
                     List<Piece> piecesToAnimate = new List<Piece>();
                     foreach (var data in eliminationOrder)
-                        if (piecesOnBoard.TryGetValue((data.x, data.y), out Piece p)) piecesToAnimate.Add(p);
+                    {
+                        if (piecesOnBoard.TryGetValue((data.x, data.y), out Piece p))
+                        {
+                            piecesToAnimate.Add(p);
+                            Debug.Log($"[GameManager] Added piece from piecesOnBoard: ({data.x},{data.y})");
+                        }
+                        else
+                        {
+                            Debug.LogWarning($"[GameManager] ⚠️ Piece ({data.x},{data.y}) NOT FOUND in piecesOnBoard!");
+                        }
+                    }
 
                     Piece specialPiece = null;
                     piecesOnBoard.TryGetValue((specialData.x, specialData.y), out specialPiece);
 
+                    Debug.Log($"[GameManager] Starting elimination animations for {piecesToAnimate.Count} pieces");
+
                     SpecialPieceAnimator specialAnimator = GetComponent<SpecialPieceAnimator>();
                     if (specialAnimator == null) specialAnimator = gameObject.AddComponent<SpecialPieceAnimator>();
-                    specialAnimator.EliminateGradually(specialPiece, piecesToAnimate);
+                    
+                    // Pass PieceAnimator reference so it can queue animations
+                    specialAnimator.SetPieceAnimator(pieceAnimator);
+                    
+                    // Wait for all elimination animations to complete
+                    yield return StartCoroutine(specialAnimator.EliminateGradually(specialPiece, piecesToAnimate));
 
-                    // Total time: delay between each piece + 0.4s for pop duration + extra buffer
-                    float totalAnimationTime = (eliminationOrder.Count - 1) * 0.05f + 0.5f;
-                    yield return new WaitForSeconds(totalAnimationTime);
-
+                    Debug.Log($"[GameManager] ✅ Animation phase complete, marking pieces for removal");
                     boardController.MarkPiecesForRemoval(piecesToEliminate);
                 }
                 else
@@ -371,12 +436,18 @@ namespace Match3.Gameplay
                 }
 
                 // Return eliminated pieces to pool
+                Debug.Log($"[GameManager] 🗑️ Returning {piecesToEliminate.Count} eliminated pieces to pool");
                 foreach (var data in piecesToEliminate)
                 {
                     if (piecesOnBoard.TryGetValue((data.x, data.y), out Piece piece))
                     {
                         ReturnToPool(piece);
                         piecesOnBoard.Remove((data.x, data.y));
+                        Debug.Log($"[GameManager] Removed ({data.x},{data.y}) from piecesOnBoard");
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"[GameManager] ❌ Piece at ({data.x},{data.y}) NOT in piecesOnBoard!");
                     }
                 }
 
@@ -487,6 +558,8 @@ namespace Match3.Gameplay
 
         private void SynchronizeAllPieces()
         {
+            Debug.Log($"[GameManager] 🔄 SynchronizeAllPieces: Before sync - piecesOnBoard has {piecesOnBoard.Count} entries");
+            
             // First, remove pieces that no longer exist in grid or are marked as Empty
             var keysToRemove = new List<(int, int)>();
             foreach (var kvp in piecesOnBoard)
@@ -496,6 +569,7 @@ namespace Match3.Gameplay
                 
                 if (piece == null || !piece.gameObject.activeSelf)
                 {
+                    Debug.LogWarning($"[GameManager] ⚠️ Removing dead piece at ({x},{y}): piece={piece?.name ?? "null"}, activeSelf={piece?.gameObject.activeSelf}");
                     keysToRemove.Add((x, y));
                     continue;
                 }
@@ -504,6 +578,15 @@ namespace Match3.Gameplay
                 PieceData gridData = boardController.GetPiece(x, y);
                 if (gridData.colorType == ColorType.Empty)
                 {
+                    Debug.LogWarning($"[GameManager] ⚠️ Grid mismatch at ({x},{y}): piecesOnBoard has {piece.Data.colorType} but grid is Empty");
+                    keysToRemove.Add((x, y));
+                    continue;
+                }
+                
+                // Verify the piece data matches the grid
+                if (piece.Data.x != x || piece.Data.y != y)
+                {
+                    Debug.LogWarning($"[GameManager] ⚠️ Position mismatch: piece.Data=({piece.Data.x},{piece.Data.y}) but dictionary key=({x},{y})");
                     keysToRemove.Add((x, y));
                     continue;
                 }
@@ -511,7 +594,10 @@ namespace Match3.Gameplay
 
             // Remove invalid entries
             foreach (var key in keysToRemove)
+            {
+                Debug.Log($"[GameManager] Removing invalid entry at {key}");
                 piecesOnBoard.Remove(key);
+            }
 
             // Update position for valid pieces
             foreach (var piece in piecesOnBoard.Values)
@@ -521,6 +607,8 @@ namespace Match3.Gameplay
                     piece.UpdatePosition();
                 }
             }
+            
+            Debug.Log($"[GameManager] ✅ SynchronizeAllPieces: After sync - piecesOnBoard has {piecesOnBoard.Count} entries");
         }
 
         private void StartGravityAnimations(List<(int x, int fromY, int toY)> movements)
@@ -532,11 +620,11 @@ namespace Match3.Gameplay
                     piecesOnBoard.Remove((x, fromY));
                     piecesOnBoard[(x, toY)] = piece;
                     pieceAnimator.PlayFallAnimation(piece, new Vector3(x, fromY, 0), new Vector3(x, toY, 0));
-                    Debug.Log($"[GameManager] Animating gravity: ({x}, {fromY}) → ({x}, {toY})");
+                    Debug.Log($"[GameManager] 📍 Gravity: ({x},{fromY}) → ({x},{toY}) | {piece.Data.colorType}");
                 }
                 else
                 {
-                    Debug.LogWarning($"[GameManager] Gravity movement failed: no piece at ({x}, {fromY})");;
+                    Debug.LogWarning($"[GameManager] ❌ No piece found at ({x},{fromY}) for gravity");
                 }
             }
         }
@@ -547,11 +635,18 @@ namespace Match3.Gameplay
             {
                 Piece piece = GetFromPool(data);
                 piece.Initialize(data);
+                
+                if (piecesOnBoard.ContainsKey((data.x, data.y)))
+                {
+                    Debug.LogError($"[GameManager] ❌ DUPLICATE KEY: ({data.x},{data.y}) already exists in piecesOnBoard!");
+                }
+                
                 piecesOnBoard[(data.x, data.y)] = piece;
                 piece.gameObject.SetActive(true);
                 Vector3 spawnPos = new Vector3(data.x, boardController.Height + 1, 0);
                 Vector3 targetPos = new Vector3(data.x, data.y, 0);
                 pieceAnimator.PlayFallAnimation(piece, spawnPos, targetPos);
+                Debug.Log($"[GameManager] 🆕 Fill at ({data.x},{data.y}): {data.colorType}");
             }
         }
 

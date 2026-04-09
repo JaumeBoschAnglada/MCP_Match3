@@ -15,29 +15,51 @@ namespace Match3.Animation
         private const float ELIMINATION_DELAY = 0.05f;
         private PieceAnimator pieceAnimator;
 
-        private void Awake()
-        {
-            pieceAnimator = GetComponent<PieceAnimator>();
-        }
+    public void SetPieceAnimator(PieceAnimator animator)
+    {
+        pieceAnimator = animator;
+    }
 
-        /// <summary>
-        /// Start gradual elimination for special pieces with pop animation.
-        /// Pass the special piece and the pieces to eliminate in order.
-        /// </summary>
-        public void EliminateGradually(Piece specialPiece, List<Piece> piecesToEliminate)
+    /// <summary>
+    /// Start gradual elimination for special pieces with pop animation.
+    /// Pass the special piece and the pieces to eliminate in order.
+    /// Returns IEnumerator so GameManager can wait for completion.
+    /// </summary>
+    public IEnumerator EliminateGradually(Piece specialPiece, List<Piece> piecesToEliminate)
         {
-            StartCoroutine(EliminateGraduallyCoroutine(specialPiece, piecesToEliminate));
+            yield return StartCoroutine(EliminateGraduallyCoroutine(specialPiece, piecesToEliminate));
         }
 
         private IEnumerator EliminateGraduallyCoroutine(Piece specialPiece, List<Piece> piecesToEliminate)
         {
             if (pieceAnimator == null)
-                pieceAnimator = GetComponent<PieceAnimator>();
+            {
+                Debug.LogError("[SpecialPieceAnimator] ❌ ERROR: pieceAnimator is null! Cannot queue animations!");
+                yield break;
+            }
+
+            // Ensure all pieces are ACTIVE before starting animations
+            foreach (var piece in piecesToEliminate)
+            {
+                if (piece != null && !piece.gameObject.activeSelf)
+                {
+                    Debug.LogWarning($"[SpecialPieceAnimator] ⚠️ Piece at ({piece.Data.x},{piece.Data.y}) was inactive! Activating...");
+                    piece.gameObject.SetActive(true);
+                }
+            }
 
             // Animate pop for each piece with delay (center outward)
             foreach (var piece in piecesToEliminate)
             {
                 if (piece == null) continue;
+
+                Debug.Log($"[SpecialPieceAnimator] Playing pop animation for {piece.Data.colorType} at ({piece.Data.x},{piece.Data.y})");
+
+                // CRITICAL: Ensure piece is active before animation
+                if (!piece.gameObject.activeSelf)
+                {
+                    piece.gameObject.SetActive(true);
+                }
 
                 // Play pop animation
                 if (pieceAnimator != null)

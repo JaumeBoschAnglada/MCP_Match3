@@ -89,6 +89,16 @@ namespace Match3.Animation
             for (int i = activeAnimations.Count - 1; i >= 0; i--)
             {
                 PieceAnimation anim = activeAnimations[i];
+                
+                // Skip if piece is null or inactive
+                if (anim.piece == null || !anim.piece.gameObject.activeSelf)
+                {
+                    if (anim.piece != null && anim.type == PieceAnimation.AnimationType.Pop)
+                        Debug.LogWarning($"[PieceAnimator] ⚠️ Skipping pop animation for {anim.piece.Data.colorType} at ({anim.piece.Data.x},{anim.piece.Data.y}) - activeSelf={anim.piece.gameObject.activeSelf}");
+                    activeAnimations.RemoveAt(i);
+                    continue;
+                }
+
                 anim.elapsed += Time.deltaTime;
                 if (anim.elapsed > anim.duration) anim.elapsed = anim.duration;
 
@@ -192,7 +202,15 @@ namespace Match3.Animation
 
         public void PlayPopAnimation(Piece piece)
         {
+            if (piece == null)
+            {
+                Debug.LogError("[PieceAnimator] ❌ PlayPopAnimation called with null piece!");
+                return;
+            }
+
             piece.SetAnimating(true);
+            Debug.Log($"[PieceAnimator] ▶️ PlayPopAnimation START for {piece.Data.colorType} at ({piece.Data.x},{piece.Data.y}), activeSelf={piece.gameObject.activeSelf}, scale={piece.transform.localScale}");
+            
             activeAnimations.Add(new PieceAnimation
             {
                 type = PieceAnimation.AnimationType.Pop,
@@ -242,22 +260,26 @@ namespace Match3.Animation
 
         private void UpdatePopAnimation(PieceAnimation anim, float t)
         {
+            if (anim.piece == null) return;
+
             if (t < 0.4f)
             {
                 float growT = t / 0.4f;
-                anim.piece.transform.localScale = Vector3.Lerp(anim.originalScale, anim.originalScale * 1.2f, growT);
+                Vector3 newScale = Vector3.Lerp(anim.originalScale, anim.originalScale * 1.2f, growT);
+                anim.piece.transform.localScale = newScale;
             }
             else
             {
                 float shrinkT = (t - 0.4f) / 0.6f;
-                anim.piece.transform.localScale = Vector3.Lerp(anim.originalScale * 1.2f, Vector3.zero, shrinkT);
-                // Note: Color/alpha effects handled separately
+                Vector3 newScale = Vector3.Lerp(anim.originalScale * 1.2f, Vector3.zero, shrinkT);
+                anim.piece.transform.localScale = newScale;
             }
 
             if (anim.IsComplete)
             {
                 anim.piece.transform.localScale = Vector3.zero;
                 anim.piece.SetAnimating(false);
+                Debug.Log($"[PieceAnimator] ✅ Pop animation complete for {anim.piece.Data.colorType} at ({anim.piece.Data.x},{anim.piece.Data.y}), scale now = {anim.piece.transform.localScale}");
             }
         }
 
