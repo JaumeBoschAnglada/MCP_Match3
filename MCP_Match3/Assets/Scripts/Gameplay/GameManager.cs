@@ -33,6 +33,8 @@ namespace Match3.Gameplay
 
         public bool IsProcessing => isProcessing;
 
+        public int GetCurrentLevelNumber() => currentLevelNumber;
+
         private void Awake()
         {
             if (Instance == null)
@@ -49,7 +51,6 @@ namespace Match3.Gameplay
         private void Start()
         {
             Initialize();
-            // Disabled: SetupDebugUI(); - Using per-piece position labels instead
         }
 
         private void Update()
@@ -63,32 +64,6 @@ namespace Match3.Gameplay
                 Vector3 targetPos = new Vector3(piece.Data.x, piece.Data.y, 0);
                 pieceAnimator.EnsureTracked(piece, targetPos);
             }
-        }
-
-        private void SetupDebugUI()
-        {
-            Debug.Log("[GameManager] SetupDebugUI() called!");
-            
-            // Find canvas and add DebugUI if not present
-            Canvas canvas = FindObjectOfType<Canvas>();
-            
-            if (canvas == null)
-            {
-                Debug.LogWarning("[GameManager] Canvas NOT FOUND!");
-                return;
-            }
-            
-            Debug.Log("[GameManager] Canvas found!");
-            
-            if (canvas.GetComponent<Match3.UI.DebugUI>() != null)
-            {
-                Debug.Log("[GameManager] DebugUI already exists!");
-                return;
-            }
-            
-            Debug.Log("[GameManager] Adding DebugUI component to Canvas...");
-            canvas.gameObject.AddComponent<Match3.UI.DebugUI>();
-            Debug.Log("[GameManager] DebugUI component added successfully!");
         }
 
         private void Initialize()
@@ -286,13 +261,20 @@ namespace Match3.Gameplay
 
                 boardController.RemoveMarkedPieces();
 
-                // Gravity
+                // Start gravity + fill in the same frame — no pause between them
                 var gravityMoves = boardController.ApplyGravity();
-                yield return StartCoroutine(AnimateGravity(gravityMoves));
+                StartGravityAnimations(gravityMoves);
 
-                // Fill empty spaces with new pieces
                 var newPieces = boardController.FillEmptySpaces();
-                yield return AnimateFill(newPieces);
+                StartFillAnimations(newPieces);
+
+                // Wait once for everything to land
+                yield return new WaitUntil(() => pieceAnimator.IsAllSettled());
+
+                foreach (var (x, fromY, toY) in gravityMoves)
+                    if (piecesOnBoard.TryGetValue((x, toY), out Piece gp) && gp != null) gp.UpdatePosition();
+                foreach (var data in newPieces)
+                    if (piecesOnBoard.TryGetValue((data.x, data.y), out Piece fp) && fp != null) fp.UpdatePosition();
 
                 // Check for cascade matches
                 matches = boardController.FindMatches();
@@ -313,7 +295,7 @@ namespace Match3.Gameplay
             }
         }
 
-        private IEnumerator AnimateGravity(List<(int x, int fromY, int toY)> movements)
+        private void StartGravityAnimations(List<(int x, int fromY, int toY)> movements)
         {
             foreach (var (x, fromY, toY) in movements)
             {
@@ -321,79 +303,28 @@ namespace Match3.Gameplay
                 {
                     piecesOnBoard.Remove((x, fromY));
                     piecesOnBoard[(x, toY)] = piece;
-
-                    Vector3 from = new Vector3(x, fromY, 0);
-                    Vector3 to = new Vector3(x, toY, 0);
-                    pieceAnimator.PlayFallAnimation(piece, from, to);
-                }
-            }
-
-            yield return new WaitUntil(() => pieceAnimator.IsAllSettled());
-            foreach (var (x, fromY, toY) in movements)
-            {
-                if (piecesOnBoard.TryGetValue((x, toY), out Piece piece) && piece != null)
-                {
-                    piece.UpdatePosition();
+                    pieceAnimator.PlayFallAnimation(piece, new Vector3(x, fromY, 0), new Vector3(x, toY, 0));
                 }
             }
         }
 
-        private IEnumerator AnimateFill(List<PieceData> newPieces)
+        private void StartFillAnimations(List<PieceData> newPieces)
         {
-            // Cascade effect: piezas caen una tras otra, no todas simultáneamente
-            float cascadeDelay = 0.05f; // Delay entre cada pieza
-            float elapsedDelay = 0;
-
             foreach (var data in newPieces)
             {
                 Piece piece = GetFromPool(data.type);
                 piece.Initialize(data);
                 piecesOnBoard[(data.x, data.y)] = piece;
-
+                piece.gameObject.SetActive(true);
                 Vector3 spawnPos = new Vector3(data.x, boardController.Height + 1, 0);
                 Vector3 targetPos = new Vector3(data.x, data.y, 0);
-                
-                // Start fall animation con delay
-                StartCoroutine(PlayFallAndReactWithDelay(piece, spawnPos, targetPos, data.x, data.y, elapsedDelay)); // Keep StartCoroutine here since it's a fire-and-forget cascade
-                elapsedDelay += cascadeDelay;
+                pieceAnimator.PlayFallAnimation(piece, spawnPos, targetPos);
             }
-
-            // Wait for cascade to fully start, then wait for all springs to settle
-            yield return new WaitForSeconds(elapsedDelay + 0.05f);
-            yield return new WaitUntil(() => pieceAnimator.IsAllSettled());
-
-            // Ensure all new pieces are synchronized
-            foreach (var data in newPieces)
-            {
-                if (piecesOnBoard.TryGetValue((data.x, data.y), out Piece piece) && piece != null)
-                {
-                    piece.UpdatePosition();
-                }
-            }
-        }
-
-        private IEnumerator PlayFallAndReactWithDelay(Piece piece, Vector3 spawnPos, Vector3 targetPos, int gridX, int gridY, float delay)
-        {
-            yield return new WaitForSeconds(delay);
-            yield return PlayFallAndReact(piece, spawnPos, targetPos, gridX, gridY);
-        }
-
-        private IEnumerator PlayFallAndReact(Piece piece, Vector3 spawnPos, Vector3 targetPos, int gridX, int gridY)
-        {
-            // Activate piece before animating (was invisible in pool)
-            piece.gameObject.SetActive(true);
-            
-            // Caer - but don't trigger reactions for filling pieces
-            pieceAnimator.PlayFallAnimation(piece, spawnPos, targetPos);
-            yield return new WaitUntil(() => pieceAnimator.IsSettled(piece));
-            
-            // Note: NO reactions for pieces during fill - only during gravity from combos
         }
 
         // Reactions disabled - keeping cleaner animation flow
         private IEnumerator TriggerAdjacentReactions(int gridX, int gridY)
         {
-            // Placeholder - reactions removed for cleaner animations
             yield return null;
         }
 

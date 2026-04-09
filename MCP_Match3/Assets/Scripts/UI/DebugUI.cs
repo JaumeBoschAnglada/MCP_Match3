@@ -45,19 +45,15 @@ namespace Match3.UI
             };
             
             // Create debug controls in the bottom-left corner using GUILayout
-            GUILayout.BeginArea(new Rect(10, Screen.height - 160, 300, 150));
-            
-            GUILayout.Label("═══════════════════════════", GUI.skin.label);
-            
-            // Time scale button - doubled in size
+            GUILayout.BeginArea(new Rect(10, 10, 300, 150));
+                        
+            // Time scale button
             string buttonLabel = isSlowMo ? "⏱ Speed: 0.1x" : "⏱ Speed: 1.0x";
             if (GUILayout.Button(buttonLabel, buttonStyle, GUILayout.Height(80)))
             {
                 ToggleTimeScale();
             }
-            
-            GUILayout.Label("═══════════════════════════", GUI.skin.label);
-            
+                        
             GUILayout.EndArea();
         }
 

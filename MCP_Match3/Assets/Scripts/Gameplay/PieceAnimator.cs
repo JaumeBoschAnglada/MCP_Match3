@@ -277,15 +277,6 @@ namespace Match3.Animation
                 anim.piece.SetAnimating(false);
             }
         }
-
-        // ==================== LEGACY STUBS ====================
-
-        public IEnumerator PlayReactionAnimation(Piece piece, Vector3 direction) { yield return null; }
-        public IEnumerator PlayLandParticle(Vector3 position) { yield return null; }
-        public IEnumerator PlayDynamicMovement(Piece piece, Vector3 startPos, Vector3 targetPos, float duration) { yield return null; }
-        public void ApplySuddenForce(Vector3 force) { }
-        public IEnumerator PlayFallAnimationDynamic(Piece piece, Vector3 fromPos, Vector3 toPos) { yield return null; }
-        public IEnumerator PlaySwapAnimationDynamic(Piece piece1, Piece piece2) { yield return null; }
     }
 }
 

@@ -22,12 +22,24 @@ namespace Match3.Input
 
         private void Update()
         {
-            if (Mouse.current == null) return;
-
-            if (Mouse.current.leftButton.wasPressedThisFrame)
-                OnPointerDown(Mouse.current.position.ReadValue());
-            else if (Mouse.current.leftButton.wasReleasedThisFrame && isDragging)
-                OnPointerUp(Mouse.current.position.ReadValue());
+            // Support both mouse (desktop) and touch (mobile)
+            if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.isPressed)
+            {
+                // Mobile touch input
+                var touchPhase = Touchscreen.current.primaryTouch.phase.ReadValue();
+                if (touchPhase == UnityEngine.InputSystem.TouchPhase.Began)
+                    OnPointerDown(Touchscreen.current.primaryTouch.position.ReadValue());
+                else if (touchPhase == UnityEngine.InputSystem.TouchPhase.Ended && isDragging)
+                    OnPointerUp(Touchscreen.current.primaryTouch.position.ReadValue());
+            }
+            else if (Mouse.current != null)
+            {
+                // Desktop mouse input
+                if (Mouse.current.leftButton.wasPressedThisFrame)
+                    OnPointerDown(Mouse.current.position.ReadValue());
+                else if (Mouse.current.leftButton.wasReleasedThisFrame && isDragging)
+                    OnPointerUp(Mouse.current.position.ReadValue());
+            }
         }
 
         private void OnPointerDown(Vector2 screenPos)
