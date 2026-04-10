@@ -41,6 +41,9 @@ namespace Match3.Gameplay
         [SerializeField] private bool showGridVisuals = true;
         [SerializeField] private Color gridColor = new Color(0, 1, 0, 0.5f);
         
+        [Header("Fill Animation Settings")]
+        [SerializeField] private float pieceFillDelay = 0.1f;
+        
         private Dictionary<(int, int), Piece> piecesOnBoard;
         private Dictionary<(ColorType, SpecialEffect), Queue<Piece>> pool;
         private bool isProcessing;
@@ -481,7 +484,7 @@ namespace Match3.Gameplay
                 StartGravityAnimations(gravityMoves);
 
                 var newPieces = boardController.FillEmptySpaces();
-                StartFillAnimations(newPieces);
+                yield return StartCoroutine(StartFillAnimations(newPieces));
 
                 yield return new WaitUntil(() => pieceAnimator.IsAllSettled());
 
@@ -659,7 +662,7 @@ namespace Match3.Gameplay
             }
         }
 
-        private void StartFillAnimations(List<PieceData> newPieces)
+        private IEnumerator StartFillAnimations(List<PieceData> newPieces)
         {
             foreach (var data in newPieces)
             {
@@ -677,6 +680,8 @@ namespace Match3.Gameplay
                 Vector3 targetPos = new Vector3(data.x, data.y, 0);
                 pieceAnimator.PlayFallAnimation(piece, spawnPos, targetPos);
                 Debug.Log($"[GameManager] 🆕 Fill at ({data.x},{data.y}): {data.colorType}");
+                
+                yield return new WaitForSeconds(pieceFillDelay);
             }
         }
 
