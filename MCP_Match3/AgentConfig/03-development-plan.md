@@ -92,12 +92,12 @@
 
 ---
 
-## Fase 2: Item System + Input 🔲 PENDIENTE
+## Fase 2: Item System + Input ✅ COMPLETADA
 
 ### Objetivo: Sistema completo de piezas con input drag-to-swap.
 
 ### Scripts NUEVOS:
-- [ ] **Item.cs** (Match3.Items) — Clase base abstracta
+- [x] **Item.cs** (Match3.Items) — Clase base abstracta
   - MonoBehaviour con BoxCollider (3D) + visual hijo
   - Propiedades virtuales: Match, Switch, Drop, m_Brust, ArountBrust, HaveNextItem
   - m_Color, m_ItemType, m_Board, m_CombineType, m_MatchMgr
@@ -111,8 +111,8 @@
   - CheackNeighbor(item) — Verifica 4 direcciones cardinales via m_Board[SQR_DIR]
   - Init(), Brust(Complete), CombineBrust(), CheckCombine()
   - MissionApply(), SetColor(), SetColorRandom(), GetDestoryScore(combo)
-- [ ] **NormalItem.cs** (Match3.Items) — Pieza básica de color
-- [ ] **ItemManager.cs** (Match3.Managers) — Factoría Singleton
+- [x] **NormalItem.cs** (Match3.Items) — Pieza básica de color
+- [x] **ItemManager.cs** (Match3.Items) — Factoría Singleton
   - Mapping ItemType → Prefab
   - CreateItem(ItemType, ColorType) → GetObject del pool
   - Init_ObjectPool_Item() → pre-instanciar piezas
@@ -120,25 +120,29 @@
   - IsCreate*() — comprueba si se puede generar un ítem especial
 
 ### Prefabs NUEVOS:
-- [ ] **NormalItem.prefab** — NormalItem + BoxCollider2D + hijo Sprite(SpriteRenderer)
-- [ ] Sprites/materiales para 6 colores (RED, YELLOW, GREEN, BLUE, PURPLE, ORANGE)
+- [x] **NormalItem.prefab** — NormalItem + BoxCollider + Visual/Sprite(SpriteRenderer)
+  - Estructura: NormalItem → Visual (escala 0.85) → Sprite
+- [x] Sprites/materiales para 6 colores (RED, YELLOW, GREEN, BLUE, PURPLE, ORANGE)
 
 ### En Board.cs (añadir):
-- [ ] GenItem(itemType, colorType) → crea y posiciona Item en la celda
-- [ ] TopSpawnItem() → genera pieza nueva en celdas superiores
+- [x] GenItem(itemType, colorType) → crea y posiciona Item en la celda
+- [x] TopSpawnItem() → genera pieza nueva en celdas superiores
 
 ### En MatchManager.cs (añadir):
-- [ ] Coroutine_Switching(A, B) — Lógica completa de intercambio:
-  - Ruta A: CheckCombine → CombineBrust
-  - Ruta B: Swap temporal → FindMatches → confirmar/revertir
-  - Animación de movimiento con Vector3.Lerp
-  - MoveLimitApply() si hay match
+- [x] ItemSetting() → genera items iniciales en todas las celdas activas
+- [x] Switching(Item A, Item B) → inicia coroutine de intercambio
+- [x] Coroutine_Switching(A, B) — Lógica completa de intercambio:
+  - Swap temporal con animación Vector3.Lerp
+  - CheckCombine para items especiales (placeholder)
+  - Revierte si no hay match (detección de match en Fase 3)
+  - Animación de movimiento fluida
 
-### Criterio de "hecho":
+### Criterio de "hecho": ✅
 - Piezas normales se colocan en el tablero con 6 colores
 - El jugador puede tocar y arrastrar para intercambiar
 - El intercambio se revierte si no hay match
-- Input funciona tanto con mouse como con touch
+- Input funciona con mouse (touch pendiente de probar en móvil)
+- Estructura Visual permite controlar escala independiente del collider
 
 ---
 

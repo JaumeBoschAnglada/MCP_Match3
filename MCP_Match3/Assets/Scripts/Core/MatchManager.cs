@@ -76,6 +76,7 @@ namespace Match3.Core
             StageSetting(stage);
             BoardSetting(stage);
             BoardPositionSetting();
+            ItemSetting(); // Phase 2: Generate initial items
             SetMatchState(MatchState.Playing);
         }
 
@@ -240,6 +241,24 @@ namespace Match3.Core
         }
 
         /// <summary>
+        /// Generate initial items for all active cells.
+        /// Phase 2: Simple random fill. Phase 3 will add match-free generation.
+        /// </summary>
+        private void ItemSetting()
+        {
+            for (int i = 0; i < 81; i++)
+            {
+                Board board = m_ListBoard[i];
+                if (!board.IsActiveCell) continue;
+
+                // Generate a random normal item
+                board.TopSpawnItem();
+            }
+
+            Debug.Log("[MatchManager] Initial items generated.");
+        }
+
+        /// <summary>
         /// Center and scale the board field to fit the camera view.
         /// </summary>
         private void BoardPositionSetting()
@@ -285,6 +304,121 @@ namespace Match3.Core
         {
             if (m_AppearColor.Count == 0) return ColorType.RED;
             return m_AppearColor[Random.Range(0, m_AppearColor.Count)];
+        }
+
+        /// <summary>
+        /// Handle item switching (swap) initiated by player input.
+        /// Checks if swap creates a match, then confirms or reverts.
+        /// </summary>
+        public void Switching(Match3.Items.Item itemA, Match3.Items.Item itemB)
+        {
+            if (itemA == null || itemB == null)
+            {
+                Debug.LogWarning("[MatchManager] Switching called with null items.");
+                return;
+            }
+
+            if (itemA.m_Board == null || itemB.m_Board == null)
+            {
+                Debug.LogWarning("[MatchManager] Items have no board reference.");
+                return;
+            }
+
+            StartCoroutine(Coroutine_Switching(itemA, itemB));
+        }
+
+        /// <summary>
+        /// Coroutine: Swap two items, check for matches, confirm or revert swap.
+        /// Phase 2 implementation: Basic swap with visual lerp.
+        /// Phase 3 will add match detection and burst logic.
+        /// </summary>
+        private System.Collections.IEnumerator Coroutine_Switching(Match3.Items.Item itemA, Match3.Items.Item itemB)
+        {
+            SetStep(StepType.Switching);
+
+            Board boardA = itemA.m_Board;
+            Board boardB = itemB.m_Board;
+
+            // Store original positions
+            Vector3 posA = itemA.transform.position;
+            Vector3 posB = itemB.transform.position;
+
+            // Swap board references
+            boardA.m_Item = itemB;
+            boardB.m_Item = itemA;
+            itemA.m_Board = boardB;
+            itemB.m_Board = boardA;
+
+            // Animate swap
+            float duration = 0.2f;
+            float elapsed = 0f;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = elapsed / duration;
+
+                itemA.transform.position = Vector3.Lerp(posA, posB, t);
+                itemB.transform.position = Vector3.Lerp(posB, posA, t);
+
+                yield return null;
+            }
+
+            // Ensure final positions
+            itemA.transform.position = posB;
+            itemB.transform.position = posA;
+
+            // TODO Phase 3: Check for matches here
+            // For now, we'll check if items can create combine pieces
+            bool hasMatch = false;
+
+            // CheckCombine for special items (Phase 2 placeholder)
+            itemA.CheckCombine();
+            itemB.CheckCombine();
+
+            // TODO Phase 3: Implement match detection
+            // hasMatch = CheckForMatches(boardA, boardB);
+
+            if (!hasMatch)
+            {
+                // No match - revert swap after a brief delay
+                yield return new UnityEngine.WaitForSeconds(0.3f);
+
+                // Swap back
+                boardA.m_Item = itemA;
+                boardB.m_Item = itemB;
+                itemA.m_Board = boardA;
+                itemB.m_Board = boardB;
+
+                // Animate revert
+                elapsed = 0f;
+                Vector3 currentPosA = itemA.transform.position;
+                Vector3 currentPosB = itemB.transform.position;
+
+                while (elapsed < duration)
+                {
+                    elapsed += Time.deltaTime;
+                    float t = elapsed / duration;
+
+                    itemA.transform.position = Vector3.Lerp(currentPosA, posA, t);
+                    itemB.transform.position = Vector3.Lerp(currentPosB, posB, t);
+
+                    yield return null;
+                }
+
+                itemA.transform.position = posA;
+                itemB.transform.position = posB;
+            }
+            else
+            {
+                // TODO Phase 3: Trigger match burst, gravity, etc.
+                // For now, just apply move limit (if implemented)
+                // MoveLimitApply();
+            }
+
+            // Reset swap tracking
+            Match3.Items.Item.SwitchingTouch = false;
+            SetStep(StepType.Wait);
         }
     }
 }

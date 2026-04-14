@@ -42,6 +42,19 @@ namespace Match3.Data
         Misson_Food6 = 105
     }
 
+    /// <summary>
+    /// Special item combine types (created from specific match patterns).
+    /// </summary>
+    public enum CombineType
+    {
+        None = 0,
+        Line_X = 1,      // 4 vertical match
+        Line_Y = 2,      // 4 horizontal match
+        Line_C = 3,      // L or T shape match
+        Bomb = 4,        // 2x2 square match
+        Rainbow = 5      // 5+ in line match
+    }
+
     public enum PanelType
     {
         Default_Full = 100,
@@ -89,6 +102,7 @@ namespace Match3.Data
     public enum StepType
     {
         Wait,
+        Switching,       // Player is swapping two items
         Matching,
         TimeBomb,
         IceCream,

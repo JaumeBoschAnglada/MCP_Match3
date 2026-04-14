@@ -216,5 +216,69 @@ namespace Match3.Core
                 m_Displayer.color = c;
             }
         }
+
+        /// <summary>
+        /// Generate and place an item in this cell.
+        /// </summary>
+        public void GenItem(ItemType itemType, ColorType colorType)
+        {
+            if (!IsActiveCell)
+            {
+                Debug.LogWarning($"[Board] Cannot generate item on inactive cell at ({X}, {Y})");
+                return;
+            }
+
+            var itemMgr = Match3.Items.ItemManager.Instance;
+            if (itemMgr == null)
+            {
+                Debug.LogError("[Board] ItemManager instance not found!");
+                return;
+            }
+
+            // Remove existing item if present
+            if (m_Item != null)
+            {
+                var existingItem = m_Item.GetComponent<Match3.Items.Item>();
+                if (existingItem != null)
+                    ObjectPool.Instance?.Restore(existingItem.gameObject);
+                m_Item = null;
+            }
+
+            // Create new item
+            var item = itemMgr.CreateItem(itemType, colorType);
+            if (item == null)
+            {
+                Debug.LogError($"[Board] Failed to create item {itemType} with color {colorType}");
+                return;
+            }
+
+            // Setup item
+            m_Item = item;
+            item.m_Board = this;
+            item.transform.SetParent(transform, false);
+            item.transform.localPosition = Vector3.zero;
+            item.gameObject.SetActive(true);
+        }
+
+        /// <summary>
+        /// Spawn a new random item at the top of a drop column.
+        /// Used when filling the board from above.
+        /// </summary>
+        public void TopSpawnItem()
+        {
+            if (!IsActiveCell) return;
+
+            var itemMgr = Match3.Items.ItemManager.Instance;
+            if (itemMgr == null) return;
+
+            // For now, always spawn normal items with random color
+            // TODO: Add special item logic based on spawn intervals in Phase 3+
+            GenItem(ItemType.Normal, ColorType.None);
+
+            // Set random color from level's available colors
+            var item = m_Item as Match3.Items.Item;
+            if (item != null)
+                item.SetColorRandom();
+        }
     }
 }
