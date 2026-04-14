@@ -31,18 +31,18 @@
 
 ---
 
-## Fase 1: Board + MatchManager + ObjectPool 🔲 PENDIENTE
+## Fase 1: Board + MatchManager + ObjectPool ✅ COMPLETADA
 
 ### Objetivo: Crear el tablero como grid de 81 celdas individuales MonoBehaviour.
 
 ### Scripts NUEVOS:
-- [ ] **ObjectPool.cs** (Match3.Core)
+- [x] **ObjectPool.cs** (Match3.Core)
   - Sealed MonoBehaviour Singleton
   - `Dictionary<GameObject, List<GameObject>> objectPools`
   - CreatePool(prefab, count), GetObject(prefab, parent), GetObject<T>(prefab, parent)
   - Restore(gameObject), Restore_Obj(prefab), Restore_All()
   - Objeto disponible = activeSelf == false
-- [ ] **Board.cs** (Match3.Core)
+- [x] **Board.cs** (Match3.Core)
   - MonoBehaviour, 1 instancia por celda
   - X, Y, índice lineal
   - Propiedades de navegación: Top, Bottom, Left, Right, diagonales
@@ -50,7 +50,7 @@
   - m_Item, m_ListPanel, flags (m_DropAnim, m_ItemBrusting, m_MatchingCheck, etc.)
   - PossibleDrop_Dirs[], SeleteDropIndex
   - Init(x, y, stage) — configura celda desde datos de nivel
-- [ ] **MatchManager.cs** (Match3.Core)
+- [x] **MatchManager.cs** (Match3.Core)
   - MonoBehaviour Singleton, cerebro del gameplay
   - m_ListBoard (Board[81])
   - m_AppearColor (List<ColorType>) — colores activos del nivel
@@ -58,33 +58,33 @@
   - MatchState, StepType, TouchState
   - BoardCreate() → instancia 81 Board
   - BoardSetting(stage) → configura cada celda
-  - PanelSetting(stage) → crea paneles
-  - ItemSetting(stage) → coloca piezas iniciales
-  - BoardPosionSetting() → centra y escala tablero
+  - BoardPositionSetting() → centra y escala tablero
   - SetStep(StepType) → cambia step activo
   - SetMatchState(MatchState)
-  - Update() → llama Step_Process() del step activo
-  - Switching(Item A, Item B) → inicia coroutine de intercambio
-  - MatchBrust() → ejecuta explosiones de todas las celdas marcadas
+  - GetRandomColor()
   - m_ListDropStart, m_ListDropHead
-  - ComboCnt, HintOffer(), ShowGravity()
-- [ ] **GravityDisplayer.cs** (Match3.Core)
+  - ComboCnt
+  - Nota: PanelSetting, ItemSetting, Switching, MatchBrust, Update+Steps se añadirán en fases posteriores
+- [x] **GravityDisplayer.cs** (Match3.Core)
   - MonoBehaviour por Board, muestra flecha de gravedad
 
 ### Prefabs NUEVOS:
-- [ ] **Board.prefab** — Board + GravityDisplayer + hijo Visual (MeshRenderer o SpriteRenderer 3D)
+- [x] **Board.prefab** — Board + GravityDisplayer + hijo Visual (SpriteRenderer)
 
 ### Escena:
-- [ ] Reconfigurar Gameplay.unity desde cero con MCP:
+- [x] Reconfigurar Gameplay.unity desde cero:
   - CommonManager con ObjectPool
   - MatchManager con Field hijo (contenedor de boards)
-  - Main Camera 3D (ortográfica o perspectiva) apuntando al tablero
+  - Main Camera (MainCamera tag)
   - Directional Light para iluminación URP
-  - GameplayCanvas (Unity UI Canvas + CanvasScaler ScaleWithScreenSize)
-  - PopupManager Canvas (conservado)
+  - GameplayCanvas (Unity UI Canvas + CanvasScaler)
+  - SoundManager
   - EventSystem
 
-### Criterio de "hecho":
+### Datos de test:
+- [x] Resources/Levels/1.json — Nivel de prueba
+
+### Criterio de "hecho": ✅
 - Se crean 81 celdas Board en runtime
 - Se pueden marcar como Full/Empty desde datos
 - El tablero se centra en pantalla

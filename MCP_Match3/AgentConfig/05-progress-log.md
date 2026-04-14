@@ -101,3 +101,36 @@ Assets/Scenes/Hall.unity             ← CONSERVADO (pendiente reconfigurar)
 ### Compilación: ✅ 0 errores (Unity + VS)
 
 ---
+
+## Fase 1: Board + MatchManager + ObjectPool ✅ COMPLETADA
+
+### Scripts creados:
+- ✅ **ObjectPool.cs** (Match3.Core) — Sealed Singleton, Dictionary<prefab, List<instance>>, CreatePool/GetObject/GetObject<T>/Restore/Restore_Obj/Restore_All
+- ✅ **Board.cs** (Match3.Core) — MonoBehaviour por celda, X/Y/Index, navegación 8 dirs, indexadores SQR_DIR+DROP_DIR, gravity (PossibleDrop_Dirs, ChangeDropDir, DropLeft/DropRight), Init(), flags completos, IsActiveCell, IsNowItemMatch, SetDisplayer
+- ✅ **MatchManager.cs** (Match3.Core) — Singleton, Board[81], BoardCreate() con vecinos, BoardSetting(stage), StageSetting(appearColor), BoardPositionSetting(), GetBoardDropStartSetting(), GetGravitySetting(), StartGame(stage), GetRandomColor(), carga nivel JSON desde Resources
+- ✅ **GravityDisplayer.cs** (Match3.Core) — Flecha visual por celda, Init/Show/Hide, rotación por DROP_DIR
+
+### Prefab creado:
+- ✅ **Board.prefab** (Assets/Prefabs/Board/) — Board + GravityDisplayer + hijo Visual (SpriteRenderer)
+
+### Escena Gameplay.unity configurada:
+- ✅ EventSystem (InputSystemUIInputModule)
+- ✅ Main Camera (tag MainCamera, URP)
+- ✅ Directional Light (URP)
+- ✅ CommonManager → ObjectPool
+- ✅ MatchManager (MatchManager component) → Field (contenedor de boards)
+- ✅ SoundManager
+- ✅ GameplayCanvas (Canvas + CanvasScaler + GraphicRaycaster)
+
+### Datos de test:
+- ✅ Resources/Levels/1.json — Nivel de prueba para verificar carga
+
+### Notas:
+- Board.m_Item tipado como Component (se cambiará a Item en Fase 2)
+- Board.m_ListPanel tipado como List<Component> (se cambiará a List<Panel> en Fase 6)
+- MatchManager aún no tiene: PanelSetting, ItemSetting, Steps/Update, Switching, MatchBrust (fases posteriores)
+- SpecialPieceCreatorTool.cs (Editor/) — archivo vacío residual, no afecta compilación
+
+### Compilación: ✅ 0 errores (Unity + VS)
+
+### Próximo paso: Fase 2 (Item System + Input)
