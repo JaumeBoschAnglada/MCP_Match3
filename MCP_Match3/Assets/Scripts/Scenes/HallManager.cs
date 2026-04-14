@@ -1,33 +1,56 @@
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 namespace Match3.Scenes
 {
+    /// <summary>
+    /// Simple scene manager for the Hall (main menu) scene.
+    /// Provides methods to load the Gameplay scene with a specific level.
+    /// </summary>
     public class HallManager : MonoBehaviour
     {
-        [SerializeField] private Button playButton;
+        public static HallManager Instance { get; private set; }
 
-        private void Start()
+        [SerializeField] private string gameplaySceneName = "Gameplay";
+
+        private int selectedLevel = 1;
+
+        private void Awake()
         {
-            if (playButton != null)
+            if (Instance == null)
             {
-                playButton.onClick.AddListener(OnPlayButtonClicked);
+                Instance = this;
             }
-            else
+            else if (Instance != this)
             {
-                Debug.LogError("HallManager: PlayButton not assigned in Inspector!");
+                Destroy(gameObject);
+                return;
             }
-
-            //Entramos directo.
-            Debug.Log("------------- HallManager: ENTRAMOS DIRECTO A LEVEL!");
-            OnPlayButtonClicked();
         }
 
-        private void OnPlayButtonClicked()
+        /// <summary>
+        /// Load the gameplay scene with the specified level number.
+        /// The level number is stored statically so MatchManager can read it on scene load.
+        /// </summary>
+        public void LoadLevel(int levelNumber)
         {
-            SceneManager.LoadScene("Gameplay", LoadSceneMode.Single);
+            selectedLevel = levelNumber;
+            CurrentLevel = levelNumber;
+            SceneManager.LoadScene(gameplaySceneName);
+        }
+
+        /// <summary>
+        /// Static accessor for the level number to load. Set before scene transition,
+        /// read by MatchManager on Gameplay scene load.
+        /// </summary>
+        public static int CurrentLevel { get; private set; } = 1;
+
+        /// <summary>
+        /// Convenience method for UI buttons: load level 1.
+        /// </summary>
+        public void OnPlayPressed()
+        {
+            LoadLevel(1);
         }
     }
 }
-

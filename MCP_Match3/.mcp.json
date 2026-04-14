@@ -1,0 +1,11 @@
+{
+  "servers": {
+    "github": {
+      "url": "https://api.githubcopilot.com/mcp/"
+    },
+    "unityMCP": {
+      "url": "http://127.0.0.1:8080/mcp",
+      "type": "http"
+    }
+  }
+}
