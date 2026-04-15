@@ -242,7 +242,7 @@ namespace Match3.Core
 
         /// <summary>
         /// Generate initial items for all active cells.
-        /// Phase 2: Simple random fill. Phase 3 will add match-free generation.
+        /// Uses predefined colors from stage if available, otherwise random.
         /// </summary>
         private void ItemSetting()
         {
@@ -251,7 +251,19 @@ namespace Match3.Core
                 Board board = m_ListBoard[i];
                 if (!board.IsActiveCell) continue;
 
-                // Generate a random normal item
+                // Check if stage has predefined colors
+                if (m_CSD != null && m_CSD.colors != null && i < m_CSD.colors.Length)
+                {
+                    ColorType predefinedColor = m_CSD.colors[i];
+                    if (predefinedColor != ColorType.None)
+                    {
+                        // Use predefined color from JSON
+                        board.GenItem(ItemType.Normal, predefinedColor);
+                        continue;
+                    }
+                }
+
+                // No predefined color - generate random
                 board.TopSpawnItem();
             }
 
@@ -329,8 +341,7 @@ namespace Match3.Core
 
         /// <summary>
         /// Coroutine: Swap two items, check for matches, confirm or revert swap.
-        /// Phase 2 implementation: Basic swap with visual lerp.
-        /// Phase 3 will add match detection and burst logic.
+        /// Phase 3: Full implementation with match detection and burst.
         /// </summary>
         private System.Collections.IEnumerator Coroutine_Switching(Match3.Items.Item itemA, Match3.Items.Item itemB)
         {
@@ -339,9 +350,13 @@ namespace Match3.Core
             Board boardA = itemA.m_Board;
             Board boardB = itemB.m_Board;
 
+            Debug.Log($"[MatchManager] Switching: {itemA.name} at {boardA.name} <-> {itemB.name} at {boardB.name}");
+
             // Store original positions
             Vector3 posA = itemA.transform.position;
             Vector3 posB = itemB.transform.position;
+
+            Debug.Log($"  -> Item A world pos: ({posA.x:F1},{posA.y:F1}), Item B world pos: ({posB.x:F1},{posB.y:F1})");
 
             // Swap board references
             boardA.m_Item = itemB;
@@ -364,20 +379,21 @@ namespace Match3.Core
                 yield return null;
             }
 
-            // Ensure final positions
-            itemA.transform.position = posB;
-            itemB.transform.position = posA;
+            // Ensure final positions match exactly (world space only, no parent change)
+            itemA.transform.position = posB; // itemA now at boardB's position
+            itemB.transform.position = posA; // itemB now at boardA's position
 
-            // TODO Phase 3: Check for matches here
-            // For now, we'll check if items can create combine pieces
-            bool hasMatch = false;
+            Debug.Log($"  -> After swap animation: Item A at ({itemA.transform.position.x:F1},{itemA.transform.position.y:F1})");
+            Debug.Log($"  -> After swap animation: Item B at ({itemB.transform.position.x:F1},{itemB.transform.position.y:F1})");
 
-            // CheckCombine for special items (Phase 2 placeholder)
+            // Phase 3: Check for matches after swap
             itemA.CheckCombine();
             itemB.CheckCombine();
 
-            // TODO Phase 3: Implement match detection
-            // hasMatch = CheckForMatches(boardA, boardB);
+            // Detect matches on both swapped items
+            bool hasMatch = CheckMatchCondition();
+
+            Debug.Log($"[MatchManager] Swap completed. HasMatch: {hasMatch}");
 
             if (!hasMatch)
             {
@@ -411,14 +427,335 @@ namespace Match3.Core
             }
             else
             {
-                // TODO Phase 3: Trigger match burst, gravity, etc.
-                // For now, just apply move limit (if implemented)
-                // MoveLimitApply();
+                // Valid match - trigger match detection and burst sequence
+                SetStep(StepType.Matching);
+
+                // Check for matches around both swapped items
+                CheckMatchCondition();
+
+                // Trigger burst sequence
+                yield return StartCoroutine(Co_MatchBurst());
+
+                // Apply gravity and refill
+                yield return StartCoroutine(Co_Drop());
+
+                // Check for cascading matches
+                bool hasNewMatches = true;
+                while (hasNewMatches)
+                {
+                    hasNewMatches = CheckMatchCondition();
+                    if (hasNewMatches)
+                    {
+                        ComboCnt++;
+                        yield return StartCoroutine(Co_MatchBurst());
+                        yield return StartCoroutine(Co_Drop());
+                    }
+                }
+
+                // TODO Phase 6: MoveLimitApply();
             }
 
             // Reset swap tracking
             Match3.Items.Item.SwitchingTouch = false;
             SetStep(StepType.Wait);
+        }
+
+        // ========== PHASE 3: MATCH DETECTION ==========
+
+        /// <summary>
+        /// Check all boards for matches and mark them for bursting.
+        /// Returns true if any matches were found.
+        /// </summary>
+        public bool CheckMatchCondition()
+        {
+            bool foundMatch = false;
+            int matchCount = 0;
+
+            // Clear previous match flags
+            for (int i = 0; i < 81; i++)
+            {
+                m_ListBoard[i].m_isMatchBrust = false;
+                m_ListBoard[i].m_NextItemType = ItemType.None;
+            }
+
+            // Priority 1: Check for 2x2 square matches
+            for (int i = 0; i < 81; i++)
+            {
+                Board board = m_ListBoard[i];
+                if (!board.IsNowItemMatch) continue;
+
+                var square = board.FindMatchesSquare();
+                if (square.Count == 4)
+                {
+                    foreach (var b in square)
+                    {
+                        b.m_isMatchBrust = true;
+                    }
+                    // Mark center for special item creation (Bomb)
+                    board.m_NextItemType = ItemType.Bomb;
+                    foundMatch = true;
+                }
+            }
+
+            // Priority 2: Check for 5+ matches (Rainbow)
+            for (int i = 0; i < 81; i++)
+            {
+                Board board = m_ListBoard[i];
+                if (!board.IsNowItemMatch) continue;
+                if (board.m_isMatchBrust) continue; // Skip already matched
+
+                var horizontal = board.FindMatchesHorizontal();
+                var vertical = board.FindMatchesVertical();
+
+                if (horizontal.Count >= 5)
+                {
+                    foreach (var b in horizontal)
+                    {
+                        b.m_isMatchBrust = true;
+                    }
+                    board.m_NextItemType = ItemType.Rainbow;
+                    foundMatch = true;
+                }
+                else if (vertical.Count >= 5)
+                {
+                    foreach (var b in vertical)
+                    {
+                        b.m_isMatchBrust = true;
+                    }
+                    board.m_NextItemType = ItemType.Rainbow;
+                    foundMatch = true;
+                }
+            }
+
+            // Priority 3: Check for 4 matches (Line items)
+            for (int i = 0; i < 81; i++)
+            {
+                Board board = m_ListBoard[i];
+                if (!board.IsNowItemMatch) continue;
+                if (board.m_isMatchBrust) continue;
+
+                var horizontal = board.FindMatchesHorizontal();
+                var vertical = board.FindMatchesVertical();
+
+                // L or T shape (both directions have matches)
+                if (horizontal.Count >= 2 && vertical.Count >= 2 && (horizontal.Count + vertical.Count - 1) >= 4)
+                {
+                    // Combine both lists (remove duplicates)
+                    var combined = new System.Collections.Generic.HashSet<Board>(horizontal);
+                    foreach (var b in vertical) combined.Add(b);
+
+                    foreach (var b in combined)
+                    {
+                        b.m_isMatchBrust = true;
+                    }
+                    board.m_NextItemType = ItemType.Line_C; // Cross item
+                    foundMatch = true;
+                }
+                else if (horizontal.Count == 4)
+                {
+                    foreach (var b in horizontal)
+                    {
+                        b.m_isMatchBrust = true;
+                    }
+                    board.m_NextItemType = ItemType.Line_Y; // Horizontal line clears rows
+                    foundMatch = true;
+                }
+                else if (vertical.Count == 4)
+                {
+                    foreach (var b in vertical)
+                    {
+                        b.m_isMatchBrust = true;
+                    }
+                    board.m_NextItemType = ItemType.Line_X; // Vertical line clears columns
+                    foundMatch = true;
+                }
+            }
+
+            // Priority 4: Check for 3 matches (normal)
+            for (int i = 0; i < 81; i++)
+            {
+                Board board = m_ListBoard[i];
+                if (!board.IsNowItemMatch) continue;
+                if (board.m_isMatchBrust) continue;
+
+                var horizontal = board.FindMatchesHorizontal();
+                var vertical = board.FindMatchesVertical();
+
+                if (horizontal.Count >= 3)
+                {
+                    foreach (var b in horizontal)
+                    {
+                        b.m_isMatchBrust = true;
+                        matchCount++;
+                    }
+                    foundMatch = true;
+                }
+
+                if (vertical.Count >= 3)
+                {
+                    foreach (var b in vertical)
+                    {
+                        b.m_isMatchBrust = true;
+                        matchCount++;
+                    }
+                    foundMatch = true;
+                }
+            }
+
+            if (foundMatch)
+            {
+                Debug.Log($"[MatchManager] CheckMatchCondition found {matchCount} cells to burst");
+            }
+
+            return foundMatch;
+        }
+
+        // ========== PHASE 3: BURST & GRAVITY ==========
+
+        /// <summary>
+        /// Execute burst on all marked cells.
+        /// Coroutine version for sequential animation.
+        /// </summary>
+        private System.Collections.IEnumerator Co_MatchBurst()
+        {
+            List<System.Collections.IEnumerator> burstCoroutines = new List<System.Collections.IEnumerator>();
+
+            Debug.Log("[MatchManager] Co_MatchBurst: Collecting burst coroutines");
+
+            for (int i = 0; i < 81; i++)
+            {
+                Board board = m_ListBoard[i];
+                if (board.m_isMatchBrust && board.m_Item != null)
+                {
+                    Debug.Log($"  -> Queueing burst for {board.name} with item {board.m_Item.name}");
+                    burstCoroutines.Add(board.Co_Brust());
+                }
+            }
+
+            Debug.Log($"[MatchManager] Co_MatchBurst: Starting {burstCoroutines.Count} burst coroutines");
+
+            // Execute all bursts in parallel
+            foreach (var coroutine in burstCoroutines)
+            {
+                StartCoroutine(coroutine);
+            }
+
+            // Wait for all bursts to complete
+            Debug.Log("[MatchManager] Co_MatchBurst: Waiting 0.5s for bursts to complete");
+            yield return new UnityEngine.WaitForSeconds(0.5f);
+
+            // Clear match flags
+            for (int i = 0; i < 81; i++)
+            {
+                m_ListBoard[i].m_isMatchBrust = false;
+            }
+
+            Debug.Log("[MatchManager] Co_MatchBurst: Complete");
+        }
+
+        /// <summary>
+        /// Apply gravity and refill empty cells.
+        /// Coroutine version for animated drops.
+        /// </summary>
+        private System.Collections.IEnumerator Co_Drop()
+        {
+            Debug.Log("[MatchManager] Co_Drop: Starting gravity and refill");
+
+            // Process gravity from bottom to top for each drop column
+            foreach (Board dropHead in m_ListDropHead)
+            {
+                if (dropHead == null || !dropHead.IsActiveCell) continue;
+
+                // Find the bottom of this drop column by following GravitySource
+                // For DROP_DIR.U, this moves from top (y=0) toward bottom (y=8)
+                Board bottomBoard = dropHead;
+                while (bottomBoard != null && bottomBoard.IsActiveCell)
+                {
+                    Board next = bottomBoard.GravitySource;  // Move toward gravity origin
+                    if (next == null || !next.IsActiveCell) break;
+                    bottomBoard = next;
+                }
+
+                // Apply gravity from this bottom cell
+                if (bottomBoard != null)
+                {
+                    Debug.Log($"[MatchManager] Processing gravity for column starting at {bottomBoard.name}");
+                    bottomBoard.GravityDropItemRow();
+                }
+            }
+
+            // Wait for drop animations to start
+            yield return new UnityEngine.WaitForSeconds(0.5f);
+
+            // Ensure all drops completed
+            bool stillDropping = true;
+            int maxWait = 20;
+            int waitCount = 0;
+
+            while (stillDropping && waitCount < maxWait)
+            {
+                stillDropping = false;
+                for (int i = 0; i < 81; i++)
+                {
+                    if (m_ListBoard[i].m_DropAnim)
+                    {
+                        stillDropping = true;
+                        break;
+                    }
+                }
+
+                if (stillDropping)
+                {
+                    yield return new UnityEngine.WaitForSeconds(0.1f);
+                    waitCount++;
+                }
+            }
+
+            Debug.Log($"[MatchManager] Co_Drop: Completed. Waited {waitCount} cycles.");
+        }
+
+        /// <summary>
+        /// Synchronous match burst (for immediate destruction).
+        /// </summary>
+        public void MatchBrust()
+        {
+            for (int i = 0; i < 81; i++)
+            {
+                Board board = m_ListBoard[i];
+                if (board.m_isMatchBrust && board.m_Item != null)
+                {
+                    board.Brust();
+                }
+            }
+
+            for (int i = 0; i < 81; i++)
+            {
+                m_ListBoard[i].m_isMatchBrust = false;
+            }
+        }
+
+        /// <summary>
+        /// Synchronous gravity drop (for immediate refill).
+        /// </summary>
+        public void Drop()
+        {
+            foreach (Board dropHead in m_ListDropHead)
+            {
+                if (dropHead == null || !dropHead.IsActiveCell) continue;
+
+                Board bottomBoard = dropHead;
+                while (bottomBoard != null && bottomBoard.IsActiveCell)
+                {
+                    Board next = bottomBoard[bottomBoard.CurrentDropDir];
+                    if (next == null || !next.IsActiveCell) break;
+                    bottomBoard = next;
+                }
+
+                if (bottomBoard != null)
+                {
+                    bottomBoard.GravityDropItemRow();
+                }
+            }
         }
     }
 }

@@ -141,49 +141,72 @@
 - Piezas normales se colocan en el tablero con 6 colores
 - El jugador puede tocar y arrastrar para intercambiar
 - El intercambio se revierte si no hay match
-- Input funciona con mouse (touch pendiente de probar en móvil)
+- Input funciona con mouse Y touch (cross-platform)
 - Estructura Visual permite controlar escala independiente del collider
+- **InputManager** implementado para soporte Android/iOS
+
+### Configuración de Input:
+- [x] **InputManager.cs** creado con soporte mouse + touch
+- [x] Active Input Handling cambiado a "Both" en Player Settings
+- [x] Input funciona en Editor (mouse) y móviles (touch)
+- [x] Detección por raycast 3D desde cámara
+- [x] Direcciones cardinales (arriba/abajo/izquierda/derecha)
+- [x] Distancia mínima de drag (20px PC, 30px móvil)
 
 ---
 
-## Fase 3: Match Detection + Explosiones + Gravedad Básica 🔲 PENDIENTE
+## Fase 3: Match Detection + Explosiones + Gravedad Básica ✅ COMPLETADA
 
 ### Objetivo: Detectar matches, explotar piezas, aplicar gravedad y rellenar.
 
 ### En Board.cs (añadir):
-- [ ] FindMatchesHorizontal() — recursivo, busca izquierda y derecha
-- [ ] FindMatchesVertical() — recursivo, busca arriba y abajo
-- [ ] FindMatchesSquare() — matches 2×2 en las 4 esquinas
-- [ ] FindMatchesAround(maxRecursion) — busca en las 4 direcciones
-- [ ] FindMatches_Dir_Recursive(color, ref list, dir) — búsqueda recursiva por dirección
-- [ ] Brust() / Co_Brust() — Coroutine de explosión:
+- [x] FindMatchesHorizontal() — recursivo, busca izquierda y derecha
+- [x] FindMatchesVertical() — recursivo, busca arriba y abajo
+- [x] FindMatchesSquare() — matches 2×2 en las 4 esquinas
+- [x] FindMatchesAround(maxRecursion) — busca en las 4 direcciones
+- [x] FindMatches_Dir_Recursive(color, ref list, dir) — búsqueda recursiva por dirección
+- [x] Brust() / Co_Brust() — Coroutine de explosión:
   - m_ItemBrusting = true
-  - Item.Brust(callback) → efecto visual
-  - Callback: PanelBrust() → AroundBrust() → MissionApply() → ScoreApply()
+  - Item.Brust(callback) → efecto visual (placeholder Phase 10)
+  - Callback: PanelBrust() → AroundBrust() → MissionApply() → ScoreApply() (placeholders Phase 6-7)
   - Genera NextItem si corresponde → m_ItemBrusting = false
-- [ ] GravityDropItemRow(Board) — Caída recursiva (gravedad estándar U)
+- [x] GravityDropItemRow(Board) — Caída recursiva (gravedad estándar U)
   - Busca celdas vacías
   - Mueve piezas de arriba hacia abajo
   - Genera piezas nuevas en celdas superiores (TopSpawnItem)
-- [ ] ItemDrop(Board destino) — Animación de caída con DropAnim flag
-- [ ] SpecailItemCondition() — Decide qué pieza especial crear:
+- [x] ItemDrop(Board destino) — Animación de caída con DropAnim flag
+- [x] Co_ItemDropAnimation() — Coroutine de animación de caída con easing
+- [x] SpecialItemCondition() — Decide qué pieza especial crear:
   - 3 en línea → Nada
   - 4 horizontal → Line_Y
   - 4 vertical → Line_X
-  - L o T → Line_C o Bomb
+  - L o T → Line_C (Cross)
+  - 2×2 → Bomb
   - 5 en línea → Rainbow
 
 ### En MatchManager.cs (añadir):
-- [ ] MatchBrust() — Ejecuta Brust() en todas las celdas con m_isMatchBrust=true
-- [ ] CheckMatchCondition() — Itera por prioridad, busca matches, marca celdas
-- [ ] Drop() — Llama GravityDropItemRow desde celdas inferiores
+- [x] CheckMatchCondition() — Itera por prioridad, busca matches, marca celdas
+  - Prioridad 1: 2×2 square → Bomb
+  - Prioridad 2: 5+ en línea → Rainbow
+  - Prioridad 3: 4 en línea o L/T → Line_X/Line_Y/Line_C
+  - Prioridad 4: 3 en línea → Normal match
+- [x] Co_MatchBurst() — Coroutine: Ejecuta Brust() en paralelo en todas las celdas marcadas
+- [x] MatchBrust() — Versión síncrona de explosión
+- [x] Co_Drop() — Coroutine: Aplica gravedad, espera animaciones, verifica completitud
+- [x] Drop() — Versión síncrona de gravedad
+- [x] Integración con Coroutine_Switching():
+  - Detecta matches después del swap
+  - Ejecuta secuencia: CheckMatch → Burst → Drop → Cascading
+  - Sistema de combo (ComboCnt++)
+  - Revierte swap si no hay match
 
-### Criterio de "hecho":
+### Criterio de "hecho": ✅
 - Se detectan matches de 3, 4, 5, L, T, cuadrado
-- Las piezas explotan con efecto visual
-- Las piezas caen por gravedad
+- Las piezas explotan (sin efectos visuales por ahora - Phase 10)
+- Las piezas caen por gravedad con animación
 - Se generan piezas nuevas desde arriba
 - Las reacciones en cadena (cascading) funcionan
+- El sistema determina qué pieza especial crear (aunque no se instancien aún - Phase 5)
 
 ---
 

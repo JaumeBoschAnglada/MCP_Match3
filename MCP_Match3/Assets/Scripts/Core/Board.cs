@@ -75,6 +75,8 @@ namespace Match3.Core
         /// <summary>
         /// Indexer by DROP_DIR for gravity-based neighbor access.
         /// Returns the board in the direction pieces come FROM.
+        /// NOTE: With localPosition.y = -y, visual "top" (y=0) has higher world.y than "bottom" (y=8).
+        /// DROP_DIR.U means gravity pulls UP (toward higher world.y), so pieces come FROM bottom (y+1).
         /// </summary>
         public Board this[DROP_DIR dir]
         {
@@ -82,10 +84,10 @@ namespace Match3.Core
             {
                 switch (dir)
                 {
-                    case DROP_DIR.U: return Top;
-                    case DROP_DIR.D: return Bottom;
-                    case DROP_DIR.L: return Left;
-                    case DROP_DIR.R: return Right;
+                    case DROP_DIR.U: return Bottom;  // Pieces drop UP from bottom (y+1)
+                    case DROP_DIR.D: return Top;     // Pieces drop DOWN from top (y-1)
+                    case DROP_DIR.L: return Right;   // Pieces drop LEFT from right (x+1)
+                    case DROP_DIR.R: return Left;    // Pieces drop RIGHT from left (x-1)
                     default: return null;
                 }
             }
@@ -93,8 +95,49 @@ namespace Match3.Core
 
         /// <summary>
         /// The board from which pieces drop into this cell (based on current gravity direction).
+        /// For DROP_DIR.U, this is Bottom (y+1) because pieces come FROM below visually.
         /// </summary>
         public Board DropBoard => this[CurrentDropDir];
+
+        /// <summary>
+        /// The board in the gravity pull direction (where gravity originates).
+        /// For DROP_DIR.U, gravity pulls upward, so pieces originate from Bottom (y+1, visually below).
+        /// Use this to find the starting point of a gravity column.
+        /// </summary>
+        public Board GravitySource
+        {
+            get
+            {
+                switch (CurrentDropDir)
+                {
+                    case DROP_DIR.U: return Bottom;   // Gravity originates from below (y+1)
+                    case DROP_DIR.D: return Top;      // Gravity originates from above (y-1)
+                    case DROP_DIR.L: return Right;    // Gravity originates from right (x+1)
+                    case DROP_DIR.R: return Left;     // Gravity originates from left (x-1)
+                    default: return null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// The board in the opposite direction of gravity (toward where items move).
+        /// For DROP_DIR.U (gravity up), this returns Top (y-1) to traverse toward the destination.
+        /// Use this to scan a column from bottom to top when processing gravity.
+        /// </summary>
+        public Board GravityDestination
+        {
+            get
+            {
+                switch (CurrentDropDir)
+                {
+                    case DROP_DIR.U: return Top;      // Items move upward to Top (y-1)
+                    case DROP_DIR.D: return Bottom;   // Items move downward to Bottom (y+1)
+                    case DROP_DIR.L: return Left;     // Items move leftward to Left (x-1)
+                    case DROP_DIR.R: return Right;    // Items move rightward to Right (x+1)
+                    default: return null;
+                }
+            }
+        }
 
         /// <summary>
         /// Diagonal-left relative to the drop direction (for side-drop).
@@ -252,12 +295,20 @@ namespace Match3.Core
                 return;
             }
 
-            // Setup item
+            // Setup item - Items are SIBLINGS of Boards, not children
             m_Item = item;
             item.m_Board = this;
-            item.transform.SetParent(transform, false);
-            item.transform.localPosition = Vector3.zero;
+
+            // Set parent to Field (same as Board's parent), not to Board itself
+            item.transform.SetParent(transform.parent, false);
+
+            // Position at Board's world position
+            item.transform.position = transform.position;
+            item.transform.rotation = Quaternion.identity;
+            item.transform.localScale = Vector3.one;
             item.gameObject.SetActive(true);
+
+            Debug.Log($"[Board {name}] Created item {itemType}/{colorType} at world ({transform.position.x:F1}, {transform.position.y:F1}), parent: {item.transform.parent.name}");
         }
 
         /// <summary>
@@ -279,6 +330,447 @@ namespace Match3.Core
             var item = m_Item as Match3.Items.Item;
             if (item != null)
                 item.SetColorRandom();
+        }
+
+        // ========== PHASE 3: MATCH DETECTION ==========
+
+        /// <summary>
+        /// Find horizontal matches (left + right) recursively.
+        /// Returns list of boards that match the current item's color.
+        /// </summary>
+        public List<Board> FindMatchesHorizontal()
+        {
+            if (!IsNowItemMatch) return new List<Board>();
+
+            var item = m_Item as Match3.Items.Item;
+            if (item == null) return new List<Board>();
+
+            List<Board> matches = new List<Board> { this };
+            ColorType targetColor = item.m_Color;
+
+            // Search left
+            FindMatches_Dir_Recursive(targetColor, ref matches, SQR_DIR.LEFT);
+
+            // Search right
+            FindMatches_Dir_Recursive(targetColor, ref matches, SQR_DIR.RIGHT);
+
+            return matches.Count >= 3 ? matches : new List<Board>();
+        }
+
+        /// <summary>
+        /// Find vertical matches (up + down) recursively.
+        /// Returns list of boards that match the current item's color.
+        /// </summary>
+        public List<Board> FindMatchesVertical()
+        {
+            if (!IsNowItemMatch) return new List<Board>();
+
+            var item = m_Item as Match3.Items.Item;
+            if (item == null) return new List<Board>();
+
+            List<Board> matches = new List<Board> { this };
+            ColorType targetColor = item.m_Color;
+
+            // Search up
+            FindMatches_Dir_Recursive(targetColor, ref matches, SQR_DIR.TOP);
+
+            // Search down
+            FindMatches_Dir_Recursive(targetColor, ref matches, SQR_DIR.BOTTOM);
+
+            return matches.Count >= 3 ? matches : new List<Board>();
+        }
+
+        /// <summary>
+        /// Find 2x2 square matches in all 4 corner directions.
+        /// Returns list of boards forming a square.
+        /// </summary>
+        public List<Board> FindMatchesSquare()
+        {
+            if (!IsNowItemMatch) return new List<Board>();
+
+            var item = m_Item as Match3.Items.Item;
+            if (item == null) return new List<Board>();
+
+            ColorType targetColor = item.m_Color;
+
+            // Check all 4 possible 2x2 squares with this cell as one corner
+            List<Board>[] squareChecks = new List<Board>[4];
+
+            // Top-Left square: this, right, bottom, bottom-right
+            squareChecks[0] = CheckSquarePattern(targetColor, SQR_DIR.RIGHT, SQR_DIR.BOTTOM, SQR_DIR.BOTTOMRIGHT);
+
+            // Top-Right square: this, left, bottom, bottom-left
+            squareChecks[1] = CheckSquarePattern(targetColor, SQR_DIR.LEFT, SQR_DIR.BOTTOM, SQR_DIR.BOTTOMLEFT);
+
+            // Bottom-Left square: this, right, top, top-right
+            squareChecks[2] = CheckSquarePattern(targetColor, SQR_DIR.RIGHT, SQR_DIR.TOP, SQR_DIR.TOPRIGHT);
+
+            // Bottom-Right square: this, left, top, top-left
+            squareChecks[3] = CheckSquarePattern(targetColor, SQR_DIR.LEFT, SQR_DIR.TOP, SQR_DIR.TOPLEFT);
+
+            // Return first valid square found
+            foreach (var square in squareChecks)
+            {
+                if (square != null && square.Count == 4)
+                    return square;
+            }
+
+            return new List<Board>();
+        }
+
+        /// <summary>
+        /// Helper: Check if a 2x2 square pattern matches.
+        /// </summary>
+        private List<Board> CheckSquarePattern(ColorType color, SQR_DIR dir1, SQR_DIR dir2, SQR_DIR dirDiag)
+        {
+            Board b1 = this[dir1];
+            Board b2 = this[dir2];
+            Board b3 = this[dirDiag];
+
+            if (b1 == null || b2 == null || b3 == null) return null;
+            if (!b1.IsNowItemMatch || !b2.IsNowItemMatch || !b3.IsNowItemMatch) return null;
+
+            var item1 = b1.m_Item as Match3.Items.Item;
+            var item2 = b2.m_Item as Match3.Items.Item;
+            var item3 = b3.m_Item as Match3.Items.Item;
+
+            if (item1 == null || item2 == null || item3 == null) return null;
+            if (item1.m_Color != color || item2.m_Color != color || item3.m_Color != color) return null;
+
+            return new List<Board> { this, b1, b2, b3 };
+        }
+
+        /// <summary>
+        /// Find matches in all 4 cardinal directions with recursion limit.
+        /// Used for special item explosions and advanced match patterns.
+        /// </summary>
+        public List<Board> FindMatchesAround(int maxRecursion = 1)
+        {
+            if (!IsNowItemMatch) return new List<Board>();
+
+            var item = m_Item as Match3.Items.Item;
+            if (item == null) return new List<Board>();
+
+            List<Board> matches = new List<Board> { this };
+            ColorType targetColor = item.m_Color;
+
+            // Search all 4 cardinal directions
+            FindMatches_Dir_Recursive(targetColor, ref matches, SQR_DIR.TOP, maxRecursion);
+            FindMatches_Dir_Recursive(targetColor, ref matches, SQR_DIR.BOTTOM, maxRecursion);
+            FindMatches_Dir_Recursive(targetColor, ref matches, SQR_DIR.LEFT, maxRecursion);
+            FindMatches_Dir_Recursive(targetColor, ref matches, SQR_DIR.RIGHT, maxRecursion);
+
+            return matches;
+        }
+
+        /// <summary>
+        /// Recursive match finder in a specific direction.
+        /// </summary>
+        private void FindMatches_Dir_Recursive(ColorType targetColor, ref List<Board> matchList, SQR_DIR dir, int depth = 99)
+        {
+            if (depth <= 0) return;
+
+            Board neighbor = this[dir];
+            if (neighbor == null) return;
+            if (!neighbor.IsNowItemMatch) return;
+            if (matchList.Contains(neighbor)) return;
+
+            var neighborItem = neighbor.m_Item as Match3.Items.Item;
+            if (neighborItem == null) return;
+            if (neighborItem.m_Color != targetColor) return;
+
+            matchList.Add(neighbor);
+            neighbor.FindMatches_Dir_Recursive(targetColor, ref matchList, dir, depth - 1);
+        }
+
+        // ========== PHASE 3: BURST & EXPLOSION ==========
+
+        /// <summary>
+        /// Burst/explode the item in this cell.
+        /// Coroutine version for animated destruction.
+        /// </summary>
+        public System.Collections.IEnumerator Co_Brust()
+        {
+            Debug.Log($"[Board {name}] Co_Brust starting, m_Item={m_Item?.name ?? "null"}");
+
+            if (m_Item == null)
+            {
+                Debug.LogWarning($"[Board {name}] Co_Brust: m_Item is null, aborting");
+                yield break;
+            }
+
+            m_ItemBrusting = true;
+
+            var item = m_Item as Match3.Items.Item;
+            if (item != null)
+            {
+                // Store item data before destroying
+                ColorType burstColor = item.m_Color;
+                ItemType burstType = item.m_ItemType;
+
+                Debug.Log($"[Board {name}] Bursting item {burstType}/{burstColor}");
+
+                // Call item's Brust method (visual effects will be added in Phase 10)
+                bool burstComplete = false;
+                item.Brust(() => burstComplete = true);
+
+                // Wait for burst animation
+                yield return new UnityEngine.WaitUntil(() => burstComplete);
+
+                Debug.Log($"[Board {name}] Burst animation complete, restoring to pool");
+
+                // Return item to pool
+                ObjectPool.Instance?.Restore(item.gameObject);
+                m_Item = null;
+
+                // TODO Phase 6: MissionApply
+                // item.MissionApply();
+
+                // TODO Phase 6: ScoreApply
+                // int score = item.GetDestroyScore(MatchManager.Instance.ComboCnt);
+                // ScoreManager.Instance?.AddScore(score);
+            }
+
+            // Burst panels (jaulas, obstáculos, etc.)
+            // TODO Phase 7: Implement panel bursting
+            // PanelBrust();
+
+            // TODO Phase 5: AroundBrust for special items
+            // if (item != null && item.ArountBrust)
+            // {
+            //     AroundBrust();
+            // }
+
+            // Generate next item if this was a special combine
+            if (m_NextItemType != ItemType.None)
+            {
+                Debug.Log($"[Board {name}] Generating special item {m_NextItemType}");
+                GenItem(m_NextItemType, ColorType.None);
+                var newItem = m_Item as Match3.Items.Item;
+                if (newItem != null)
+                    newItem.SetColorRandom();
+                m_NextItemType = ItemType.None;
+            }
+
+            Debug.Log($"[Board {name}] Co_Brust complete, m_ItemBrusting=false");
+            m_ItemBrusting = false;
+        }
+
+        /// <summary>
+        /// Synchronous burst (for immediate destruction without animation).
+        /// </summary>
+        public void Brust()
+        {
+            if (m_Item == null) return;
+
+            var item = m_Item as Match3.Items.Item;
+            if (item != null)
+            {
+                item.Brust();
+                ObjectPool.Instance?.Restore(item.gameObject);
+                m_Item = null;
+            }
+
+            if (m_NextItemType != ItemType.None)
+            {
+                GenItem(m_NextItemType, ColorType.None);
+                var newItem = m_Item as Match3.Items.Item;
+                if (newItem != null)
+                    newItem.SetColorRandom();
+                m_NextItemType = ItemType.None;
+            }
+        }
+
+        // ========== PHASE 3: GRAVITY & DROP ==========
+
+        /// <summary>
+        /// Recursive gravity drop for standard upward gravity (DROP_DIR.U).
+        /// Fills empty cells by pulling items from above.
+        /// THIS board is the starting point (usually bottom of column).
+        /// </summary>
+        public void GravityDropItemRow()
+        {
+            if (!IsActiveCell) return;
+
+            Debug.Log($"[Board {name}] GravityDropItemRow starting");
+
+            // Find the first empty cell in THIS column (from bottom toward destination)
+            Board emptyBoard = null;
+            Board current = this;
+
+            while (current != null && current.IsActiveCell)
+            {
+                if (current.m_Item == null && !current.m_DropAnim)
+                {
+                    emptyBoard = current;
+                    Debug.Log($"  -> Found empty cell: {emptyBoard.name}");
+                    break;
+                }
+                current = current.GravityDestination; // Move toward gravity destination (up for DROP_DIR.U)
+            }
+
+            if (emptyBoard == null)
+            {
+                Debug.Log($"  -> No empty cells found in column");
+                return;
+            }
+
+            // Find the first filled cell above the empty one (in direction of gravity destination)
+            Board filledBoard = emptyBoard.GravityDestination;
+            while (filledBoard != null && filledBoard.IsActiveCell)
+            {
+                if (filledBoard.m_Item != null && !filledBoard.m_DropAnim && !filledBoard.m_ItemBrusting)
+                {
+                    Debug.Log($"  -> Found filled cell {filledBoard.name} above empty {emptyBoard.name}, initiating drop");
+
+                    // Move item from filled to empty
+                    emptyBoard.ItemDrop(filledBoard);
+
+                    // Recursively fill the cell that just became empty (restart from bottom)
+                    this.GravityDropItemRow();
+                    return;
+                }
+                filledBoard = filledBoard.GravityDestination;
+            }
+
+            // No filled cell found above - need to spawn at top of column
+            // Find the topmost cell (GravityDestination == null or inactive)
+            Board topCell = emptyBoard;
+            while (topCell.GravityDestination != null && topCell.GravityDestination.IsActiveCell)
+            {
+                topCell = topCell.GravityDestination;
+            }
+
+            Debug.Log($"  -> No filled cell found above {emptyBoard.name}, spawning at top cell {topCell.name}");
+            topCell.TopSpawnItem();
+
+            // After spawning, the new item needs to drop down to fill emptyBoard
+            if (topCell != emptyBoard && topCell.m_Item != null)
+            {
+                Debug.Log($"  -> Dropping newly spawned item from {topCell.name} to {emptyBoard.name}");
+                emptyBoard.ItemDrop(topCell);
+            }
+
+            // Recursively process remaining empty cells
+            this.GravityDropItemRow();
+        }
+
+        /// <summary>
+        /// Animate an item dropping from this board to the destination board.
+        /// </summary>
+        public void ItemDrop(Board fromBoard)
+        {
+            if (fromBoard == null || fromBoard.m_Item == null) return;
+
+            Debug.Log($"[Board {name}] ItemDrop: Moving item from {fromBoard.name} (world {fromBoard.transform.position.x:F1},{fromBoard.transform.position.y:F1}) to {name} (world {transform.position.x:F1},{transform.position.y:F1})");
+
+            // Transfer item reference (logical ownership)
+            m_Item = fromBoard.m_Item;
+            fromBoard.m_Item = null;
+
+            var item = m_Item as Match3.Items.Item;
+            if (item != null)
+            {
+                item.m_Board = this;
+                // NOTE: Item stays at same parent (Field), just changes position
+                // No SetParent() call needed - items are siblings of boards
+
+                // Start drop animation
+                MatchManager.Instance?.StartCoroutine(Co_ItemDropAnimation(item));
+            }
+        }
+
+        /// <summary>
+        /// Coroutine: Animate item falling to this cell's position.
+        /// Items are siblings of Boards, so we only animate world position.
+        /// </summary>
+        private System.Collections.IEnumerator Co_ItemDropAnimation(Match3.Items.Item item)
+        {
+            m_DropAnim = true;
+
+            Vector3 startPos = item.transform.position;
+            Vector3 targetPos = transform.position; // Target = Board's world position
+
+            Debug.Log($"[Board {name}] Drop Animation: from world ({startPos.x:F1},{startPos.y:F1}) to ({targetPos.x:F1},{targetPos.y:F1})");
+
+            float duration = 0.3f;
+            float elapsed = 0f;
+
+            while (elapsed < duration)
+            {
+                elapsed += UnityEngine.Time.deltaTime;
+                float t = elapsed / duration;
+
+                // Ease-in gravity
+                float easedT = 1f - (1f - t) * (1f - t);
+
+                item.transform.position = Vector3.Lerp(startPos, targetPos, easedT);
+                yield return null;
+            }
+
+            // Ensure final world position matches Board exactly
+            item.transform.position = targetPos;
+
+            Debug.Log($"[Board {name}] Drop Animation Complete: Final world ({item.transform.position.x:F1},{item.transform.position.y:F1}), parent: {item.transform.parent.name}");
+
+            m_DropAnim = false;
+        }
+
+        // ========== PHASE 3: SPECIAL ITEM CREATION ==========
+
+        /// <summary>
+        /// Determine which special item to create based on match pattern.
+        /// Called when a match is detected during CheckMatchCondition.
+        /// </summary>
+        public ItemType SpecialItemCondition(List<Board> matchList)
+        {
+            if (matchList == null || matchList.Count < 3) return ItemType.None;
+
+            int matchCount = matchList.Count;
+
+            // 5+ in line → Rainbow
+            if (matchCount >= 5)
+            {
+                return ItemType.Rainbow;
+            }
+
+            // Check for L or T shapes (4 cells minimum)
+            if (matchCount >= 4)
+            {
+                // Get horizontal and vertical matches from this board
+                var horizontal = FindMatchesHorizontal();
+                var vertical = FindMatchesVertical();
+
+                // L or T shape: both directions have matches
+                if (horizontal.Count >= 2 && vertical.Count >= 2)
+                {
+                    // TODO Phase 5: Distinguish between Line_C and Bomb
+                    // For now, alternate or use Bomb
+                    return ItemType.Bomb;
+                }
+
+                // 4 in horizontal line → Line_Y (clears horizontal row)
+                if (horizontal.Count == 4 && vertical.Count < 2)
+                {
+                    return ItemType.Line_Y;
+                }
+
+                // 4 in vertical line → Line_X (clears vertical column)
+                if (vertical.Count == 4 && horizontal.Count < 2)
+                {
+                    return ItemType.Line_X;
+                }
+            }
+
+            // 2x2 square → Bomb
+            var square = FindMatchesSquare();
+            if (square.Count == 4)
+            {
+                return ItemType.Bomb;
+            }
+
+            // 3 in line → Normal (no special item)
+            return ItemType.None;
         }
     }
 }

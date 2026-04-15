@@ -77,8 +77,13 @@ namespace Match3.Items
             SetColor(randomColor);
         }
 
+        // NOTE: Input is now handled by InputManager (supports mouse + touch)
+        // These OnMouse* methods are kept for backward compatibility but not used
+
+        /*
         /// <summary>
         /// Mouse down: Start swap tracking (desktop input).
+        /// DEPRECATED: Use InputManager instead for cross-platform support.
         /// </summary>
         protected virtual void OnMouseDown()
         {
@@ -90,6 +95,7 @@ namespace Match3.Items
 
         /// <summary>
         /// Mouse enter: If dragging, set Swap_B and trigger swap (desktop input).
+        /// DEPRECATED: Use InputManager instead for cross-platform support.
         /// </summary>
         protected virtual void OnMouseEnter()
         {
@@ -106,11 +112,13 @@ namespace Match3.Items
 
         /// <summary>
         /// Mouse up: Cancel swap tracking.
+        /// DEPRECATED: Use InputManager instead for cross-platform support.
         /// </summary>
         protected virtual void OnMouseUp()
         {
             SwitchStart = false;
         }
+        */
 
         /// <summary>
         /// Check if we can start a swap interaction.

@@ -1,0 +1,818 @@
+[ItemManager] Object pool initialized with items.
+UnityEngine.Debug:Log (object)
+Match3.Items.ItemManager:Init_ObjectPool_Item () (at Assets/Scripts/Items/ItemManager.cs:71)
+Match3.Items.ItemManager:CreateItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Items/ItemManager.cs:89)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:248)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_2_0] Created item Normal/RED at world (-2,0, 4,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_3_0] Created item Normal/YELLOW at world (-1,0, 4,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_4_0] Created item Normal/GREEN at world (0,0, 4,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_5_0] Created item Normal/RED at world (1,0, 4,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_6_0] Created item Normal/YELLOW at world (2,0, 4,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_0_1] Created item Normal/RED at world (-4,0, 3,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_1_1] Created item Normal/YELLOW at world (-3,0, 3,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_2_1] Created item Normal/GREEN at world (-2,0, 3,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_3_1] Created item Normal/RED at world (-1,0, 3,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_4_1] Created item Normal/YELLOW at world (0,0, 3,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_5_1] Created item Normal/GREEN at world (1,0, 3,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_6_1] Created item Normal/RED at world (2,0, 3,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_7_1] Created item Normal/YELLOW at world (3,0, 3,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_8_1] Created item Normal/GREEN at world (4,0, 3,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_0_2] Created item Normal/YELLOW at world (-4,0, 2,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_1_2] Created item Normal/GREEN at world (-3,0, 2,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_2_2] Created item Normal/RED at world (-2,0, 2,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_3_2] Created item Normal/YELLOW at world (-1,0, 2,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_4_2] Created item Normal/GREEN at world (0,0, 2,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_5_2] Created item Normal/RED at world (1,0, 2,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_6_2] Created item Normal/YELLOW at world (2,0, 2,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_7_2] Created item Normal/GREEN at world (3,0, 2,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_8_2] Created item Normal/RED at world (4,0, 2,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_0_3] Created item Normal/GREEN at world (-4,0, 1,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_1_3] Created item Normal/RED at world (-3,0, 1,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_2_3] Created item Normal/YELLOW at world (-2,0, 1,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_3_3] Created item Normal/GREEN at world (-1,0, 1,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_4_3] Created item Normal/RED at world (0,0, 1,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_5_3] Created item Normal/YELLOW at world (1,0, 1,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_6_3] Created item Normal/GREEN at world (2,0, 1,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_7_3] Created item Normal/RED at world (3,0, 1,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_8_3] Created item Normal/YELLOW at world (4,0, 1,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_0_4] Created item Normal/RED at world (-4,0, 0,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_1_4] Created item Normal/YELLOW at world (-3,0, 0,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_2_4] Created item Normal/GREEN at world (-2,0, 0,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_3_4] Created item Normal/RED at world (-1,0, 0,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_4_4] Created item Normal/YELLOW at world (0,0, 0,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_5_4] Created item Normal/GREEN at world (1,0, 0,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_6_4] Created item Normal/RED at world (2,0, 0,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_7_4] Created item Normal/YELLOW at world (3,0, 0,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_8_4] Created item Normal/GREEN at world (4,0, 0,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_0_5] Created item Normal/YELLOW at world (-4,0, -1,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_1_5] Created item Normal/GREEN at world (-3,0, -1,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_2_5] Created item Normal/RED at world (-2,0, -1,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_3_5] Created item Normal/YELLOW at world (-1,0, -1,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_4_5] Created item Normal/GREEN at world (0,0, -1,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_5_5] Created item Normal/RED at world (1,0, -1,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_6_5] Created item Normal/YELLOW at world (2,0, -1,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_7_5] Created item Normal/GREEN at world (3,0, -1,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_8_5] Created item Normal/RED at world (4,0, -1,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_0_6] Created item Normal/GREEN at world (-4,0, -2,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_1_6] Created item Normal/RED at world (-3,0, -2,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_2_6] Created item Normal/YELLOW at world (-2,0, -2,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_3_6] Created item Normal/GREEN at world (-1,0, -2,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_4_6] Created item Normal/RED at world (0,0, -2,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_5_6] Created item Normal/YELLOW at world (1,0, -2,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_6_6] Created item Normal/GREEN at world (2,0, -2,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_7_6] Created item Normal/RED at world (3,0, -2,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_8_6] Created item Normal/YELLOW at world (4,0, -2,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_2_7] Created item Normal/RED at world (-2,0, -3,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_3_7] Created item Normal/YELLOW at world (-1,0, -3,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_4_7] Created item Normal/GREEN at world (0,0, -3,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_5_7] Created item Normal/RED at world (1,0, -3,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_6_7] Created item Normal/YELLOW at world (2,0, -3,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_2_8] Created item Normal/YELLOW at world (-2,0, -4,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_3_8] Created item Normal/GREEN at world (-1,0, -4,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_4_8] Created item Normal/RED at world (0,0, -4,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_5_8] Created item Normal/YELLOW at world (1,0, -4,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[Board Board_6_8] Created item Normal/GREEN at world (2,0, -4,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:261)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[MatchManager] Initial items generated.
+UnityEngine.Debug:Log (object)
+Match3.Core.MatchManager:ItemSetting () (at Assets/Scripts/Core/MatchManager.cs:270)
+Match3.Core.MatchManager:StartGame (Match3.Data.Stage) (at Assets/Scripts/Core/MatchManager.cs:79)
+Match3.Core.MatchManager:Start () (at Assets/Scripts/Core/MatchManager.cs:57)
+
+[ItemManager] Object pool initialized with items.
+UnityEngine.Debug:Log (object)
+Match3.Items.ItemManager:Init_ObjectPool_Item () (at Assets/Scripts/Items/ItemManager.cs:71)
+Match3.Items.ItemManager:Start () (at Assets/Scripts/Items/ItemManager.cs:58)
+
+[MatchManager] Switching: Item_Normal_YELLOW at Board_4_1 <-> Item_Normal_RED at Board_3_1
+UnityEngine.Debug:Log (object)
+Match3.Core.MatchManager/<Coroutine_Switching>d__58:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:353)
+UnityEngine.MonoBehaviour:StartCoroutine (System.Collections.IEnumerator)
+Match3.Core.MatchManager:Switching (Match3.Items.Item,Match3.Items.Item) (at Assets/Scripts/Core/MatchManager.cs:339)
+Match3.Input.InputManager:ExecuteSwap () (at Assets/Scripts/Input/InputManager.cs:207)
+Match3.Input.InputManager:OnPressCanceled (UnityEngine.InputSystem.InputAction/CallbackContext) (at Assets/Scripts/Input/InputManager.cs:123)
+UnityEngine.InputSystem.LowLevel.NativeInputRuntime/<>c__DisplayClass7_0:<set_onUpdate>b__0 (UnityEngineInternal.Input.NativeInputUpdateType,UnityEngineInternal.Input.NativeInputEventBuffer*)
+UnityEngineInternal.Input.NativeInputSystem:NotifyUpdate (UnityEngineInternal.Input.NativeInputUpdateType,intptr)
+
+  -> Item A world pos: (0,0,3,0), Item B world pos: (-1,0,3,0)
+UnityEngine.Debug:Log (object)
+Match3.Core.MatchManager/<Coroutine_Switching>d__58:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:359)
+UnityEngine.MonoBehaviour:StartCoroutine (System.Collections.IEnumerator)
+Match3.Core.MatchManager:Switching (Match3.Items.Item,Match3.Items.Item) (at Assets/Scripts/Core/MatchManager.cs:339)
+Match3.Input.InputManager:ExecuteSwap () (at Assets/Scripts/Input/InputManager.cs:207)
+Match3.Input.InputManager:OnPressCanceled (UnityEngine.InputSystem.InputAction/CallbackContext) (at Assets/Scripts/Input/InputManager.cs:123)
+UnityEngine.InputSystem.LowLevel.NativeInputRuntime/<>c__DisplayClass7_0:<set_onUpdate>b__0 (UnityEngineInternal.Input.NativeInputUpdateType,UnityEngineInternal.Input.NativeInputEventBuffer*)
+UnityEngineInternal.Input.NativeInputSystem:NotifyUpdate (UnityEngineInternal.Input.NativeInputUpdateType,intptr)
+
+  -> After swap animation: Item A at (-1,0,3,0)
+UnityEngine.Debug:Log (object)
+Match3.Core.MatchManager/<Coroutine_Switching>d__58:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:386)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr)
+
+  -> After swap animation: Item B at (0,0,3,0)
+UnityEngine.Debug:Log (object)
+Match3.Core.MatchManager/<Coroutine_Switching>d__58:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:387)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr)
+
+[MatchManager] CheckMatchCondition found 3 cells to burst
+UnityEngine.Debug:Log (object)
+Match3.Core.MatchManager:CheckMatchCondition () (at Assets/Scripts/Core/MatchManager.cs:607)
+Match3.Core.MatchManager/<Coroutine_Switching>d__58:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:394)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr)
+
+[MatchManager] Swap completed. HasMatch: True
+UnityEngine.Debug:Log (object)
+Match3.Core.MatchManager/<Coroutine_Switching>d__58:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:396)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr)
+
+[MatchManager] CheckMatchCondition found 3 cells to burst
+UnityEngine.Debug:Log (object)
+Match3.Core.MatchManager:CheckMatchCondition () (at Assets/Scripts/Core/MatchManager.cs:607)
+Match3.Core.MatchManager/<Coroutine_Switching>d__58:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:434)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr)
+
+[MatchManager] Co_Drop: Starting gravity and refill
+UnityEngine.Debug:Log (object)
+Match3.Core.MatchManager/<Co_Drop>d__61:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:654)
+UnityEngine.MonoBehaviour:StartCoroutine (System.Collections.IEnumerator)
+Match3.Core.MatchManager/<Coroutine_Switching>d__58:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:440)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr)
+
+[MatchManager] Processing gravity for column starting at Board_2_0
+UnityEngine.Debug:Log (object)
+Match3.Core.MatchManager/<Co_Drop>d__61:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:673)
+UnityEngine.MonoBehaviour:StartCoroutine (System.Collections.IEnumerator)
+Match3.Core.MatchManager/<Coroutine_Switching>d__58:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:440)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr)
+
+[Board Board_2_0] GravityDropItemRow starting
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GravityDropItemRow () (at Assets/Scripts/Core/Board.cs:540)
+Match3.Core.MatchManager/<Co_Drop>d__61:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:674)
+UnityEngine.MonoBehaviour:StartCoroutine (System.Collections.IEnumerator)
+Match3.Core.MatchManager/<Coroutine_Switching>d__58:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:440)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr)
+
+  -> No empty cells found in column
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GravityDropItemRow () (at Assets/Scripts/Core/Board.cs:559)
+Match3.Core.MatchManager/<Co_Drop>d__61:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:674)
+UnityEngine.MonoBehaviour:StartCoroutine (System.Collections.IEnumerator)
+Match3.Core.MatchManager/<Coroutine_Switching>d__58:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:440)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr)
+
+[MatchManager] Processing gravity for column starting at Board_3_0
+UnityEngine.Debug:Log (object)
+Match3.Core.MatchManager/<Co_Drop>d__61:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:673)
+UnityEngine.MonoBehaviour:StartCoroutine (System.Collections.IEnumerator)
+Match3.Core.MatchManager/<Coroutine_Switching>d__58:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:440)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr)
+
+[Board Board_3_0] GravityDropItemRow starting
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GravityDropItemRow () (at Assets/Scripts/Core/Board.cs:540)
+Match3.Core.MatchManager/<Co_Drop>d__61:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:674)
+UnityEngine.MonoBehaviour:StartCoroutine (System.Collections.IEnumerator)
+Match3.Core.MatchManager/<Coroutine_Switching>d__58:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:440)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr)
+
+  -> Found empty cell: Board_3_0
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GravityDropItemRow () (at Assets/Scripts/Core/Board.cs:551)
+Match3.Core.MatchManager/<Co_Drop>d__61:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:674)
+UnityEngine.MonoBehaviour:StartCoroutine (System.Collections.IEnumerator)
+Match3.Core.MatchManager/<Coroutine_Switching>d__58:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:440)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr)
+
+  -> No filled cell found above Board_3_0, spawning at top cell Board_3_0
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GravityDropItemRow () (at Assets/Scripts/Core/Board.cs:589)
+Match3.Core.MatchManager/<Co_Drop>d__61:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:674)
+UnityEngine.MonoBehaviour:StartCoroutine (System.Collections.IEnumerator)
+Match3.Core.MatchManager/<Coroutine_Switching>d__58:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:440)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr)
+
+[NormalItem] No sprite assigned for color None
+UnityEngine.Debug:LogWarning (object)
+Match3.Items.NormalItem:SetColor (Match3.Data.ColorType) (at Assets/Scripts/Items/NormalItem.cs:38)
+Match3.Items.Item:Init (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Items/Item.cs:57)
+Match3.Items.ItemManager:CreateItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Items/ItemManager.cs:113)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:248)
+Match3.Core.Board:TopSpawnItem () (at Assets/Scripts/Core/Board.cs:284)
+Match3.Core.Board:GravityDropItemRow () (at Assets/Scripts/Core/Board.cs:590)
+Match3.Core.MatchManager/<Co_Drop>d__61:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:674)
+UnityEngine.MonoBehaviour:StartCoroutine (System.Collections.IEnumerator)
+Match3.Core.MatchManager/<Coroutine_Switching>d__58:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:440)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr)
+
+[Board Board_3_0] Created item Normal/None at world (-1,0, 4,0), parent: Field
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GenItem (Match3.Data.ItemType,Match3.Data.ColorType) (at Assets/Scripts/Core/Board.cs:268)
+Match3.Core.Board:TopSpawnItem () (at Assets/Scripts/Core/Board.cs:284)
+Match3.Core.Board:GravityDropItemRow () (at Assets/Scripts/Core/Board.cs:590)
+Match3.Core.MatchManager/<Co_Drop>d__61:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:674)
+UnityEngine.MonoBehaviour:StartCoroutine (System.Collections.IEnumerator)
+Match3.Core.MatchManager/<Coroutine_Switching>d__58:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:440)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr)
+
+[Board Board_3_0] GravityDropItemRow starting
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GravityDropItemRow () (at Assets/Scripts/Core/Board.cs:540)
+Match3.Core.Board:GravityDropItemRow () (at Assets/Scripts/Core/Board.cs:600)
+Match3.Core.MatchManager/<Co_Drop>d__61:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:674)
+UnityEngine.MonoBehaviour:StartCoroutine (System.Collections.IEnumerator)
+Match3.Core.MatchManager/<Coroutine_Switching>d__58:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:440)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr)
+
+  -> No empty cells found in column
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GravityDropItemRow () (at Assets/Scripts/Core/Board.cs:559)
+Match3.Core.Board:GravityDropItemRow () (at Assets/Scripts/Core/Board.cs:600)
+Match3.Core.MatchManager/<Co_Drop>d__61:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:674)
+UnityEngine.MonoBehaviour:StartCoroutine (System.Collections.IEnumerator)
+Match3.Core.MatchManager/<Coroutine_Switching>d__58:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:440)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr)
+
+[MatchManager] Processing gravity for column starting at Board_4_0
+UnityEngine.Debug:Log (object)
+Match3.Core.MatchManager/<Co_Drop>d__61:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:673)
+UnityEngine.MonoBehaviour:StartCoroutine (System.Collections.IEnumerator)
+Match3.Core.MatchManager/<Coroutine_Switching>d__58:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:440)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr)
+
+[Board Board_4_0] GravityDropItemRow starting
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GravityDropItemRow () (at Assets/Scripts/Core/Board.cs:540)
+Match3.Core.MatchManager/<Co_Drop>d__61:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:674)
+UnityEngine.MonoBehaviour:StartCoroutine (System.Collections.IEnumerator)
+Match3.Core.MatchManager/<Coroutine_Switching>d__58:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:440)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr)
+
+  -> No empty cells found in column
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GravityDropItemRow () (at Assets/Scripts/Core/Board.cs:559)
+Match3.Core.MatchManager/<Co_Drop>d__61:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:674)
+UnityEngine.MonoBehaviour:StartCoroutine (System.Collections.IEnumerator)
+Match3.Core.MatchManager/<Coroutine_Switching>d__58:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:440)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr)
+
+[MatchManager] Processing gravity for column starting at Board_5_0
+UnityEngine.Debug:Log (object)
+Match3.Core.MatchManager/<Co_Drop>d__61:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:673)
+UnityEngine.MonoBehaviour:StartCoroutine (System.Collections.IEnumerator)
+Match3.Core.MatchManager/<Coroutine_Switching>d__58:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:440)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr)
+
+[Board Board_5_0] GravityDropItemRow starting
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GravityDropItemRow () (at Assets/Scripts/Core/Board.cs:540)
+Match3.Core.MatchManager/<Co_Drop>d__61:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:674)
+UnityEngine.MonoBehaviour:StartCoroutine (System.Collections.IEnumerator)
+Match3.Core.MatchManager/<Coroutine_Switching>d__58:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:440)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr)
+
+  -> No empty cells found in column
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GravityDropItemRow () (at Assets/Scripts/Core/Board.cs:559)
+Match3.Core.MatchManager/<Co_Drop>d__61:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:674)
+UnityEngine.MonoBehaviour:StartCoroutine (System.Collections.IEnumerator)
+Match3.Core.MatchManager/<Coroutine_Switching>d__58:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:440)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr)
+
+[MatchManager] Processing gravity for column starting at Board_6_0
+UnityEngine.Debug:Log (object)
+Match3.Core.MatchManager/<Co_Drop>d__61:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:673)
+UnityEngine.MonoBehaviour:StartCoroutine (System.Collections.IEnumerator)
+Match3.Core.MatchManager/<Coroutine_Switching>d__58:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:440)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr)
+
+[Board Board_6_0] GravityDropItemRow starting
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GravityDropItemRow () (at Assets/Scripts/Core/Board.cs:540)
+Match3.Core.MatchManager/<Co_Drop>d__61:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:674)
+UnityEngine.MonoBehaviour:StartCoroutine (System.Collections.IEnumerator)
+Match3.Core.MatchManager/<Coroutine_Switching>d__58:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:440)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr)
+
+  -> No empty cells found in column
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GravityDropItemRow () (at Assets/Scripts/Core/Board.cs:559)
+Match3.Core.MatchManager/<Co_Drop>d__61:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:674)
+UnityEngine.MonoBehaviour:StartCoroutine (System.Collections.IEnumerator)
+Match3.Core.MatchManager/<Coroutine_Switching>d__58:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:440)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr)
+
+[MatchManager] Processing gravity for column starting at Board_0_1
+UnityEngine.Debug:Log (object)
+Match3.Core.MatchManager/<Co_Drop>d__61:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:673)
+UnityEngine.MonoBehaviour:StartCoroutine (System.Collections.IEnumerator)
+Match3.Core.MatchManager/<Coroutine_Switching>d__58:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:440)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr)
+
+[Board Board_0_1] GravityDropItemRow starting
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GravityDropItemRow () (at Assets/Scripts/Core/Board.cs:540)
+Match3.Core.MatchManager/<Co_Drop>d__61:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:674)
+UnityEngine.MonoBehaviour:StartCoroutine (System.Collections.IEnumerator)
+Match3.Core.MatchManager/<Coroutine_Switching>d__58:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:440)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr)
+
+  -> No empty cells found in column
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GravityDropItemRow () (at Assets/Scripts/Core/Board.cs:559)
+Match3.Core.MatchManager/<Co_Drop>d__61:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:674)
+UnityEngine.MonoBehaviour:StartCoroutine (System.Collections.IEnumerator)
+Match3.Core.MatchManager/<Coroutine_Switching>d__58:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:440)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr)
+
+[MatchManager] Processing gravity for column starting at Board_1_1
+UnityEngine.Debug:Log (object)
+Match3.Core.MatchManager/<Co_Drop>d__61:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:673)
+UnityEngine.MonoBehaviour:StartCoroutine (System.Collections.IEnumerator)
+Match3.Core.MatchManager/<Coroutine_Switching>d__58:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:440)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr)
+
+[Board Board_1_1] GravityDropItemRow starting
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GravityDropItemRow () (at Assets/Scripts/Core/Board.cs:540)
+Match3.Core.MatchManager/<Co_Drop>d__61:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:674)
+UnityEngine.MonoBehaviour:StartCoroutine (System.Collections.IEnumerator)
+Match3.Core.MatchManager/<Coroutine_Switching>d__58:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:440)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr)
+
+  -> No empty cells found in column
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GravityDropItemRow () (at Assets/Scripts/Core/Board.cs:559)
+Match3.Core.MatchManager/<Co_Drop>d__61:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:674)
+UnityEngine.MonoBehaviour:StartCoroutine (System.Collections.IEnumerator)
+Match3.Core.MatchManager/<Coroutine_Switching>d__58:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:440)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr)
+
+[MatchManager] Processing gravity for column starting at Board_7_1
+UnityEngine.Debug:Log (object)
+Match3.Core.MatchManager/<Co_Drop>d__61:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:673)
+UnityEngine.MonoBehaviour:StartCoroutine (System.Collections.IEnumerator)
+Match3.Core.MatchManager/<Coroutine_Switching>d__58:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:440)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr)
+
+[Board Board_7_1] GravityDropItemRow starting
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GravityDropItemRow () (at Assets/Scripts/Core/Board.cs:540)
+Match3.Core.MatchManager/<Co_Drop>d__61:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:674)
+UnityEngine.MonoBehaviour:StartCoroutine (System.Collections.IEnumerator)
+Match3.Core.MatchManager/<Coroutine_Switching>d__58:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:440)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr)
+
+  -> No empty cells found in column
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GravityDropItemRow () (at Assets/Scripts/Core/Board.cs:559)
+Match3.Core.MatchManager/<Co_Drop>d__61:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:674)
+UnityEngine.MonoBehaviour:StartCoroutine (System.Collections.IEnumerator)
+Match3.Core.MatchManager/<Coroutine_Switching>d__58:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:440)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr)
+
+[MatchManager] Processing gravity for column starting at Board_8_1
+UnityEngine.Debug:Log (object)
+Match3.Core.MatchManager/<Co_Drop>d__61:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:673)
+UnityEngine.MonoBehaviour:StartCoroutine (System.Collections.IEnumerator)
+Match3.Core.MatchManager/<Coroutine_Switching>d__58:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:440)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr)
+
+[Board Board_8_1] GravityDropItemRow starting
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GravityDropItemRow () (at Assets/Scripts/Core/Board.cs:540)
+Match3.Core.MatchManager/<Co_Drop>d__61:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:674)
+UnityEngine.MonoBehaviour:StartCoroutine (System.Collections.IEnumerator)
+Match3.Core.MatchManager/<Coroutine_Switching>d__58:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:440)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr)
+
+  -> No empty cells found in column
+UnityEngine.Debug:Log (object)
+Match3.Core.Board:GravityDropItemRow () (at Assets/Scripts/Core/Board.cs:559)
+Match3.Core.MatchManager/<Co_Drop>d__61:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:674)
+UnityEngine.MonoBehaviour:StartCoroutine (System.Collections.IEnumerator)
+Match3.Core.MatchManager/<Coroutine_Switching>d__58:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:440)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr)
+
+[MatchManager] Co_Drop: Completed. Waited 0 cycles.
+UnityEngine.Debug:Log (object)
+Match3.Core.MatchManager/<Co_Drop>d__61:MoveNext () (at Assets/Scripts/Core/MatchManager.cs:705)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr)
+
