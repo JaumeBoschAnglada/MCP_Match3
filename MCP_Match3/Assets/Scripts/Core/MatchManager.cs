@@ -297,6 +297,29 @@ namespace Match3.Core
             float centerX = (minX + maxX) * 0.5f;
             float centerY = (minY + maxY) * 0.5f;
             m_Field.localPosition = new Vector3(-centerX, -centerY, 0f);
+
+            // Adjust camera to fit the board
+            Camera mainCamera = Camera.main;
+            if (mainCamera != null && mainCamera.orthographic)
+            {
+                // Calculate board dimensions
+                float boardWidth = maxX - minX + 1f;  // +1 for cell size
+                float boardHeight = maxY - minY + 1f;
+
+                // Get screen aspect ratio
+                float screenAspect = (float)Screen.width / Screen.height;
+
+                // Calculate required orthographic size
+                // OrthographicSize is half-height of the view
+                float requiredHeightSize = boardHeight * 0.5f;
+                float requiredWidthSize = boardWidth / screenAspect * 0.5f;
+
+                // Use the larger value to ensure everything fits, with padding
+                float padding = 1.5f; // Extra space around the board
+                mainCamera.orthographicSize = Mathf.Max(requiredHeightSize, requiredWidthSize) + padding;
+
+                Debug.Log($"[MatchManager] Camera adjusted: Board size ({boardWidth:F1} x {boardHeight:F1}), Ortho size: {mainCamera.orthographicSize:F1}");
+            }
         }
 
         public void SetMatchState(MatchState state)

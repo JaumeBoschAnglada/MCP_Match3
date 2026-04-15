@@ -541,14 +541,15 @@ namespace Match3.Core
             //     AroundBrust();
             // }
 
-            // Generate next item if this was a special combine
+            // TODO Phase 5: Generate special items after burst
+            // For now, just log what would be created and reset the flag
             if (m_NextItemType != ItemType.None)
             {
-                Debug.Log($"[Board {name}] Generating special item {m_NextItemType}");
-                GenItem(m_NextItemType, ColorType.None);
-                var newItem = m_Item as Match3.Items.Item;
-                if (newItem != null)
-                    newItem.SetColorRandom();
+                Debug.Log($"[Board {name}] Match created special item condition: {m_NextItemType} (will spawn in Phase 5)");
+                // GenItem(m_NextItemType, ColorType.None);  // Phase 5: Uncomment when special item prefabs exist
+                // var newItem = m_Item as Match3.Items.Item;
+                // if (newItem != null)
+                //     newItem.SetColorRandom();
                 m_NextItemType = ItemType.None;
             }
 
@@ -571,12 +572,14 @@ namespace Match3.Core
                 m_Item = null;
             }
 
+            // TODO Phase 5: Generate special items after burst
             if (m_NextItemType != ItemType.None)
             {
-                GenItem(m_NextItemType, ColorType.None);
-                var newItem = m_Item as Match3.Items.Item;
-                if (newItem != null)
-                    newItem.SetColorRandom();
+                Debug.Log($"[Board {name}] Match created special item condition: {m_NextItemType} (will spawn in Phase 5)");
+                // GenItem(m_NextItemType, ColorType.None);  // Phase 5: Uncomment when special item prefabs exist
+                // var newItem = m_Item as Match3.Items.Item;
+                // if (newItem != null)
+                //     newItem.SetColorRandom();
                 m_NextItemType = ItemType.None;
             }
         }
