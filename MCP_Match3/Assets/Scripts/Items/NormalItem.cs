@@ -35,7 +35,7 @@ namespace Match3.Items
             Sprite targetSprite = GetSpriteForColor(color);
             if (targetSprite != null)
                 m_Sprite.sprite = targetSprite;
-            else
+            else if (color != ColorType.None)
                 Debug.LogWarning($"[NormalItem] No sprite assigned for color {color}");
         }
 

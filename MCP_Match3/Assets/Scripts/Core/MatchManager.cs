@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using Match3.Data;
+using Match3.Steps;
 using Newtonsoft.Json;
 
 namespace Match3.Core
@@ -31,6 +32,10 @@ namespace Match3.Core
         // === Combo ===
         public int ComboCnt { get; set; }
 
+        // === Step system (Phase 4) ===
+        private Dictionary<StepType, BaseStep> m_DicStep;
+        private BaseStep m_CurrentStep;
+
         // === Managers (assigned via SerializeField) ===
         [SerializeField] private ObjectPool m_ObjectPool;
 
@@ -48,6 +53,14 @@ namespace Match3.Core
         private void Start()
         {
             BoardCreate();
+
+            // Debug overlay
+            if (FindFirstObjectByType<DebugManager>() == null)
+            {
+                var go = new GameObject("[Debug]");
+                go.AddComponent<DebugManager>();
+                DontDestroyOnLoad(go);
+            }
 
             // Try to load a test level
             TextAsset levelAsset = Resources.Load<TextAsset>("Levels/1");
@@ -73,11 +86,19 @@ namespace Match3.Core
                 stage.CreateGravity();
 
             VariableInit();
+            StepInit();
             StageSetting(stage);
             BoardSetting(stage);
             BoardPositionSetting();
-            ItemSetting(); // Phase 2: Generate initial items
+            ItemSetting();
             SetMatchState(MatchState.Playing);
+            SetStep(StepType.Wait);
+        }
+
+        private void Update()
+        {
+            if (m_MatchState != MatchState.Playing) return;
+            m_CurrentStep?.Step_Process();
         }
 
         private void VariableInit()
@@ -86,6 +107,33 @@ namespace Match3.Core
             m_AppearColor.Clear();
             m_ListDropStart.Clear();
             m_ListDropHead.Clear();
+        }
+
+        /// <summary>
+        /// Create all step instances and register them in the dictionary.
+        /// </summary>
+        private void StepInit()
+        {
+            m_DicStep = new Dictionary<StepType, BaseStep>
+            {
+                { StepType.Wait,          new WaitStep(this) },
+                { StepType.Switching,     new MatchingStep(this) },
+                { StepType.Matching,      new MatchingStep(this) },
+                { StepType.TimeBomb,      new TimeBombStep(this) },
+                { StepType.IceCream,      new IceCreamStep(this) },
+                { StepType.ConveyerBelt,  new ConveyerBeltStep(this) },
+                { StepType.Chameleon,     new ChameleonStep(this) },
+                { StepType.MagicColor,    new MagicColorStep(this) },
+                { StepType.BearJump,      new BearJumpStep(this) },
+                { StepType.BearSpawn,     new BearSpawnStep(this) },
+                { StepType.Mission,       new MissionStep(this) },
+                { StepType.Clear,         new ClearStep(this) },
+                { StepType.Fail,          new FailStep(this) },
+                { StepType.Shuffling,     new ShufflingStep(this) },
+            };
+
+            foreach (var step in m_DicStep.Values)
+                step.Step_Init();
         }
 
         /// <summary>
@@ -330,6 +378,12 @@ namespace Match3.Core
         public void SetStep(StepType step)
         {
             m_StepType = step;
+
+            if (m_DicStep != null && m_DicStep.TryGetValue(step, out var newStep))
+            {
+                m_CurrentStep = newStep;
+                m_CurrentStep.Step_Play();
+            }
         }
 
         /// <summary>
@@ -453,16 +507,10 @@ namespace Match3.Core
                 // Valid match - trigger match detection and burst sequence
                 SetStep(StepType.Matching);
 
-                // Check for matches around both swapped items
-                CheckMatchCondition();
-
-                // Trigger burst sequence
+                // Burst → Drop → Cascade loop
                 yield return StartCoroutine(Co_MatchBurst());
-
-                // Apply gravity and refill
                 yield return StartCoroutine(Co_Drop());
 
-                // Check for cascading matches
                 bool hasNewMatches = true;
                 while (hasNewMatches)
                 {
@@ -478,9 +526,11 @@ namespace Match3.Core
                 // TODO Phase 6: MoveLimitApply();
             }
 
-            // Reset swap tracking
+            // Advance through the post-match step chain:
+            // TimeBomb → IceCream → ConveyerBelt → Chameleon → MagicColor → BearJump → BearSpawn → Mission → Wait
+            // Each stub step calls SetStep(next) immediately in Step_Play().
             Match3.Items.Item.SwitchingTouch = false;
-            SetStep(StepType.Wait);
+            SetStep(StepType.TimeBomb);
         }
 
         // ========== PHASE 3: MATCH DETECTION ==========
