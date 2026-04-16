@@ -364,7 +364,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dcff2d923ee0844478d0fe5145d77c32, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Match3.Scenes.HallManager
-  playButton: {fileID: 251574769}
+  gameplaySceneName: Gameplay
 --- !u!4 &201436265
 Transform:
   m_ObjectHideFlags: 0
@@ -442,7 +442,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 251574770}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 201436264}
+        m_TargetAssemblyTypeName: Match3.Scenes.HallManager, Assembly-CSharp
+        m_MethodName: LoadLevel
+        m_Mode: 3
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 2
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &251574770
 MonoBehaviour:
   m_ObjectHideFlags: 0

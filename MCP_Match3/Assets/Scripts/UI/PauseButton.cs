@@ -1,33 +1,22 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Match3.UI
 {
     /// <summary>
-    /// Button that opens the pause popup.
-    /// No direct prefab references - just calls PopupManager.ShowPopupByType(PopupType.Pause).
-    /// The prefab is managed by PopupManager.
+    /// Attach to the in-game pause button. Opens PausePopup via PopupManager.
     /// </summary>
+    [RequireComponent(typeof(Button))]
     public class PauseButton : MonoBehaviour
     {
-        private PopupManager popupManager;
-
-        private void Start()
+        private void Awake()
         {
-            popupManager = PopupManager.Instance;
-            if (popupManager == null)
-            {
-                Debug.LogError("[PauseButton] PopupManager not found in scene!");
-            }
+            GetComponent<Button>().onClick.AddListener(OnClick);
         }
 
-        public void OnPausePressed()
+        private void OnClick()
         {
-            if (popupManager == null)
-            {
-                Debug.LogError("[PauseButton] PopupManager not initialized");
-                return;
-            }
-            popupManager.ShowPopupByType(PopupType.Pause);
+            PopupManager.Instance?.Show<PausePopup>();
         }
     }
 }

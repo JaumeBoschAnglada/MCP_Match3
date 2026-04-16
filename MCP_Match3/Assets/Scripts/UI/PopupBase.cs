@@ -1,87 +1,64 @@
+﻿using System;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace Match3.UI
 {
     /// <summary>
-    /// Base class for all popups. Provides common lifecycle, title, and close button handling.
-    /// All popups inherit from this and should have a consistent structure:
-    /// - Canvas (PopupBase component)
-    ///   - Panel (background/content)
-    ///     - Title (Text or TextMeshProUGUI)
-    ///     - CloseButton (Button)
-    ///     - [Custom content for each popup type]
+    /// Base class for all popups.
+    /// Expected hierarchy on the prefab:
+    ///   Root (CanvasGroup + this component)
+    ///     ├── Backdrop   (Image – semi-transparent overlay)
+    ///     └── Panel      (RectTransform – the visible card)
+    ///          ├── TitleBar
+    ///          │    ├── TitleText  (TMP – optional)
+    ///          │    └── CloseButton (Button – optional)
+    ///          └── Body  (content injected by subclasses via [SerializeField])
     /// </summary>
     public abstract class PopupBase : MonoBehaviour
     {
-        [SerializeField] protected Text titleText;          // Title text component
-        [SerializeField] protected Button closeButton;      // Close button
+        [SerializeField] protected CanvasGroup canvasGroup;
+        [SerializeField] protected Button closeButton;
 
-        protected PopupManager popupManager;
-        protected Canvas popupCanvas;
+        private Action m_OnClosed;
 
-        /// <summary>Initialize the popup with a reference to the PopupManager.</summary>
-        public virtual void Initialize(PopupManager manager)
+        // ── Lifecycle ────────────────────────────────────────────────
+
+        protected virtual void Awake()
         {
-            popupManager = manager;
-            popupCanvas = GetComponent<Canvas>();
-
-            // Auto-find components if not assigned in inspector
-            if (titleText == null)
-            {
-                titleText = GetComponentInChildren<Text>();
-            }
-
-            if (closeButton == null)
-            {
-                // Look for button named "CloseButton" first
-                Transform closeButtonTransform = transform.Find("CloseButton");
-                if (closeButtonTransform == null)
-                {
-                    // Fallback: find first button in children
-                    closeButton = GetComponentInChildren<Button>();
-                }
-                else
-                {
-                    closeButton = closeButtonTransform.GetComponent<Button>();
-                }
-            }
-
-            // Wire up close button
-            if (closeButton != null)
-            {
-                closeButton.onClick.AddListener(Close);
-            }
+            if (!canvasGroup) canvasGroup = GetComponent<CanvasGroup>();
+            if (closeButton)  closeButton.onClick.AddListener(Close);
         }
 
-        /// <summary>Set the title of the popup.</summary>
-        public virtual void SetTitle(string title)
+        /// <summary>Show this popup and register an optional callback for when it closes.</summary>
+        public virtual void Show(Action onClosed = null)
         {
-            if (titleText != null)
+            m_OnClosed = onClosed;
+            gameObject.SetActive(true);
+            if (canvasGroup)
             {
-                titleText.text = title;
+                canvasGroup.alpha          = 1f;
+                canvasGroup.interactable   = true;
+                canvasGroup.blocksRaycasts = true;
             }
+            OnShow();
         }
 
-        /// <summary>Called when the popup is shown.</summary>
-        public virtual void OnShow() { }
-
-        /// <summary>Called when the popup is hidden.</summary>
-        public virtual void OnHide() { }
-
-        /// <summary>Close this popup.</summary>
+        /// <summary>Close this popup and fire the onClosed callback.</summary>
         public virtual void Close()
         {
-            if (closeButton != null)
-            {
-                closeButton.onClick.RemoveListener(Close);
-            }
-
-            if (popupManager != null)
-            {
-                popupManager.ClosePopup(this);
-            }
+            OnClose();
+            gameObject.SetActive(false);
+            m_OnClosed?.Invoke();
+            m_OnClosed = null;
         }
+
+        // ── Overridable hooks ─────────────────────────────────────────
+
+        /// <summary>Called right after the popup becomes visible. Override for entry animations, etc.</summary>
+        protected virtual void OnShow() { }
+
+        /// <summary>Called right before the popup is hidden. Override for exit animations, etc.</summary>
+        protected virtual void OnClose() { }
     }
 }
-

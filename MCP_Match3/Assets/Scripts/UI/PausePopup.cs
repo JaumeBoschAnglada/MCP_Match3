@@ -5,67 +5,35 @@ using UnityEngine.SceneManagement;
 namespace Match3.UI
 {
     /// <summary>
-    /// Pause popup - appears when user presses pause button during gameplay.
-    /// Inherits from PopupBase which provides: Title, Close button (auto-wired).
-    /// This popup adds: Resume button, Restart button.
+    /// Pause popup: shown during gameplay when the player hits the pause button.
+    /// Pauses time on open, restores it on close.
     /// </summary>
     public class PausePopup : PopupBase
     {
-        [SerializeField] private Button resumeButton;
-        [SerializeField] private Button restartButton;
+        [SerializeField] private Button resumeBtn;
+        [SerializeField] private Button restartBtn;
 
-        public override void Initialize(PopupManager manager)
+        protected override void Awake()
         {
-            base.Initialize(manager);
-
-            if (resumeButton == null)
-            {
-                Transform t = transform.Find("ResumeButton");
-                if (t == null) t = transform.Find("Panel/ResumeButton");
-                if (t != null) resumeButton = t.GetComponent<Button>();
-            }
-
-            if (restartButton == null)
-            {
-                Transform t = transform.Find("RestartButton");
-                if (t == null) t = transform.Find("Panel/RestartButton");
-                if (t != null) restartButton = t.GetComponent<Button>();
-            }
+            base.Awake();
+            if (resumeBtn)  resumeBtn.onClick.AddListener(Close);
+            if (restartBtn) restartBtn.onClick.AddListener(Restart);
         }
 
-        public override void OnShow()
+        protected override void OnShow()
         {
-            base.OnShow();
-            SetTitle("PAUSED");
-
-            if (resumeButton != null)
-                resumeButton.onClick.AddListener(OnResumePressed);
-            if (restartButton != null)
-                restartButton.onClick.AddListener(OnRestartPressed);
+            Time.timeScale = 0f;
         }
 
-        public override void OnHide()
+        protected override void OnClose()
         {
-            if (resumeButton != null)
-                resumeButton.onClick.RemoveListener(OnResumePressed);
-            if (restartButton != null)
-                restartButton.onClick.RemoveListener(OnRestartPressed);
-
-            base.OnHide();
+            Time.timeScale = 1f;
         }
 
-        private void OnResumePressed()
+        private void Restart()
         {
-            Close();
-        }
-
-        private void OnRestartPressed()
-        {
-            if (popupManager != null)
-                popupManager.CloseAllPopups();
-
-            // Reload the current gameplay scene
-            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            Time.timeScale = 1f;
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
     }
 }

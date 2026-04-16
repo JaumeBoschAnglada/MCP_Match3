@@ -92,6 +92,9 @@ namespace Match3.Core
             BoardSetting(stage);
             BoardPositionSetting();
             ItemSetting();
+
+            Managers.MissionManager.Instance?.MissionSetting(stage);
+
             SetMatchState(MatchState.Playing);
             SetStep(StepType.Wait);
         }

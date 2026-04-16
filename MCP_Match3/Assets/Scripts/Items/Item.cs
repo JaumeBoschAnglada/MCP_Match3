@@ -189,7 +189,7 @@ namespace Match3.Items
         /// </summary>
         public virtual void MissionApply()
         {
-            // TODO: Integrate with MissionManager when implemented
+            Managers.MissionManager.Instance?.MissionApply(m_ItemType, m_Color);
         }
 
         /// <summary>

@@ -1,21 +1,35 @@
-using UnityEngine;
+﻿using UnityEngine;
 using Match3.Core;
 using Match3.Data;
+using Match3.Managers;
+using Match3.UI;
 
 namespace Match3.Steps
 {
-    /// <summary>
-    /// Mission step: Checks if there are pending matches (re-enter Matching),
-    /// or if mission is clear/failed, or returns to Wait for the next turn.
-    /// </summary>
     public class MissionStep : BaseStep
     {
+        private MissionManager missionMgr;
+
         public override bool IsItemStep => false;
 
-        public MissionStep(MatchManager matchManager) : base(matchManager) { }
+        public MissionStep(MatchManager matchManager) : base(matchManager)
+        {
+            missionMgr = MissionManager.Instance;
+        }
 
         public override void Step_Play()
         {
+            // Lazy-init: MissionManager may not exist yet (e.g. Phase 6 partial setup)
+            if (!missionMgr)
+                missionMgr = MissionManager.Instance;
+
+            // Without MissionManager just pass through to Wait — no missions to check
+            if (!missionMgr)
+            {
+                MatchMgr.SetStep(StepType.Wait);
+                return;
+            }
+
             bool hasPending = false;
             for (int i = 0; i < 81; i++)
             {
@@ -28,15 +42,24 @@ namespace Match3.Steps
 
             if (hasPending)
             {
-                Debug.Log("[MissionStep] Pending matches found, returning to Matching");
                 MatchMgr.SetStep(StepType.Matching);
                 return;
             }
 
-            // TODO Phase 6: CheckMissionClear() → SetStep(Clear)
-            // TODO Phase 6: CheckMissionFail() → SetStep(Fail)
+            if (missionMgr.CheckMissionClear())
+            {
+                MatchMgr.SetStep(StepType.Clear);
+                return;
+            }
 
-            MatchMgr.ComboCnt = 0;
+            if (missionMgr.CheckMissionFail())
+            {
+                MatchMgr.SetStep(StepType.Fail);
+                return;
+            }
+
+            missionMgr.MoveLimitApply();
+            TopUIController.Instance?.Refresh();
             MatchMgr.SetStep(StepType.Wait);
         }
     }

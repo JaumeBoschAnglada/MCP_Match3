@@ -62,7 +62,7 @@ namespace Match3.Editor
             if (!Application.isPlaying) return;
 
             // Find all items in scene
-            Item[] items = Object.FindObjectsOfType<Item>();
+            Item[] items = Object.FindObjectsByType<Item>(FindObjectsSortMode.None);
 
             const float ALIGNMENT_THRESHOLD = 0.001f;
 

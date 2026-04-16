@@ -502,10 +502,11 @@
 1. **Cada fase debe compilar** antes de avanzar
 2. **NO reutilizar código viejo** — todo se crea nuevo
 3. **Solo se conserva** el sistema de popups (PopupManager, PopupBase, etc.)
-4. **Prefabs con MCP** — Crear prefabs vía MCP tools
+4. **Prefabs y escena SOLO con MCP** — NUNCA crear scripts Editor generadores de contenido Unity ([MenuItem], EditorWindow, etc.). Si existe alguno, borrarlo.
 5. **Probar en Editor** — Simular touch, verificar flujo
 6. **Prioridad**: Gameplay funcional > Visual > Contenido
 7. **La lógica de gameplay** de los docs TMP Textos Agente/ es la fuente de verdad
 8. **Escena 3D** — Tablero y piezas en espacio 3D, cámara 3D
 9. **UI con Unity UI** — Canvas + CanvasScaler + Image/TMP/Button. **NO NGUI.**
 10. **La jerarquía de escena es propia** — No replicamos la sección 2.1 del doc de referencia
+11. **Si MCP no está conectado**, avisar al usuario antes de crear cualquier contenido en Unity

@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using Match3.Data;
+using Match3.Items;
+using Match3.Managers;
 
 namespace Match3.Core
 {
@@ -549,12 +551,12 @@ namespace Match3.Core
                 ObjectPool.Instance?.Restore(item.gameObject);
                 m_Item = null;
 
-                // TODO Phase 6: MissionApply
-                // item.MissionApply();
+                // MissionApply: notifica la pieza destruida a MissionManager
+                item.MissionApply();
 
-                // TODO Phase 6: ScoreApply
-                // int score = item.GetDestroyScore(MatchManager.Instance.ComboCnt);
-                // ScoreManager.Instance?.AddScore(score);
+                // ScoreApply: suma puntos por pieza destruida
+                int score = item.GetDestroyScore(MatchManager.Instance != null ? MatchManager.Instance.ComboCnt : 0);
+                Managers.MissionManager.Instance?.AddScore(score);
             }
 
             // Burst panels (jaulas, obstáculos, etc.)

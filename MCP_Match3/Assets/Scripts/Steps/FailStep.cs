@@ -1,12 +1,10 @@
-using UnityEngine;
+﻿using UnityEngine;
 using Match3.Core;
 using Match3.Data;
+using Match3.UI;
 
 namespace Match3.Steps
 {
-    /// <summary>
-    /// Fail step: Player ran out of moves or a TimeBomb expired.
-    /// </summary>
     public class FailStep : BaseStep
     {
         public override bool IsItemStep => false;
@@ -15,8 +13,23 @@ namespace Match3.Steps
 
         public override void Step_Play()
         {
-            Debug.Log("[FailStep] Game Fail!");
-            MatchMgr.SetMatchState(MatchState.GameFail);
+            Debug.Log("[FailStep] Mission failed!");
+
+            if (PopupManager.Instance)
+            {
+                PopupManager.Instance.Show<DefeatPopup>(
+                    p => p.SetContent("¡Sin movimientos!"),
+                    onClosed: () => RetryLevel());
+            }
+            else
+            {
+                RetryLevel();
+            }
+        }
+
+        private void RetryLevel()
+        {
+            Debug.Log("[FailStep] Retrying level...");
         }
     }
 }

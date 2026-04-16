@@ -72,10 +72,13 @@ Lo que SÍ se toma del doc como fuente de verdad:
 
 ## Filosofía de Desarrollo
 
-### MCP First
-- Escenas y GameObjects se crean/modifican con MCP tools
-- Scripts son SOLO lógica de juego
-- NUNCA crear herramientas Editor ni scripts generadores de escenas
+### MCP First — REGLA OBLIGATORIA
+- **Escenas, GameObjects, prefabs y UI se crean/modifican EXCLUSIVAMENTE con MCP tools**
+- **NUNCA crear scripts Editor ([MenuItem], [InitializeOnLoad], EditorWindow, etc.) para generar contenido en Unity**
+- **NUNCA crear scripts generadores de escenas, prefabs o assets** (ni siquiera en carpeta Editor/)
+- Si MCP no está conectado, avisar al usuario antes de proceder
+- Scripts son SOLO lógica de juego (MonoBehaviour, ScriptableObject, clases de datos)
+- Si ya existe un script generador heredado, borrarlo y rehacerlo con MCP
 
 ### Input Legacy (NO InputSystem)
 - El input del jugador usa `OnMouseDown/OnMouseEnter/OnMouseUp` directamente en `Item.cs`
