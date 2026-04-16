@@ -467,10 +467,22 @@ namespace Match3.Core
             itemA.CheckCombine();
             itemB.CheckCombine();
 
+            // Check if either swapped item is a special item that should activate on swap
+            bool specialActivation = IsSpecialItem(itemA.m_ItemType) || IsSpecialItem(itemB.m_ItemType);
+
             // Detect matches on both swapped items
             bool hasMatch = CheckMatchCondition();
 
-            Debug.Log($"[MatchManager] Swap completed. HasMatch: {hasMatch}");
+            // Special items always activate when swapped (even without a color match)
+            if (specialActivation && !hasMatch)
+            {
+                // Mark the special item(s) for burst
+                if (IsSpecialItem(itemA.m_ItemType)) itemA.m_Board.m_isMatchBrust = true;
+                if (IsSpecialItem(itemB.m_ItemType)) itemB.m_Board.m_isMatchBrust = true;
+                hasMatch = true;
+            }
+
+            Debug.Log($"[MatchManager] Swap completed. HasMatch: {hasMatch} (specialActivation: {specialActivation})");
 
             if (!hasMatch)
             {
@@ -531,6 +543,28 @@ namespace Match3.Core
         // ========== PHASE 3: MATCH DETECTION ==========
 
         /// <summary>
+        /// Returns true if the item type is a special (activatable) item — not a Normal piece.
+        /// Special items burst on swap regardless of color match.
+        /// </summary>
+        private static bool IsSpecialItem(ItemType t)
+        {
+            return t == ItemType.Butterfly || t == ItemType.Line_X || t == ItemType.Line_Y ||
+                   t == ItemType.Line_C    || t == ItemType.Bomb    || t == ItemType.Rainbow;
+        }
+
+        /// <summary>
+        /// Returns true if any board cell is already flagged for burst
+        /// (e.g. from a special item effect that fired in the previous wave).
+        /// </summary>
+        private bool HasPendingBursts()
+        {
+            for (int i = 0; i < 81; i++)
+                if (m_ListBoard[i].m_isMatchBrust && m_ListBoard[i].m_Item != null)
+                    return true;
+            return false;
+        }
+
+        /// <summary>
         /// Check all boards for matches and mark them for bursting.
         /// Returns true if any matches were found.
         /// </summary>
@@ -539,7 +573,7 @@ namespace Match3.Core
             bool foundMatch = false;
             int matchCount = 0;
 
-            // Clear previous match flags
+            // Clear all match flags before fresh detection
             for (int i = 0; i < 81; i++)
             {
                 m_ListBoard[i].m_isMatchBrust = false;
@@ -720,33 +754,39 @@ namespace Match3.Core
         /// Coroutine version for sequential animation.
         /// </summary>
         private System.Collections.IEnumerator Co_MatchBurst()
-        {            Debug.Log("[MatchManager] Co_MatchBurst: Collecting burst coroutines");
+        {
+            Debug.Log("[MatchManager] Co_MatchBurst: Collecting burst coroutines");
 
-            // Snapshot which boards need bursting, then immediately clear flags
-            // to prevent newly-spawned special items from being re-collected
-            var boardsToBurst = new List<Board>();
-            for (int i = 0; i < 81; i++)
+            // Keep bursting in waves until no more flags remain.
+            // Each wave may generate new flags via special item effects (Line, Bomb, etc.)
+            // All waves are resolved before returning, so Co_Drop only runs once per turn.
+            int waveLimit = 20; // safety cap against infinite loops
+            while (HasPendingBursts() && waveLimit-- > 0)
             {
-                Board board = m_ListBoard[i];
-                if (board.m_isMatchBrust && board.m_Item != null)
+                // Snapshot boards flagged for this wave
+                var boardsToBurst = new List<Board>();
+                for (int i = 0; i < 81; i++)
                 {
-                    Debug.Log($"  -> Queueing burst for {board.name} with item {board.m_Item.name}");
-                    boardsToBurst.Add(board);
+                    Board board = m_ListBoard[i];
+                    if (board.m_isMatchBrust && board.m_Item != null)
+                    {
+                        Debug.Log($"  -> Queueing burst for {board.name} with item {board.m_Item.name}");
+                        boardsToBurst.Add(board);
+                    }
+                    // Clear ALL flags now — specials will re-set flags for their targets
+                    board.m_isMatchBrust = false;
                 }
-                board.m_isMatchBrust = false; // Clear flag immediately
+
+                if (boardsToBurst.Count == 0) break;
+
+                Debug.Log($"[MatchManager] Co_MatchBurst: Starting {boardsToBurst.Count} burst coroutines");
+
+                foreach (var board in boardsToBurst)
+                    StartCoroutine(board.Co_Brust());
+
+                // Wait for this wave's animations to finish before starting the next wave
+                yield return new UnityEngine.WaitForSeconds(0.35f);
             }
-
-            Debug.Log($"[MatchManager] Co_MatchBurst: Starting {boardsToBurst.Count} burst coroutines");
-
-            // Execute all bursts in parallel
-            foreach (var board in boardsToBurst)
-            {
-                StartCoroutine(board.Co_Brust());
-            }
-
-            // Wait for all bursts to complete
-            Debug.Log("[MatchManager] Co_MatchBurst: Waiting 0.5s for bursts to complete");
-            yield return new UnityEngine.WaitForSeconds(0.5f);
 
             Debug.Log("[MatchManager] Co_MatchBurst: Complete");
         }

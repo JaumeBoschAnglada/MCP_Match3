@@ -182,9 +182,17 @@ namespace Match3.Core
 
         /// <summary>
         /// Whether the cell currently has a valid matchable item (not animating, not empty).
+        /// Also checks Item.Match so special items (Bomb, Line, etc.) don't participate in color chains.
         /// </summary>
-        public bool IsNowItemMatch =>
-            IsActiveCell && m_Item != null && !m_DropAnim && !m_ItemBrusting;
+        public bool IsNowItemMatch
+        {
+            get
+            {
+                if (!IsActiveCell || m_Item == null || m_DropAnim || m_ItemBrusting) return false;
+                var item = m_Item as Match3.Items.Item;
+                return item == null || item.Match; // Match=false for specials
+            }
+        }
 
         /// <summary>
         /// Initialize the board cell with coordinates and gravity from stage data.
