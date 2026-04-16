@@ -48,9 +48,12 @@ namespace Match3.Steps
 
             if (missionMgr.CheckMissionClear())
             {
+                Debug.Log("[MissionStep] CheckMissionClear = TRUE → going to Clear");
                 MatchMgr.SetStep(StepType.Clear);
                 return;
             }
+
+            Debug.Log($"[MissionStep] CheckMissionClear = false. Moves left after apply: {missionMgr.MovesRemaining - 1}");
 
             // Descontar el movimiento primero, luego comprobar derrota
             missionMgr.MoveLimitApply();

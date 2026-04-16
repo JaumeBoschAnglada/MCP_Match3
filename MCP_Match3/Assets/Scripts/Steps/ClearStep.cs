@@ -14,7 +14,7 @@ namespace Match3.Steps
 
         public override void Step_Play()
         {
-            Debug.Log("[ClearStep] Mission completed!");
+            Debug.Log("[ClearStep] Step_Play called.");
 
             MatchMgr.SetMatchState(MatchState.GameClear);
 
@@ -22,14 +22,19 @@ namespace Match3.Steps
             int finalScore = missionMgr ? missionMgr.CurrentScore : 0;
             int stars      = CalculateStars(finalScore, missionMgr);
 
-            if (PopupManager.Instance)
+            var pm = PopupManager.Instance;
+            Debug.Log($"[ClearStep] PopupManager={pm != null}, score={finalScore}, stars={stars}");
+
+            if (pm)
             {
-                PopupManager.Instance.Show<VictoryPopup>(
+                var vp = pm.Show<VictoryPopup>(
                     p => p.SetContent(finalScore, stars),
                     onClosed: () => LoadNextLevel());
+                Debug.Log($"[ClearStep] Show<VictoryPopup> returned: {(vp != null ? vp.name : "NULL — not registered")}");
             }
             else
             {
+                Debug.LogWarning("[ClearStep] No PopupManager in scene.");
                 LoadNextLevel();
             }
         }

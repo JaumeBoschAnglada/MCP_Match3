@@ -73,6 +73,7 @@ namespace Match3.Managers
                             m_MissionProgress[mission.kind] = 0;
 
                         m_MissionProgress[mission.kind]++;
+                        Debug.Log($"[MissionManager] {mission.kind}: {m_MissionProgress[mission.kind]}/{mission.count}");
 
                         var topUI = TopUIController.Instance;
                         topUI?.Refresh();
