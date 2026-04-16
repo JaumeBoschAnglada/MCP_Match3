@@ -181,8 +181,8 @@ namespace Match3.Core
         public bool IsActiveCell { get; set; } = true;
 
         /// <summary>
-        /// Whether the cell currently has a valid matchable item (not animating, not empty).
-        /// Also checks Item.Match so special items (Bomb, Line, etc.) don't participate in color chains.
+        /// Whether this cell can act as the PIVOT of a color match detection
+        /// (i.e. initiate FindMatchesHorizontal/Vertical). Normal items only.
         /// </summary>
         public bool IsNowItemMatch
         {
@@ -190,7 +190,22 @@ namespace Match3.Core
             {
                 if (!IsActiveCell || m_Item == null || m_DropAnim || m_ItemBrusting) return false;
                 var item = m_Item as Match3.Items.Item;
-                return item == null || item.Match; // Match=false for specials
+                return item == null || item.Match; // Match=false for specials: they cannot be pivot
+            }
+        }
+
+        /// <summary>
+        /// Whether this cell can be counted as a neighbor in a color chain.
+        /// Special colored items (Butterfly, Bomb, Line...) count as part of a chain
+        /// when adjacent to matching normals, even though they cannot start one.
+        /// </summary>
+        public bool IsNowItemChainable
+        {
+            get
+            {
+                if (!IsActiveCell || m_Item == null || m_DropAnim || m_ItemBrusting) return false;
+                var item = m_Item as Match3.Items.Item;
+                return item == null || item.m_Color != Match3.Data.ColorType.None;
             }
         }
 
@@ -436,7 +451,7 @@ namespace Match3.Core
             Board b3 = this[dirDiag];
 
             if (b1 == null || b2 == null || b3 == null) return null;
-            if (!b1.IsNowItemMatch || !b2.IsNowItemMatch || !b3.IsNowItemMatch) return null;
+            if (!b1.IsNowItemChainable || !b2.IsNowItemChainable || !b3.IsNowItemChainable) return null;
 
             var item1 = b1.m_Item as Match3.Items.Item;
             var item2 = b2.m_Item as Match3.Items.Item;
@@ -480,7 +495,7 @@ namespace Match3.Core
 
             Board neighbor = this[dir];
             if (neighbor == null) return;
-            if (!neighbor.IsNowItemMatch) return;
+            if (!neighbor.IsNowItemChainable) return; // chainable: normals + colored specials
             if (matchList.Contains(neighbor)) return;
 
             var neighborItem = neighbor.m_Item as Match3.Items.Item;

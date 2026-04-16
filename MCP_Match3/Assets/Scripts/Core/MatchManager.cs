@@ -63,7 +63,8 @@ namespace Match3.Core
             }
 
             // Try to load a test level
-            TextAsset levelAsset = Resources.Load<TextAsset>("Levels/1");
+            int levelIndex = 2;
+            TextAsset levelAsset = Resources.Load<TextAsset>("Levels/" + levelIndex);
             if (levelAsset != null)
             {
                 Stage stage = JsonConvert.DeserializeObject<Stage>(levelAsset.text);
@@ -71,7 +72,7 @@ namespace Match3.Core
             }
             else
             {
-                Debug.Log("[MatchManager] No level found. Create a level JSON in Resources/Levels/1.json");
+                Debug.Log("[MatchManager] No level found. Create a level JSON in Resources/Levels/" + levelIndex + ".json");
             }
         }
 
@@ -299,19 +300,28 @@ namespace Match3.Core
                 Board board = m_ListBoard[i];
                 if (!board.IsActiveCell) continue;
 
-                // Check if stage has predefined colors
-                if (m_CSD != null && m_CSD.colors != null && i < m_CSD.colors.Length)
+                ItemType itemType = ItemType.Normal;
+                ColorType itemColor = ColorType.None;
+
+                if (m_CSD != null)
                 {
-                    ColorType predefinedColor = m_CSD.colors[i];
-                    if (predefinedColor != ColorType.None)
-                    {
-                        // Use predefined color from JSON
-                        board.GenItem(ItemType.Normal, predefinedColor);
-                        continue;
-                    }
+                    if (m_CSD.items != null && i < m_CSD.items.Length)
+                        itemType = m_CSD.items[i];
+                    if (m_CSD.colors != null && i < m_CSD.colors.Length)
+                        itemColor = m_CSD.colors[i];
                 }
 
-                // No predefined color - generate random
+                if (itemType == ItemType.None)
+                    continue; // empty cell marker
+
+                if (itemType != ItemType.Normal || itemColor != ColorType.None)
+                {
+                    // Spawn special or color-fixed item directly
+                    board.GenItem(itemType, itemColor);
+                    continue;
+                }
+
+                // No predefined type or color — generate random normal
                 board.TopSpawnItem();
             }
 
