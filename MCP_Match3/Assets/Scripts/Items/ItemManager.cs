@@ -15,12 +15,12 @@ namespace Match3.Items
         // === Item prefabs ===
         [Header("Item Prefabs")]
         [SerializeField] private GameObject m_NormalItemPrefab;
-
-        // TODO: Add special item prefabs in later phases
-        // [SerializeField] private GameObject m_LineXPrefab;
-        // [SerializeField] private GameObject m_LineYPrefab;
-        // [SerializeField] private GameObject m_BombPrefab;
-        // [SerializeField] private GameObject m_RainbowPrefab;
+        [SerializeField] private GameObject m_ButterflyPrefab;
+        [SerializeField] private GameObject m_LineXPrefab;
+        [SerializeField] private GameObject m_LineYPrefab;
+        [SerializeField] private GameObject m_LineCPrefab;
+        [SerializeField] private GameObject m_BombPrefab;
+        [SerializeField] private GameObject m_RainbowPrefab;
 
         // === Object pool reference ===
         private ObjectPool m_ObjectPool;
@@ -121,22 +121,14 @@ namespace Match3.Items
         {
             switch (itemType)
             {
-                case ItemType.Normal:
-                    return m_NormalItemPrefab;
-
-                // TODO: Add special items in future phases
-                // case ItemType.Line_X:
-                //     return m_LineXPrefab;
-                // case ItemType.Line_Y:
-                //     return m_LineYPrefab;
-                // case ItemType.Line_C:
-                // case ItemType.Bomb:
-                //     return m_BombPrefab;
-                // case ItemType.Rainbow:
-                //     return m_RainbowPrefab;
-
-                default:
-                    return null;
+                case ItemType.Normal:     return m_NormalItemPrefab;
+                case ItemType.Butterfly:  return m_ButterflyPrefab;
+                case ItemType.Line_X:     return m_LineXPrefab;
+                case ItemType.Line_Y:   return m_LineYPrefab;
+                case ItemType.Line_C:   return m_LineCPrefab;
+                case ItemType.Bomb:     return m_BombPrefab;
+                case ItemType.Rainbow:  return m_RainbowPrefab;
+                default:                return null;
             }
         }
 

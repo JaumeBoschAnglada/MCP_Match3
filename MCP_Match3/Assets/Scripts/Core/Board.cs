@@ -500,12 +500,15 @@ namespace Match3.Core
             }
 
             m_ItemBrusting = true;
+            m_isMatchBrust = false; // Clear flag immediately so we can't be re-collected in the next cascade
 
             var item = m_Item as Match3.Items.Item;
+            ColorType burstColor = ColorType.None;
+
             if (item != null)
             {
                 // Store item data before destroying
-                ColorType burstColor = item.m_Color;
+                burstColor = item.m_Color;
                 ItemType burstType = item.m_ItemType;
 
                 Debug.Log($"[Board {name}] Bursting item {burstType}/{burstColor}");
@@ -541,16 +544,15 @@ namespace Match3.Core
             //     AroundBrust();
             // }
 
-            // TODO Phase 5: Generate special items after burst
-            // For now, just log what would be created and reset the flag
+            // Phase 5: Generate special item after burst if a special was earned
             if (m_NextItemType != ItemType.None)
             {
-                Debug.Log($"[Board {name}] Match created special item condition: {m_NextItemType} (will spawn in Phase 5)");
-                // GenItem(m_NextItemType, ColorType.None);  // Phase 5: Uncomment when special item prefabs exist
-                // var newItem = m_Item as Match3.Items.Item;
-                // if (newItem != null)
-                //     newItem.SetColorRandom();
+                ItemType specialType = m_NextItemType;
+                ColorType specialColor = burstColor; // inherit the color of the destroyed item
                 m_NextItemType = ItemType.None;
+
+                GenItem(specialType, specialColor);
+                Debug.Log($"[Board {name}] Spawned special item {specialType}/{specialColor}");
             }
 
             Debug.Log($"[Board {name}] Co_Brust complete, m_ItemBrusting=false");
@@ -572,15 +574,13 @@ namespace Match3.Core
                 m_Item = null;
             }
 
-            // TODO Phase 5: Generate special items after burst
+            // Phase 5: Generate special item after burst if a special was earned
             if (m_NextItemType != ItemType.None)
             {
-                Debug.Log($"[Board {name}] Match created special item condition: {m_NextItemType} (will spawn in Phase 5)");
-                // GenItem(m_NextItemType, ColorType.None);  // Phase 5: Uncomment when special item prefabs exist
-                // var newItem = m_Item as Match3.Items.Item;
-                // if (newItem != null)
-                //     newItem.SetColorRandom();
+                ItemType specialType = m_NextItemType;
+                ColorType specialColor = item != null ? item.m_Color : ColorType.None;
                 m_NextItemType = ItemType.None;
+                GenItem(specialType, specialColor);
             }
         }
 

@@ -511,16 +511,11 @@ namespace Match3.Core
                 yield return StartCoroutine(Co_MatchBurst());
                 yield return StartCoroutine(Co_Drop());
 
-                bool hasNewMatches = true;
-                while (hasNewMatches)
+                while (CheckMatchCondition())
                 {
-                    hasNewMatches = CheckMatchCondition();
-                    if (hasNewMatches)
-                    {
-                        ComboCnt++;
-                        yield return StartCoroutine(Co_MatchBurst());
-                        yield return StartCoroutine(Co_Drop());
-                    }
+                    ComboCnt++;
+                    yield return StartCoroutine(Co_MatchBurst());
+                    yield return StartCoroutine(Co_Drop());
                 }
 
                 // TODO Phase 6: MoveLimitApply();
@@ -551,56 +546,7 @@ namespace Match3.Core
                 m_ListBoard[i].m_NextItemType = ItemType.None;
             }
 
-            // Priority 1: Check for 2x2 square matches
-            for (int i = 0; i < 81; i++)
-            {
-                Board board = m_ListBoard[i];
-                if (!board.IsNowItemMatch) continue;
-
-                var square = board.FindMatchesSquare();
-                if (square.Count == 4)
-                {
-                    foreach (var b in square)
-                    {
-                        b.m_isMatchBrust = true;
-                    }
-                    // Mark center for special item creation (Bomb)
-                    board.m_NextItemType = ItemType.Bomb;
-                    foundMatch = true;
-                }
-            }
-
-            // Priority 2: Check for 5+ matches (Rainbow)
-            for (int i = 0; i < 81; i++)
-            {
-                Board board = m_ListBoard[i];
-                if (!board.IsNowItemMatch) continue;
-                if (board.m_isMatchBrust) continue; // Skip already matched
-
-                var horizontal = board.FindMatchesHorizontal();
-                var vertical = board.FindMatchesVertical();
-
-                if (horizontal.Count >= 5)
-                {
-                    foreach (var b in horizontal)
-                    {
-                        b.m_isMatchBrust = true;
-                    }
-                    board.m_NextItemType = ItemType.Rainbow;
-                    foundMatch = true;
-                }
-                else if (vertical.Count >= 5)
-                {
-                    foreach (var b in vertical)
-                    {
-                        b.m_isMatchBrust = true;
-                    }
-                    board.m_NextItemType = ItemType.Rainbow;
-                    foundMatch = true;
-                }
-            }
-
-            // Priority 3: Check for 4 matches (Line items)
+            // === Priority 6: 5+ in a line → Rainbow ===
             for (int i = 0; i < 81; i++)
             {
                 Board board = m_ListBoard[i];
@@ -610,41 +556,125 @@ namespace Match3.Core
                 var horizontal = board.FindMatchesHorizontal();
                 var vertical = board.FindMatchesVertical();
 
-                // L or T shape (both directions have matches)
-                if (horizontal.Count >= 2 && vertical.Count >= 2 && (horizontal.Count + vertical.Count - 1) >= 4)
+                if (horizontal.Count >= 5)
                 {
-                    // Combine both lists (remove duplicates)
-                    var combined = new System.Collections.Generic.HashSet<Board>(horizontal);
-                    foreach (var b in vertical) combined.Add(b);
-
-                    foreach (var b in combined)
-                    {
-                        b.m_isMatchBrust = true;
-                    }
-                    board.m_NextItemType = ItemType.Line_C; // Cross item
+                    foreach (var b in horizontal) b.m_isMatchBrust = true;
+                    board.m_NextItemType = ItemType.Rainbow;
                     foundMatch = true;
                 }
-                else if (horizontal.Count == 4)
+                else if (vertical.Count >= 5)
                 {
-                    foreach (var b in horizontal)
-                    {
-                        b.m_isMatchBrust = true;
-                    }
-                    board.m_NextItemType = ItemType.Line_Y; // Horizontal line clears rows
-                    foundMatch = true;
-                }
-                else if (vertical.Count == 4)
-                {
-                    foreach (var b in vertical)
-                    {
-                        b.m_isMatchBrust = true;
-                    }
-                    board.m_NextItemType = ItemType.Line_X; // Vertical line clears columns
+                    foreach (var b in vertical) b.m_isMatchBrust = true;
+                    board.m_NextItemType = ItemType.Rainbow;
                     foundMatch = true;
                 }
             }
 
-            // Priority 4: Check for 3 matches (normal)
+            // === Priority 5: L-shape (corner) → Bomb ===
+            // === Priority 4: T-shape or + → Line_C ===
+            // Both require matches in both H and V directions (≥2 each, total ≥4)
+            for (int i = 0; i < 81; i++)
+            {
+                Board board = m_ListBoard[i];
+                if (!board.IsNowItemMatch) continue;
+                if (board.m_isMatchBrust) continue;
+
+                var horizontal = board.FindMatchesHorizontal();
+                var vertical = board.FindMatchesVertical();
+
+                // Need at least 2 in each direction with total >= 4
+                // horizontal/vertical include the center cell, so Count>=2 means 1 neighbor + center
+                int hCount = horizontal.Count; // includes center
+                int vCount = vertical.Count;   // includes center
+                if (hCount < 2 || vCount < 2) continue;
+                if ((hCount + vCount - 1) < 4) continue; // -1 because center is counted twice
+
+                // Determine if L-shape or T-shape using bit pattern
+                // Check which sides have neighbors
+                int bits = 0;
+                var item = (board.m_Item as Match3.Items.Item);
+                if (item == null) continue;
+                ColorType c = item.m_Color;
+
+                // Check horizontal neighbors (excluding center)
+                bool hasLeft = board.Left != null && board.Left.IsNowItemMatch &&
+                    (board.Left.m_Item as Match3.Items.Item)?.m_Color == c;
+                bool hasRight = board.Right != null && board.Right.IsNowItemMatch &&
+                    (board.Right.m_Item as Match3.Items.Item)?.m_Color == c;
+                bool hasTop = board.Top != null && board.Top.IsNowItemMatch &&
+                    (board.Top.m_Item as Match3.Items.Item)?.m_Color == c;
+                bool hasBottom = board.Bottom != null && board.Bottom.IsNowItemMatch &&
+                    (board.Bottom.m_Item as Match3.Items.Item)?.m_Color == c;
+
+                if (hasLeft)  bits |= 1;
+                if (hasRight) bits |= 2;
+                if (hasBottom) bits |= 4;
+                if (hasTop)   bits |= 8;
+
+                // L-shape: neighbors on exactly one side of each axis
+                // bits 5 = left+bottom, 6 = right+bottom, 9 = left+top, 10 = right+top
+                bool isLShape = (bits == 5 || bits == 6 || bits == 9 || bits == 10);
+
+                // Combine both lists (remove duplicates)
+                var combined = new System.Collections.Generic.HashSet<Board>(horizontal);
+                foreach (var b in vertical) combined.Add(b);
+                foreach (var b in combined) b.m_isMatchBrust = true;
+
+                if (isLShape)
+                    board.m_NextItemType = ItemType.Bomb;    // L → Bomb
+                else
+                    board.m_NextItemType = ItemType.Line_C;  // T or + → Line_C (cross)
+
+                foundMatch = true;
+            }
+
+            // === Priority 3: 4 in vertical → Line_X (destroys row, perpendicular) ===
+            // === Priority 2: 4 in horizontal → Line_Y (destroys column, perpendicular) ===
+            for (int i = 0; i < 81; i++)
+            {
+                Board board = m_ListBoard[i];
+                if (!board.IsNowItemMatch) continue;
+                if (board.m_isMatchBrust) continue;
+
+                var horizontal = board.FindMatchesHorizontal();
+                var vertical = board.FindMatchesVertical();
+
+                if (vertical.Count == 4)
+                {
+                    foreach (var b in vertical) b.m_isMatchBrust = true;
+                    board.m_NextItemType = ItemType.Line_X; // 4 vertical → destroys row (perpendicular)
+                    foundMatch = true;
+                }
+                else if (horizontal.Count == 4)
+                {
+                    foreach (var b in horizontal) b.m_isMatchBrust = true;
+                    board.m_NextItemType = ItemType.Line_Y; // 4 horizontal → destroys column (perpendicular)
+                    foundMatch = true;
+                }
+            }
+
+            // === Priority 1: 2×2 square → Butterfly ===
+            bool squarePivotAssigned = false;
+            for (int i = 0; i < 81; i++)
+            {
+                Board board = m_ListBoard[i];
+                if (!board.IsNowItemMatch) continue;
+                if (board.m_isMatchBrust) continue;
+
+                var square = board.FindMatchesSquare();
+                if (square.Count == 4)
+                {
+                    foreach (var b in square) b.m_isMatchBrust = true;
+                    if (!squarePivotAssigned)
+                    {
+                        board.m_NextItemType = ItemType.Butterfly;
+                        squarePivotAssigned = true;
+                    }
+                    foundMatch = true;
+                }
+            }
+
+            // === Priority 0: 3 in a line → Normal (no special) ===
             for (int i = 0; i < 81; i++)
             {
                 Board board = m_ListBoard[i];
@@ -690,38 +720,33 @@ namespace Match3.Core
         /// Coroutine version for sequential animation.
         /// </summary>
         private System.Collections.IEnumerator Co_MatchBurst()
-        {
-            List<System.Collections.IEnumerator> burstCoroutines = new List<System.Collections.IEnumerator>();
+        {            Debug.Log("[MatchManager] Co_MatchBurst: Collecting burst coroutines");
 
-            Debug.Log("[MatchManager] Co_MatchBurst: Collecting burst coroutines");
-
+            // Snapshot which boards need bursting, then immediately clear flags
+            // to prevent newly-spawned special items from being re-collected
+            var boardsToBurst = new List<Board>();
             for (int i = 0; i < 81; i++)
             {
                 Board board = m_ListBoard[i];
                 if (board.m_isMatchBrust && board.m_Item != null)
                 {
                     Debug.Log($"  -> Queueing burst for {board.name} with item {board.m_Item.name}");
-                    burstCoroutines.Add(board.Co_Brust());
+                    boardsToBurst.Add(board);
                 }
+                board.m_isMatchBrust = false; // Clear flag immediately
             }
 
-            Debug.Log($"[MatchManager] Co_MatchBurst: Starting {burstCoroutines.Count} burst coroutines");
+            Debug.Log($"[MatchManager] Co_MatchBurst: Starting {boardsToBurst.Count} burst coroutines");
 
             // Execute all bursts in parallel
-            foreach (var coroutine in burstCoroutines)
+            foreach (var board in boardsToBurst)
             {
-                StartCoroutine(coroutine);
+                StartCoroutine(board.Co_Brust());
             }
 
             // Wait for all bursts to complete
             Debug.Log("[MatchManager] Co_MatchBurst: Waiting 0.5s for bursts to complete");
             yield return new UnityEngine.WaitForSeconds(0.5f);
-
-            // Clear match flags
-            for (int i = 0; i < 81; i++)
-            {
-                m_ListBoard[i].m_isMatchBrust = false;
-            }
 
             Debug.Log("[MatchManager] Co_MatchBurst: Complete");
         }

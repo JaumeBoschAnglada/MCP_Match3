@@ -48,7 +48,7 @@ namespace Match3.Core
             if (mgr == null) return;
 
             m_LabelStyle.normal.textColor = Color.white;
-            GUI.Label(new Rect(10, 135, 600, 50),
+            GUI.Label(new Rect(10, 135, 700, 50),
                 $"Step: {mgr.m_StepType}  State: {mgr.m_MatchState}  Combo: {mgr.ComboCnt}",
                 m_LabelStyle);
 

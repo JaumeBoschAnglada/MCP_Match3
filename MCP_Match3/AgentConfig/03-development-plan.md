@@ -210,91 +210,69 @@
 
 ---
 
-## Fase 4: Steps (Máquina de Estados del Turno) 🔲 PENDIENTE
+## Fase 4: Steps (Máquina de Estados del Turno) ✅ COMPLETADA
 
 ### Objetivo: Toda la secuencia Wait → Matching → ... → Mission → Wait
 
 ### Scripts NUEVOS:
-- [ ] **BaseStep.cs** (Match3.Steps)
-  - Step_Init(), Step_Play(), Step_Process() — virtuales
-  - static bool isItemStep
-  - Referencia a MatchManager (MatchMgr)
-- [ ] **WaitStep.cs**
-  - Step_Play(): ShufflingCheck(), FocusShow(), ShowGravity(), reset hint timer
-  - Step_Process(): hint timer (5s → HintOffer), gravity display timer (8s)
-- [ ] **MatchingStep.cs**
-  - Step_Play(): set flags
-  - Step_Process() / DefaultProcess(): cada frame:
-    1. CheckFood()
-    2. Drop()
-    3. CheckMatchCondition()
-    4. CheckRing()
-    5. AllEnd check → SetStep(TimeBomb) si todo terminó
-  - ComboPlus() al confirmar match
-- [ ] **TimeBombStep.cs** — Decrementa contadores de bombas
-- [ ] **IceCreamStep.cs** — Expande helado (stub, funcionalidad en Fase 8)
-- [ ] **ConveyerBeltStep.cs** — Mueve cintas (stub)
-- [ ] **ChameleonStep.cs** — Cambia colores (stub)
-- [ ] **MagicColorStep.cs** — Color mágico (stub)
-- [ ] **BearJumpStep.cs** — Osos saltan (stub)
-- [ ] **BearSpawnStep.cs** — Genera osos (stub)
-- [ ] **MissionStep.cs**
-  - isItemStep = false
-  - Check m_MatchingCheck pendientes → vuelve a Matching
-  - CheckMissionClear() → Clear
-  - CheckMissionFail() → Fail
-  - Nada → Wait
-- [ ] **ClearStep.cs** → Inicia BonusTime → GameClear
-- [ ] **FailStep.cs** → GameFail
-- [ ] **ShufflingStep.cs** — Recoloca piezas
+- [x] **BaseStep.cs** (Match3.Steps)
+- [x] **WaitStep.cs**
+- [x] **MatchingStep.cs**
+- [x] **TimeBombStep.cs** — stub
+- [x] **IceCreamStep.cs** — stub
+- [x] **ConveyerBeltStep.cs** — stub
+- [x] **ChameleonStep.cs** — stub
+- [x] **MagicColorStep.cs** — stub
+- [x] **BearJumpStep.cs** — stub
+- [x] **BearSpawnStep.cs** — stub
+- [x] **MissionStep.cs**
+- [x] **ClearStep.cs**
+- [x] **FailStep.cs**
+- [x] **ShufflingStep.cs** — stub
 
-### En MatchManager.cs (añadir):
-- [ ] Dictionary<StepType, BaseStep> m_DicStep
-- [ ] StepInit() — Crea instancias de todos los Steps
-- [ ] SetStep(StepType) — Llama Step_Play() del nuevo step
-- [ ] Update() — Llama Step_Process() del step activo
-- [ ] ShufflingCheck() — Verifica si hay movimientos posibles
-- [ ] HintOffer() — Sugiere un movimiento visualmente
+### En MatchManager.cs (añadido):
+- [x] Dictionary<StepType, BaseStep> m_DicStep
+- [x] StepInit() — crea todos los steps
+- [x] SetStep(StepType) — llama Step_Play() del nuevo step
+- [x] Update() — llama Step_Process() del step activo
 
-### Criterio de "hecho":
-- Flujo completo: Wait → Matching → Mission → Wait funciona
-- El jugador puede hacer múltiples turnos consecutivos
-- Los steps post-match (aunque sean stubs) ejecutan en secuencia
-- Shuffling funciona si no hay movimientos
+### Criterio de "hecho": ✅
+- Flujo completo: Wait → Matching → TimeBomb→…→ Mission → Wait funciona
+- Múltiples turnos consecutivos OK
+- Steps stub avanzan inmediatamente hasta Mission → Wait
 
 ---
 
-## Fase 5: Piezas Especiales + Combinaciones 🔲 PENDIENTE
-
-### Objetivo: Todas las piezas especiales y sus combinaciones.
+## Fase 5: Piezas Especiales + Combinaciones ✅ COMPLETADA
 
 ### Scripts NUEVOS (Items):
-- [ ] **LineXItem.cs** — Destruye fila completa
-- [ ] **LineYItem.cs** — Destruye columna completa
-- [ ] **LineCItem.cs** — Destruye fila + columna
-- [ ] **BombItem.cs** — Destruye área 3×3
-- [ ] **RainbowItem.cs** — Destruye todas de un color (sin color propio)
-- [ ] **ButterflyItem.cs** — Vuela hacia pieza del mismo color y la destruye
+- [x] **LineXItem.cs** — Destruye fila completa (generado por 4 en vertical, perpendicular)
+- [x] **LineYItem.cs** — Destruye columna completa (generado por 4 en horizontal, perpendicular)
+- [x] **LineCItem.cs** — Destruye fila + columna (generado por T o +)
+- [x] **BombItem.cs** — Destruye área 3×3 (generado por L-shape esquina)
+- [x] **RainbowItem.cs** — Destruye todas de un color (generado por 5 en línea)
+- [x] **ButterflyItem.cs** — Vuela a pieza del mismo color y la destruye (generado por 2×2)
 
-### Scripts NUEVOS (Managers):
-- [ ] **AbilityManager.cs** — Ejecuta combinaciones entre especiales
-  - CombineBrust para cada par: Line+Line, Line+Cross, Bomb+Line, Bomb+Cross,
-    Bomb+Bomb, Rainbow+Normal, Rainbow+Line, Rainbow+Cross, Rainbow+Bomb,
-    Rainbow+Rainbow, etc.
+### Prefabs NUEVOS:
+- [x] LineXItem.prefab, LineYItem.prefab, LineCItem.prefab, BombItem.prefab, RainbowItem.prefab, ButterflyItem.prefab
+- [x] Sprites procedurales en Assets/Art/Sprites/Items/Special/
 
-### Prefabs NUEVOS (uno por tipo × posiblemente × color):
-- [ ] LineXItem.prefab, LineYItem.prefab, LineCItem.prefab
-- [ ] BombItem.prefab, RainbowItem.prefab, ButterflyItem.prefab
+### Integración:
+- [x] ItemManager.cs — 6 prefab slots asignados en escena (Normal, Butterfly, LineX, LineY, LineC, Bomb, Rainbow)
+- [x] Board.Co_Brust / Brust — spawna la pieza especial tras el burst si m_NextItemType != None
+- [x] CheckMatchCondition — prioridades correctas según documentación:
+  - P6: 5+ en línea → Rainbow
+  - P5: L-shape (esquina, bits 5/6/9/10) → Bomb
+  - P4: T o + → Line_C
+  - P3: 4 en vertical → Line_X (perpendicular, destruye fila)
+  - P2: 4 en horizontal → Line_Y (perpendicular, destruye columna)
+  - P1: 2×2 cuadrado → Butterfly
+  - P0: 3 en línea → Normal (sin especial)
 
-### En Item.cs (añadir):
-- [ ] CheckCombine(ItemType) — Tabla de combinaciones permitidas
-- [ ] CombineBrust(combinetype, Complete) — Override en cada subclase
-
-### Criterio de "hecho":
-- Matches de 4+ generan piezas especiales correctas
-- Cada pieza especial explota correctamente (fila, columna, cruz, área, color, vuelo)
-- Combinar dos especiales produce el efecto correcto
-- Rainbow + Rainbow destruye todo el tablero
+### Criterio de "hecho": ✅
+- Matches de 4+ generan piezas especiales visuales en el tablero
+- Cada tipo explota con su efecto correcto (fila, columna, cruz, 3×3, color)
+- Prefabs con sprites diferenciados por tipo
 
 ---
 

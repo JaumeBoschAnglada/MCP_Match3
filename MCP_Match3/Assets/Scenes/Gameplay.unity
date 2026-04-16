@@ -419,6 +419,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Match3.Items.ItemManager
   m_NormalItemPrefab: {fileID: 6060777647990671262, guid: 163c87217b34c894a980f8d15bc44953, type: 3}
+  m_ButterflyPrefab: {fileID: 204573687050659355, guid: 4e355e25fe794af46995b08f578699e9, type: 3}
+  m_LineXPrefab: {fileID: 8664402753341627533, guid: 778837a801e8b47478e7c1aceccba76f, type: 3}
+  m_LineYPrefab: {fileID: 6460423282251511788, guid: 63e8d3ad84af6b343a1efca9cfea0e79, type: 3}
+  m_LineCPrefab: {fileID: 2887208918436109196, guid: 798e9e25543e7214197f6abfeff4b4f3, type: 3}
+  m_BombPrefab: {fileID: 270861859842968142, guid: a6a4e1130c008674892486b2127a6a2e, type: 3}
+  m_RainbowPrefab: {fileID: 5616402638266913395, guid: 0f3965f7909e5f74abbd4b2ef93552e2, type: 3}
   m_LineItemInterval: 10
   m_BombItemInterval: 15
   m_RainbowItemInterval: 20
