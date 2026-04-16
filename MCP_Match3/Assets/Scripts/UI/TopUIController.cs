@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using Match3.Managers;
 
 namespace Match3.UI
@@ -9,7 +10,12 @@ namespace Match3.UI
 
         [SerializeField] private MovesDisplay movesDisplay;
         [SerializeField] private ScoreDisplay scoreDisplay;
-        [SerializeField] private MissionDisplay[] missionDisplays;
+
+        [Header("Missions (dynamic)")]
+        [SerializeField] private Transform missionsContainer;
+        [SerializeField] private GameObject missionDisplayPrefab;
+
+        private readonly List<MissionDisplay> m_ActiveDisplays = new List<MissionDisplay>();
         private MissionManager missionMgr;
 
         private void Awake()
@@ -21,8 +27,6 @@ namespace Match3.UI
         private void OnEnable()
         {
             missionMgr = MissionManager.Instance;
-            // Si MissionSetting ya se ejecutó, inicializar; si no, Init() se llamará
-            // desde MissionManager.MissionSetting() una vez los datos estén listos.
             if (missionMgr != null && missionMgr.Missions != null)
                 Init();
         }
@@ -32,27 +36,48 @@ namespace Match3.UI
             if (missionMgr == null) missionMgr = MissionManager.Instance;
             if (missionMgr == null) return;
 
-            int i = 0;
-            if (missionMgr.Missions != null)
-                foreach (var m in missionMgr.Missions)
-                    if (i < missionDisplays.Length) missionDisplays[i++].SetMission(m);
-            while (i < missionDisplays.Length) missionDisplays[i++].SetEmpty();
-
-            // Mostrar moves y score iniciales
+            BuildDisplays();
             Refresh();
         }
+
+        /// <summary>
+        /// Destroys existing MissionDisplay instances and creates exactly one per mission.
+        /// </summary>
+        private void BuildDisplays()
+        {
+            // Destroy previous displays
+            foreach (var d in m_ActiveDisplays)
+                if (d != null) Destroy(d.gameObject);
+            m_ActiveDisplays.Clear();
+
+            if (missionMgr.Missions == null || missionDisplayPrefab == null) return;
+
+            foreach (var mission in missionMgr.Missions)
+            {
+                var go = Instantiate(missionDisplayPrefab, missionsContainer);
+                var display = go.GetComponent<MissionDisplay>();
+                if (display != null)
+                {
+                    display.SetMission(mission);
+                    m_ActiveDisplays.Add(display);
+                }
+            }
+        }
+
         public void Refresh()
         {
             if (!missionMgr) missionMgr = MissionManager.Instance;
             if (!missionMgr) return;
+
             movesDisplay?.UpdateMoves(missionMgr.MovesRemaining);
             scoreDisplay?.UpdateScore(missionMgr.CurrentScore);
-            int i = 0;
-            foreach (var m in missionMgr.Missions)
+
+            for (int i = 0; i < m_ActiveDisplays.Count; i++)
             {
-                if (i >= missionDisplays.Length) break;
-                int curr = missionMgr.MissionProgress.ContainsKey(m.kind) ? missionMgr.MissionProgress[m.kind] : 0;
-                missionDisplays[i++].UpdateCount(curr);
+                var mission = missionMgr.Missions[i];
+                int curr = missionMgr.MissionProgress.ContainsKey(mission.kind)
+                    ? missionMgr.MissionProgress[mission.kind] : 0;
+                m_ActiveDisplays[i].UpdateCount(curr);
             }
         }
     }

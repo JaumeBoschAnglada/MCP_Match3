@@ -312,6 +312,12 @@
 - Victoria al completar objetivo (popup + input bloqueado)
 - Derrota al quedarse sin movimientos (popup + input bloqueado)
 - UI muestra objetivos y progreso
+- MissionDisplays instanciados dinámicamente (1 por misión del nivel, sin límite fijo)
+
+### Pendiente (Fase 12 — Iconos de misión):
+- MissionDisplay.missionIcon actualmente sin sprite asignado
+- Necesita un sistema de mapping MissionKind → Sprite (ScriptableObject o atlas)
+- SetMission() debe buscar el sprite del color/tipo de misión y asignarlo al Image
 
 ---
 

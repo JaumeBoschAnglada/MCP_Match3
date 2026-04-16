@@ -922,21 +922,26 @@
     "limit_Move": 2200,
     "missionType": "OrderN",
     "isOrderNMission": true,
-    "missionInfo": [
-        {
-            "type": "OrderN",
-            "kind": "Red",
-            "count": 15
-        },
-        {
-            "type": "OrderN",
-            "kind": "Yellow",
-            "count": 15
-        },
-        {
-            "type": "OrderN",
-            "kind": "Blue",
-            "count": 10
-        }
-    ]
+  "missionInfo": [
+    {
+      "type": "OrderN",
+      "kind": "Red",
+      "count": 15
+    },
+    {
+      "type": "OrderN",
+      "kind": "Yellow",
+      "count": 15
+    },
+    {
+      "type": "OrderN",
+      "kind": "Orange",
+      "count": 12
+    },
+    {
+      "type": "OrderN",
+      "kind": "Blue",
+      "count": 10
+    }
+  ]
 }
