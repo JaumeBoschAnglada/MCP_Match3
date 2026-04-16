@@ -968,26 +968,126 @@ La detección se realiza en `MatchingStep.CheckMatchCondition()` y los métodos 
 
 ### 10.1. Tipos de match soportados
 
-| Patrón | Condición | Pieza generada |
-|---|---|---|
-| **3 en línea** (horizontal/vertical) | 2 vecinos + 1 central | Ninguna (Normal) |
-| **4 en línea horizontal** | 3 vecinos horizontales | `Line_Y` (perpendicular) |
-| **4 en línea vertical** | 3 vecinos verticales | `Line_X` (perpendicular) |
-| **L o T** (3H + 3V cruzados) | ≥2 horizontales Y ≥2 verticales | `Line_C` (cruz) |
-| **L o T (con esquina)** | Forma de L verificada por bits | `Bomb` |
-| **5 en línea** | ≥4 vecinos en una dirección | `Rainbow` |
-| **2×2 cuadrado** | 4 piezas en cuadrado | Match normal (3 vecinos) |
+La detección itera por **prioridad descendente** desde `Rainbow` (valor 6) hasta `Normal` (valor 0). El primer patrón que encaja para cada celda es el que se aplica. Los valores corresponden al enum `ItemType`: Normal=0, Butterfly=1, Line_X=2, Line_Y=3, Line_C=4, Bomb=5, Rainbow=6.
+
+#### Prioridad 6 — Rainbow (5 en línea)
+
+```
+■ ■ ■ ■ ■     ■
+               ■
+               ■
+               ■
+               ■
+```
+
+- **Condición:** `list_x.Count >= 4` ó `list_y.Count >= 4` (4 vecinos + 1 central = 5 piezas).
+- **Genera:** `Rainbow` en la posición central.
+- **Efecto:** Al activar, destruye TODAS las piezas de un color elegido.
+
+#### Prioridad 5 — Bomb (L con esquina)
+
+```
+■              ■          ■ ■ ■      ■
+■                  ■          ■      ■
+■ ■ ■      ■ ■ ■          ■      ■ ■ ■
+```
+
+- **Condición:** `list_x.Count >= 2` Y `list_y.Count >= 2`, Y los vecinos forman una **L** (no T).
+- **Validación por bits:** Se verifica que los vecinos horizontales estén *todos a un solo lado* y los verticales *todos a un solo lado*:
+  - bit 1 = vecino H a la izquierda, bit 2 = vecino H a la derecha
+  - bit 8 = vecino V arriba, bit 4 = vecino V abajo
+  - Solo se acepta si el resultado es 5 (izq+abajo), 6 (der+abajo), 9 (izq+arriba) o 10 (der+arriba).
+- **Genera:** `Bomb` en la posición central.
+- **Efecto:** Destruye un área de 3×3 alrededor.
+- **Nota:** Una forma de T (vecinos a ambos lados de un eje) **NO** genera Bomb, genera `Line_C`.
+
+#### Prioridad 4 — Line_C (T o cruz, 3H + 3V cruzados)
+
+```
+    ■
+■ ■ ★ ■         ■
+    ■         ■ ■ ★
+    ■            ■
+```
+
+- **Condición:** `list_x.Count >= 2` Y `list_y.Count >= 2` (al menos 2 vecinos en cada eje).
+- **Genera:** `Line_C` en la posición central.
+- **Efecto:** Destruye fila + columna completa.
+- **Nota:** Se evalúa *después* de Bomb. Si la forma tiene vecinos a ambos lados en algún eje (forma T en vez de L), entra aquí en lugar de Bomb.
+
+#### Prioridad 3 — Line_Y → genera Line_X (4 en vertical)
+
+```
+■
+■
+★
+■
+```
+
+- **Condición:** `list_y.Count >= 3` (3 vecinos verticales + 1 central = 4 piezas).
+- **Genera:** `Line_X` (¡perpendicular!) en la posición central.
+- **Efecto:** Destruye toda la **fila** (horizontal).
+
+#### Prioridad 2 — Line_X → genera Line_Y (4 en horizontal)
+
+```
+■ ■ ★ ■
+```
+
+- **Condición:** `list_x.Count >= 3` (3 vecinos horizontales + 1 central = 4 piezas).
+- **Genera:** `Line_Y` (¡perpendicular!) en la posición central.
+- **Efecto:** Destruye toda la **columna** (vertical).
+
+#### Prioridad 1 — Butterfly (cuadrado 2×2)
+
+```
+■ ■        ■ ■        ★ ■        ■ ★
+★ ■        ■ ★        ■ ■        ■ ■
+```
+
+- **Detección especial:** En vez de `FindMatchesHorizontal/Vertical`, usa `FindMatchesSquare()` que busca las 4 esquinas posibles (TopLeft, TopRight, BottomLeft, BottomRight).
+- **Condición:** `list_x.Count >= 3` (el cuadrado pone 3 vecinos en list_x).
+- **Genera:** `Butterfly` en la posición central.
+- **Efecto:** La mariposa vuela hasta una pieza del mismo color y la destruye.
+- **Nota importante:** La Butterfly es la **única pieza especial que se genera por un cuadrado 2×2**. Este es un patrón exclusivo.
+
+#### Prioridad 0 — Normal (3 en línea)
+
+```
+■ ■ ■         ■
+              ■
+              ■
+```
+
+- **Condición:** `list_x.Count == 2` ó `list_y.Count == 2` (2 vecinos + 1 central = 3 piezas).
+- **Genera:** Nada (`ItemType.None`). Solo destrucción normal de las piezas.
+
+#### Tabla resumen
+
+| Prioridad | Patrón | Condición en `SpecailItemCondition` | Pieza generada |
+|:-:|---|---|---|
+| 6 | 5 en línea (H o V) | `list_x ≥ 4` ó `list_y ≥ 4` | `Rainbow` |
+| 5 | L (esquina: solo un lado H + un lado V) | `list_x ≥ 2` Y `list_y ≥ 2` Y bits ∈ {5,6,9,10} | `Bomb` |
+| 4 | T o + (ambos lados en algún eje) | `list_x ≥ 2` Y `list_y ≥ 2` | `Line_C` |
+| 3 | 4 en vertical | `list_y ≥ 3` | `Line_X` (perpendicular) |
+| 2 | 4 en horizontal | `list_x ≥ 3` | `Line_Y` (perpendicular) |
+| 1 | Cuadrado 2×2 | `FindMatchesSquare` → `list_x ≥ 3` | `Butterfly` |
+| 0 | 3 en línea (H o V) | `list_x == 2` ó `list_y == 2` | Ninguna (Normal) |
+
+> **Nota sobre perpendicularidad:** Un match de 4 horizontal genera `Line_Y` (destruye columna) y un match de 4 vertical genera `Line_X` (destruye fila). La pieza especial siempre destruye en la dirección **perpendicular** al match que la creó.
 
 ### 10.2. Proceso de detección
 
-1. Se itera por prioridad de pieza especial (de `Rainbow` (7) a `Normal` (0)).
-2. Para cada celda marcada con `m_MatchingCheck = true`:
-   - `FindMatchesHorizontal()`: busca recursivamente a izquierda y derecha.
-   - `FindMatchesVertical()`: busca recursivamente arriba y abajo.
-   - `FindMatchesSquare()`: busca cuadrados 2×2 en las 4 esquinas.
-3. `SpecailItemCondition()` evalúa qué pieza especial crear según el patrón encontrado.
-4. Las celdas con match se marcan con `m_isMatchBrust = true`.
-5. `MatchBrust()` ejecuta la destrucción de todas las celdas marcadas.
+El método `CheckMatchCondition()` en `MatchingStep` ejecuta la detección:
+
+1. Se itera por prioridad descendente de `i=7` a `i=0` (correspondiendo a los valores de `ItemType`).
+2. Para cada celda marcada con `m_MatchingCheck = true` (y que no esté cayendo ni explotando):
+   - **Si `i == 1` (Butterfly):** se usa `FindMatchesSquare(ref list_x)` que busca cuadrados 2×2 en las 4 esquinas.
+   - **Si `i != 1`:** se usa `FindMatchesHorizontal(ref list_x)` + `FindMatchesVertical(ref list_y)`.
+3. `SpecailItemCondition(bd, (ItemType)i, list_x, list_y)` evalúa si el patrón encontrado genera la pieza especial de esa prioridad.
+4. Si hay match, las celdas se marcan con `m_isMatchBrust = true` y `m_MatchingCheck = false`.
+5. Si alguna celda del match tiene `m_IsJamBoard`, la jalea se expande a las celdas adyacentes del match.
+6. Tras iterar todas las prioridades y celdas, `MatchBrust()` ejecuta la destrucción de todas las celdas marcadas.
 
 ### 10.3. FindMatches_Dir_Recursive
 
@@ -1005,17 +1105,17 @@ Desde una celda, busca recursivamente en una dirección (`dir`) todas las celdas
 
 ## 11. Generación de piezas especiales
 
-Las piezas especiales se crean cuando un match cumple ciertas condiciones de forma. La pieza especial aparece en la posición de la pieza central (o la primera disponible si esa está explotando).
+Las piezas especiales se crean cuando un match cumple ciertas condiciones de forma (ver sección 10.1). La pieza especial aparece en la posición de la pieza central del match. Si esa celda ya está explotando (`m_Brust == true`) y no tiene ya un `HaveNextItem`, se busca la primera celda del match que sí esté explotando para colocar la pieza especial ahí.
 
-| Match | Piezas requeridas | Genera |
-|---|---|---|
-| 3 en línea | 3 | Nada (solo destrucción) |
-| 4 horizontal | 4 | `Line_Y` (destruye columna) |
-| 4 vertical | 4 | `Line_X` (destruye fila) |
-| L o T | 5 (3+3 cruzados) | `Line_C` (destruye fila+columna) |
-| L (esquina válida) | 5 (3+3 cruzados, con esquina) | `Bomb` (destruye área 3×3) |
-| 5 en línea | 5 | `Rainbow` (destruye todo un color) |
-| 4 horizontal con butterfly | 4+ | `Butterfly` (vuela y destruye una pieza del mismo color) |
+| Prioridad | Match | Piezas involucradas | Genera | Efecto |
+|:-:|---|:-:|---|---|
+| 6 | 5 en línea | 5 | `Rainbow` | Destruye todas las piezas de un color |
+| 5 | L (esquina) | 5 | `Bomb` | Destruye área 3×3 |
+| 4 | T o + | 5 | `Line_C` | Destruye fila + columna |
+| 3 | 4 vertical | 4 | `Line_X` | Destruye fila (perpendicular) |
+| 2 | 4 horizontal | 4 | `Line_Y` | Destruye columna (perpendicular) |
+| 1 | Cuadrado 2×2 | 4 | `Butterfly` | Vuela y destruye pieza del mismo color |
+| 0 | 3 en línea | 3 | Nada | Solo destrucción |
 
 La pieza especial se almacena en `Board.m_NextItemType` y se genera tras la explosión de los ítems originales.
 
