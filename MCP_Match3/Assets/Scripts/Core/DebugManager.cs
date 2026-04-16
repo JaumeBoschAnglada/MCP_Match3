@@ -6,9 +6,14 @@ namespace Match3.Core
     {
         private bool m_IsSlowMo = false;
         private bool m_ShowBoardInfo = false;
+        private bool m_PanelVisible = false;
         private GUIStyle m_BtnStyle;
         private GUIStyle m_LabelStyle;
         private GUIStyle m_CellStyle;
+
+        // Offset Y para no solaparse con el TopUI (120px de alto)
+        private const float k_TopUIHeight = 130f;
+        private const float k_ToggleSize  = 36f;
 
         private void OnGUI()
         {
@@ -23,12 +28,22 @@ namespace Match3.Core
                     alignment = TextAnchor.MiddleCenter,
                     fontStyle = FontStyle.Bold
                 };
-                // Dark outline for readability
                 m_CellStyle.normal.background = Texture2D.grayTexture;
             }
 
-            // Buttons
-            GUILayout.BeginArea(new Rect(10, 10, 320, 120));
+            // ── Botón toggle arriba-izquierda ────────────────────────
+            var toggleStyle = new GUIStyle(GUI.skin.button) { fontSize = 18, fontStyle = FontStyle.Bold };
+            GUI.color = m_PanelVisible ? Color.yellow : Color.white;
+            if (GUI.Button(new Rect(10, 10, k_ToggleSize, k_ToggleSize), "🛠", toggleStyle))
+                m_PanelVisible = !m_PanelVisible;
+            GUI.color = Color.white;
+
+            if (!m_PanelVisible) return;
+
+            // ── Panel de herramientas (bajo el TopUI) ────────────────
+            float y = k_TopUIHeight;
+
+            GUILayout.BeginArea(new Rect(10, y, 320, 120));
             GUI.color = m_IsSlowMo ? Color.yellow : Color.green;
             if (GUILayout.Button(m_IsSlowMo ? "TimeScale: 0.1x" : "TimeScale: 1.0x", m_BtnStyle, GUILayout.Height(50)))
             {
@@ -48,7 +63,7 @@ namespace Match3.Core
             if (mgr == null) return;
 
             m_LabelStyle.normal.textColor = Color.white;
-            GUI.Label(new Rect(10, 135, 700, 50),
+            GUI.Label(new Rect(10, y + 125, 700, 50),
                 $"Step: {mgr.m_StepType}  State: {mgr.m_MatchState}  Combo: {mgr.ComboCnt}",
                 m_LabelStyle);
 
