@@ -1,4 +1,4 @@
-﻿# MCP Match3 — Plan de Desarrollo (Desde Cero)
+# MCP Match3 — Plan de Desarrollo (Desde Cero)
 
 > Se construye TODO nuevo. Solo se conserva el sistema de popups.
 > Cada fase produce un juego que compila y es jugable antes de avanzar.
@@ -251,7 +251,7 @@
 - [x] **LineCItem.cs** — Destruye fila + columna (generado por T o +)
 - [x] **BombItem.cs** — Destruye área 3×3 (generado por L-shape esquina)
 - [x] **RainbowItem.cs** — Destruye todas de un color (generado por 5 en línea)
-- [x] **ButterflyItem.cs** — Vuela a pieza del mismo color y la destruye (generado por 2×2)
+- [x] **ButterflyItem.cs** — Vuela a 3 piezas aleatorias del mismo color y las destruye (generado por 2×2)
 
 ### Prefabs NUEVOS:
 - [x] LineXItem.prefab, LineYItem.prefab, LineCItem.prefab, BombItem.prefab, RainbowItem.prefab, ButterflyItem.prefab

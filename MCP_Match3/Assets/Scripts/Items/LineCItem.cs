@@ -4,7 +4,7 @@ using Match3.Data;
 namespace Match3.Items
 {
     /// <summary>
-    /// LineCItem (Cross): destroys the entire row AND column it is in when burst.
+    /// LineCItem (Diagonal Cross): destroys both diagonals (X shape) when burst.
     /// Created by matching an L or T shape.
     /// </summary>
     public class LineCItem : Item
@@ -31,16 +31,41 @@ namespace Match3.Items
         public override void Brust(System.Action onComplete = null)
         {
             if (m_Board == null) { onComplete?.Invoke(); return; }
-            // Row
-            var left = m_Board;
-            while (left.Left != null && left.Left.IsActiveCell) left = left.Left;
-            var cur = left;
-            while (cur != null && cur.IsActiveCell) { cur.m_isMatchBrust = true; cur = cur.Right; }
-            // Column
-            var top = m_Board;
-            while (top.Top != null && top.Top.IsActiveCell) top = top.Top;
-            cur = top;
-            while (cur != null && cur.IsActiveCell) { cur.m_isMatchBrust = true; cur = cur.Bottom; }
+            
+            // Main diagonal: top-left to bottom-right (\)
+            var diag1 = m_Board;
+            // Move to top-left corner of diagonal
+            while (diag1.Top != null && diag1.Top.IsActiveCell && diag1.Left != null && diag1.Left.IsActiveCell)
+                diag1 = diag1.Top.Left;
+            
+            var cur = diag1;
+            while (cur != null && cur.IsActiveCell)
+            {
+                cur.m_isMatchBrust = true;
+                // Move down-right
+                if (cur.Right != null && cur.Right.IsActiveCell && cur.Bottom != null && cur.Bottom.IsActiveCell)
+                    cur = cur.Bottom.Right;
+                else
+                    break;
+            }
+
+            // Anti-diagonal: top-right to bottom-left (/)
+            var diag2 = m_Board;
+            // Move to top-right corner of diagonal
+            while (diag2.Top != null && diag2.Top.IsActiveCell && diag2.Right != null && diag2.Right.IsActiveCell)
+                diag2 = diag2.Top.Right;
+            
+            cur = diag2;
+            while (cur != null && cur.IsActiveCell)
+            {
+                cur.m_isMatchBrust = true;
+                // Move down-left
+                if (cur.Left != null && cur.Left.IsActiveCell && cur.Bottom != null && cur.Bottom.IsActiveCell)
+                    cur = cur.Bottom.Left;
+                else
+                    break;
+            }
+
             onComplete?.Invoke();
         }
 

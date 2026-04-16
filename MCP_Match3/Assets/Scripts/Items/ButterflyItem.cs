@@ -4,7 +4,8 @@ using Match3.Data;
 namespace Match3.Items
 {
     /// <summary>
-    /// Butterfly item: flies to a random item of the same color and destroys it.
+    /// Butterfly item: flies to 3 random items of the same color and destroys them.
+    /// Helps complete objectives by targeting helper pieces.
     /// Created by matching a 2×2 square.
     /// </summary>
     public class ButterflyItem : Item
@@ -32,7 +33,7 @@ namespace Match3.Items
         {
             if (m_Board == null || m_MatchMgr == null) { onComplete?.Invoke(); return; }
 
-            // Find a random board with an item of the same color
+            // Find all boards with items of the same color
             var boards = m_MatchMgr.m_ListBoard;
             var candidates = new System.Collections.Generic.List<int>();
 
@@ -46,10 +47,14 @@ namespace Match3.Items
                     candidates.Add(i);
             }
 
-            if (candidates.Count > 0)
+            // Destroy up to 3 random pieces of the same color
+            int targetCount = Mathf.Min(3, candidates.Count);
+            for (int j = 0; j < targetCount; j++)
             {
-                int targetIdx = candidates[Random.Range(0, candidates.Count)];
+                int randomIdx = Random.Range(0, candidates.Count);
+                int targetIdx = candidates[randomIdx];
                 boards[targetIdx].m_isMatchBrust = true;
+                candidates.RemoveAt(randomIdx); // Avoid targeting same piece twice
             }
 
             onComplete?.Invoke();
