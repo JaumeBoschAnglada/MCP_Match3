@@ -24,6 +24,7 @@ namespace Match3.Items
         public override void SetColor(ColorType color)
         {
             m_Color = color;
+            gameObject.name = $"Item_{m_ItemType}_{color}";
 
             if (m_Sprite == null)
             {

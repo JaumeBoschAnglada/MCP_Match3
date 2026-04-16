@@ -49,6 +49,10 @@ namespace Match3.Items
         /// </summary>
         public virtual void Init(ItemType itemType, ColorType color)
         {
+            // Lazy-init: items from the pool may have been created before MatchManager existed
+            if (m_MatchMgr == null)
+                m_MatchMgr = MatchManager.Instance;
+
             m_ItemType = itemType;
             m_Color = color;
             m_CombineType = CombineType.None;
@@ -67,6 +71,10 @@ namespace Match3.Items
         /// </summary>
         public virtual void SetColorRandom()
         {
+            // Lazy-init: items from the pool may have been created before MatchManager existed
+            if (m_MatchMgr == null)
+                m_MatchMgr = MatchManager.Instance;
+
             if (m_MatchMgr == null || m_MatchMgr.m_AppearColor == null || m_MatchMgr.m_AppearColor.Count == 0)
             {
                 Debug.LogWarning("[Item] No appear colors available for random color.");
