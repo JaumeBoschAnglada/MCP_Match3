@@ -276,35 +276,41 @@
 
 ---
 
-## Fase 6: Misiones + Victoria/Derrota 🔲 PENDIENTE
+## Fase 6: Misiones + Victoria/Derrota ✅ COMPLETADA
 
 ### Objetivo: Sistema completo de objetivos y fin de partida.
 
 ### Scripts NUEVOS:
-- [ ] **MissionManager.cs** (Match3.Managers)
+- [x] **MissionManager.cs** (Match3.Managers)
   - Singleton
-  - MissionSetting(stage) — carga misiones desde JSON
+  - MissionSetting(stage) — carga misiones desde JSON + inicializa TopUI
   - MissionApply(ItemType, ColorType) — notificación de pieza destruida
-  - CheckMissionClear() — ¿todos los objetivos cumplidos?
-  - CheckMissionFail() — ¿sin movimientos o bomba explotó?
+  - CheckMissionClear() — ¿todos los objetivos cumplidos? (false si sin misiones)
+  - CheckMissionFail() — ¿sin movimientos?
   - MoveLimitApply() — resta 1 movimiento
-  - MissionInterval() — actualiza intervalos de spawn
-  - CreatFoodItem() — genera piezas de comida
-  - Mission[] con MissionType, MissionKind, count, current
+  - ScoreStar1/2/3 — umbrales de estrellas desde stage
 
 ### UI NUEVA (Unity UI — Canvas):
-- [ ] TopUI — Panel en GameplayCanvas: misiones (iconos + contadores), movimientos restantes, puntuación
-  - Usa Image, TextMeshProUGUI, HorizontalLayoutGroup, etc.
-- [ ] Popup de misión pre-partida (MissionPopup) — Prefab instanciado bajo PopupManager Canvas
-- [ ] Popup de victoria (VictoryPopup)
-- [ ] Popup de derrota (DefeatPopup)
-- [ ] Ampliar PopupType.cs con nuevos tipos
+- [x] TopUI — Panel en GameplayCanvas: misiones (iconos + contadores), movimientos restantes, puntuación
+- [x] MissionPopup — script creado (instancia en escena pendiente para Fase 12)
+- [x] VictoryPopup — vía PopupManager, score + estrellas
+- [x] DefeatPopup — vía PopupManager, motivo de derrota
+- [x] PopupType.cs ampliado (Pause, Mission, Victory, Defeat)
+- [x] PopupManager — singleton stackable, auto-registra hijos PopupBase
+- [x] PopupBase — lifecycle Show/Close con callbacks
+- [x] PausePopup + PauseButton — recreados
 
-### Criterio de "hecho":
+### Fixes aplicados:
+- [x] ClearStep y FailStep llaman SetMatchState(GameClear/GameFail) → bloquea input
+- [x] Swap fallido va directo a Wait (sin pasar por MissionStep → no consume movimiento)
+- [x] CheckMissionClear retorna false con lista vacía (evita victoria falsa)
+- [x] TopUI se inicializa desde MissionSetting (timing correcto)
+
+### Criterio de "hecho": ✅
 - Se pueden configurar misiones desde JSON (OrderN: recoger X de color Y)
-- Contador de movimientos funcional
-- Victoria al completar objetivo
-- Derrota al quedarse sin movimientos
+- Contador de movimientos funcional (solo baja en swaps con match)
+- Victoria al completar objetivo (popup + input bloqueado)
+- Derrota al quedarse sin movimientos (popup + input bloqueado)
 - UI muestra objetivos y progreso
 
 ---

@@ -18,14 +18,28 @@ namespace Match3.UI
             Instance = this;
         }
 
-        private void OnEnable() { missionMgr = MissionManager.Instance; if (missionMgr) Init(); }
-        private void Init()
+        private void OnEnable()
         {
+            missionMgr = MissionManager.Instance;
+            // Si MissionSetting ya se ejecutó, inicializar; si no, Init() se llamará
+            // desde MissionManager.MissionSetting() una vez los datos estén listos.
+            if (missionMgr != null && missionMgr.Missions != null)
+                Init();
+        }
+
+        public void Init()
+        {
+            if (missionMgr == null) missionMgr = MissionManager.Instance;
+            if (missionMgr == null) return;
+
             int i = 0;
             if (missionMgr.Missions != null)
                 foreach (var m in missionMgr.Missions)
                     if (i < missionDisplays.Length) missionDisplays[i++].SetMission(m);
             while (i < missionDisplays.Length) missionDisplays[i++].SetEmpty();
+
+            // Mostrar moves y score iniciales
+            Refresh();
         }
         public void Refresh()
         {

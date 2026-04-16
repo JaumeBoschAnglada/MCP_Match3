@@ -52,6 +52,9 @@ namespace Match3.Managers
             }
 
             Debug.Log($"[MissionManager] Missions initialized: {m_Missions.Count} objectives, {m_MovesRemaining} moves");
+
+            // Inicializar TopUI ahora que los datos están listos
+            TopUIController.Instance?.Init();
         }
 
         public void MissionApply(ItemType itemType, ColorType color)

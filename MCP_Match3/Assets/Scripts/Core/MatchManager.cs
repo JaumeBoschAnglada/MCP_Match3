@@ -499,7 +499,7 @@ namespace Match3.Core
 
             if (!hasMatch)
             {
-                // No match - revert swap after a brief delay
+                // No match - revert swap after a brief delay (no move cost)
                 yield return new UnityEngine.WaitForSeconds(0.3f);
 
                 // Swap back
@@ -526,6 +526,11 @@ namespace Match3.Core
 
                 itemA.transform.position = posA;
                 itemB.transform.position = posB;
+
+                // Swap fallido: volver directamente a Wait sin pasar por MissionStep
+                Match3.Items.Item.SwitchingTouch = false;
+                SetStep(StepType.Wait);
+                yield break;
             }
             else
             {
@@ -542,13 +547,10 @@ namespace Match3.Core
                     yield return StartCoroutine(Co_MatchBurst());
                     yield return StartCoroutine(Co_Drop());
                 }
-
-                // TODO Phase 6: MoveLimitApply();
             }
 
             // Advance through the post-match step chain:
             // TimeBomb → IceCream → ConveyerBelt → Chameleon → MagicColor → BearJump → BearSpawn → Mission → Wait
-            // Each stub step calls SetStep(next) immediately in Step_Play().
             Match3.Items.Item.SwitchingTouch = false;
             SetStep(StepType.TimeBomb);
         }

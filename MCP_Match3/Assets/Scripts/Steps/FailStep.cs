@@ -15,6 +15,8 @@ namespace Match3.Steps
         {
             Debug.Log("[FailStep] Mission failed!");
 
+            MatchMgr.SetMatchState(MatchState.GameFail);
+
             if (PopupManager.Instance)
             {
                 PopupManager.Instance.Show<DefeatPopup>(

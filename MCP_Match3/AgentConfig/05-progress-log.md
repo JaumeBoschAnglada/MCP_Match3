@@ -134,3 +134,54 @@ Assets/Scenes/Hall.unity             ← CONSERVADO (pendiente reconfigurar)
 ### Compilación: ✅ 0 errores (Unity + VS)
 
 ### Próximo paso: Fase 2 (Item System + Input)
+
+---
+
+## Fases 2-5 ✅ COMPLETADAS
+> Ver plan detallado en 03-development-plan.md. Todos los criterios de "hecho" superados.
+
+---
+
+## Fase 6: Misiones + Victoria/Derrota ✅ COMPLETADA
+
+### Scripts creados/modificados:
+- ✅ **MissionManager.cs** — Singleton, MissionSetting, MissionApply (fix cast), CheckMissionClear (fix lista vacía), CheckMissionFail, MoveLimitApply, AddScore, ScoreStar1/2/3
+- ✅ **PopupBase.cs** — Lifecycle Show/Close con callback, hooks OnShow/OnClose. Sin dependencia circular.
+- ✅ **PopupManager.cs** — Singleton stackable. Auto-registra hijos PopupBase en Awake. Show<T>(setup, onClosed), CloseTop(), CloseAll()
+- ✅ **PopupType.cs** — Enum: Pause, Mission, Victory, Defeat
+- ✅ **PausePopup.cs** — Pausa timeScale, botones Continuar/Reiniciar
+- ✅ **PauseButton.cs** — [RequireComponent(Button)] → PopupManager.Show<PausePopup>()
+- ✅ **VictoryPopup.cs** — SetContent(score, stars, onNext), usa PopupManager
+- ✅ **DefeatPopup.cs** — SetContent(reason, onRetry), usa PopupManager
+- ✅ **MissionPopup.cs** — SetContent(title, desc, onStart), script listo (escena Fase 12)
+- ✅ **TopUIController.cs** — Singleton Instance, Init() public, Refresh(). Init() llamado desde MissionSetting()
+- ✅ **MovesDisplay.cs** — UpdateMoves(remaining), color rojo cuando ≤5
+- ✅ **ScoreDisplay.cs** — UpdateScore(score)
+- ✅ **MissionDisplay.cs** — SetMission(data), UpdateCount(current), SetEmpty()
+- ✅ **ClearStep.cs** — SetMatchState(GameClear) + PopupManager.Show<VictoryPopup>
+- ✅ **FailStep.cs** — SetMatchState(GameFail) + PopupManager.Show<DefeatPopup>
+- ✅ **MissionStep.cs** — lazy-init, pass-through si no hay MissionManager, Refresh tras MoveLimitApply
+- ✅ **MatchManager.cs** — swap fallido → SetStep(Wait) directo (sin consumir movimiento)
+
+### Escena Gameplay.unity:
+- ✅ CommonManager/MissionManager
+- ✅ GameplayCanvas/PopupManager (auto-registra popups hijos)
+- ✅ GameplayCanvas/TopUI (TopUIController + MovesDisplay + ScoreDisplay + 3×MissionDisplay)
+- ✅ GameplayCanvas/VictoryPopup (inactivo)
+- ✅ GameplayCanvas/DefeatPopup (inactivo)
+- ✅ GameplayCanvas/PausePopup (inactivo)
+
+### Datos de test:
+- ✅ Resources/Levels/2.json — 3 misiones OrderN (15 rojos, 15 amarillos, 10 azules), 50 movimientos, score stars 1000/3000/6000
+
+### Bugs corregidos en esta fase:
+- ✅ Swap fallido consumía movimiento → ahora va directo a Wait
+- ✅ CheckMissionClear() devolvía true con lista vacía → victoria falsa en primer movimiento
+- ✅ ClearStep/FailStep no bloqueaban el input → añadido SetMatchState(GameClear/GameFail)
+- ✅ TopUI inicializaba antes que MissionSetting() → ahora MissionSetting() llama Init()
+- ✅ MissionApply tenía cast incorrecto (ColorType)mission.type → (int)mission.kind == (int)color
+- ✅ Scripts generadores de Editor (Phase6Setup.cs, CreateUIHelper.cs) eliminados (directriz MCP-first)
+
+### Compilación: ✅ 0 errores
+
+### Próximo paso: Fase 7 (Paneles)

@@ -1,1 +1,942 @@
-﻿{"isUseGravity":false,"appearColor":[true,true,true,true,true,true],"panels":[{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]},{"listinfo":[{"paneltype":"Default_Full","defence":-1,"value":0}]}],"items":["Normal","Normal","Normal","Normal","Normal","Normal","Normal","Normal","Normal","Normal","Normal","Normal","Normal","Normal","Normal","Normal","Normal","Normal","Normal","Normal","Normal","Butterfly","Normal","Normal","Normal","Line_Y","Normal","Normal","Normal","Normal","Normal","Normal","Normal","Normal","Normal","Normal","Normal","Normal","Line_X","Normal","Normal","Normal","Normal","Normal","Normal","Normal","Normal","Normal","Normal","Normal","Normal","Normal","Normal","Normal","Normal","Normal","Normal","Bomb","Normal","Normal","Normal","Normal","Normal","Normal","Normal","Normal","Line_C","Normal","Normal","Normal","Normal","Normal","Normal","Normal","Normal","Normal","Normal","Normal","Normal","Normal","Normal"],"colors":["RED","GREEN","PURPLE","RED","GREEN","PURPLE","RED","GREEN","PURPLE","BLUE","ORANGE","YELLOW","BLUE","ORANGE","YELLOW","BLUE","YELLOW","YELLOW","RED","GREEN","RED","RED","GREEN","RED","RED","YELLOW","PURPLE","BLUE","ORANGE","YELLOW","BLUE","ORANGE","YELLOW","BLUE","RED","YELLOW","RED","GREEN","GREEN","PURPLE","GREEN","PURPLE","RED","YELLOW","PURPLE","BLUE","ORANGE","YELLOW","BLUE","ORANGE","YELLOW","BLUE","ORANGE","YELLOW","RED","GREEN","BLUE","BLUE","ORANGE","BLUE","RED","GREEN","PURPLE","BLUE","ORANGE","PURPLE","PURPLE","GREEN","PURPLE","BLUE","ORANGE","YELLOW","RED","GREEN","PURPLE","RED","GREEN","PURPLE","RED","GREEN","PURPLE"],"defaultSpawnLine":[true,true,true,true,true,true,true,true,true],"scoreStar1":1000,"scoreStar2":3000,"scoreStar3":6000,"limit_Move":50,"missionType":"OrderN","isOrderNMission":true,"missionInfo":[{"type":"OrderN","kind":"Red","count":15},{"type":"OrderN","kind":"Yellow","count":15},{"type":"OrderN","kind":"Blue","count":10}]}
+﻿{
+    "isUseGravity": false,
+    "appearColor": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+    ],
+    "panels": [
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        },
+        {
+            "listinfo": [
+                {
+                    "paneltype": "Default_Full",
+                    "defence": -1,
+                    "value": 0
+                }
+            ]
+        }
+    ],
+    "items": [
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Butterfly",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Line_Y",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Line_X",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Bomb",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Line_C",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal",
+        "Normal"
+    ],
+    "colors": [
+        "RED",
+        "GREEN",
+        "PURPLE",
+        "RED",
+        "GREEN",
+        "PURPLE",
+        "RED",
+        "GREEN",
+        "PURPLE",
+        "BLUE",
+        "ORANGE",
+        "YELLOW",
+        "BLUE",
+        "ORANGE",
+        "YELLOW",
+        "BLUE",
+        "YELLOW",
+        "YELLOW",
+        "RED",
+        "GREEN",
+        "RED",
+        "RED",
+        "GREEN",
+        "RED",
+        "RED",
+        "YELLOW",
+        "PURPLE",
+        "BLUE",
+        "ORANGE",
+        "YELLOW",
+        "BLUE",
+        "ORANGE",
+        "YELLOW",
+        "BLUE",
+        "RED",
+        "YELLOW",
+        "RED",
+        "GREEN",
+        "GREEN",
+        "PURPLE",
+        "GREEN",
+        "PURPLE",
+        "RED",
+        "YELLOW",
+        "PURPLE",
+        "BLUE",
+        "ORANGE",
+        "YELLOW",
+        "BLUE",
+        "ORANGE",
+        "YELLOW",
+        "BLUE",
+        "ORANGE",
+        "YELLOW",
+        "RED",
+        "GREEN",
+        "BLUE",
+        "BLUE",
+        "ORANGE",
+        "BLUE",
+        "RED",
+        "GREEN",
+        "PURPLE",
+        "BLUE",
+        "ORANGE",
+        "PURPLE",
+        "PURPLE",
+        "GREEN",
+        "PURPLE",
+        "BLUE",
+        "ORANGE",
+        "YELLOW",
+        "RED",
+        "GREEN",
+        "PURPLE",
+        "RED",
+        "GREEN",
+        "PURPLE",
+        "RED",
+        "GREEN",
+        "PURPLE"
+    ],
+    "defaultSpawnLine": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+    ],
+    "scoreStar1": 1000,
+    "scoreStar2": 3000,
+    "scoreStar3": 6000,
+    "limit_Move": 2200,
+    "missionType": "OrderN",
+    "isOrderNMission": true,
+    "missionInfo": [
+        {
+            "type": "OrderN",
+            "kind": "Red",
+            "count": 15
+        },
+        {
+            "type": "OrderN",
+            "kind": "Yellow",
+            "count": 15
+        },
+        {
+            "type": "OrderN",
+            "kind": "Blue",
+            "count": 10
+        }
+    ]
+}

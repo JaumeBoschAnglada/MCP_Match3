@@ -16,6 +16,8 @@ namespace Match3.Steps
         {
             Debug.Log("[ClearStep] Mission completed!");
 
+            MatchMgr.SetMatchState(MatchState.GameClear);
+
             var missionMgr = MissionManager.Instance;
             int finalScore = missionMgr ? missionMgr.CurrentScore : 0;
             int stars      = CalculateStars(finalScore, missionMgr);

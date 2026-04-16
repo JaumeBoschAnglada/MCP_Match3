@@ -52,14 +52,16 @@ namespace Match3.Steps
                 return;
             }
 
+            // Descontar el movimiento primero, luego comprobar derrota
+            missionMgr.MoveLimitApply();
+            TopUIController.Instance?.Refresh();
+
             if (missionMgr.CheckMissionFail())
             {
                 MatchMgr.SetStep(StepType.Fail);
                 return;
             }
 
-            missionMgr.MoveLimitApply();
-            TopUIController.Instance?.Refresh();
             MatchMgr.SetStep(StepType.Wait);
         }
     }
