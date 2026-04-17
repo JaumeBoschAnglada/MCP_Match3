@@ -10,6 +10,9 @@ namespace Match3.Panels
     /// </summary>
     public abstract class Panel : MonoBehaviour
     {
+        public const int BackgroundSortingOrder = 0;
+        public const int OverlaySortingOrder = 20;
+
         // === Data ===
         public PanelType m_PanelType  { get; protected set; }
         public int       Defence      { get; protected set; } = 0;  // Hits needed to destroy
@@ -18,6 +21,19 @@ namespace Match3.Panels
 
         // === Board reference ===
         public Core.Board m_Board { get; set; }
+
+        public virtual int VisualSortingOrder => BackgroundSortingOrder;
+        public virtual bool BlocksItemSwitch => false;
+        public virtual bool BlocksGravity => false;
+
+        public void ApplyVisualSorting()
+        {
+            var renderers = GetComponentsInChildren<SpriteRenderer>(true);
+            foreach (var renderer in renderers)
+            {
+                renderer.sortingOrder = VisualSortingOrder;
+            }
+        }
 
         // ── Virtual lifecycle ─────────────────────────────────────────
 

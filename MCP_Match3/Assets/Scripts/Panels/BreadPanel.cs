@@ -8,6 +8,8 @@ namespace Match3.Panels
     /// </summary>
     public class BreadPanel : Panel
     {
+        public override int VisualSortingOrder => OverlaySortingOrder;
+
         private void Awake()
         {
             m_PanelType = PanelType.Bread_Block;

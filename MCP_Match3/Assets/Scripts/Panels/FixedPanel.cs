@@ -8,6 +8,10 @@ namespace Match3.Panels
     /// </summary>
     public class FixedPanel : Panel
     {
+        public override int VisualSortingOrder => OverlaySortingOrder;
+        public override bool BlocksItemSwitch => true;
+        public override bool BlocksGravity => true;
+
         private void Awake()
         {
             m_PanelType = PanelType.Fixed_Block;

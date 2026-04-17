@@ -11,6 +11,8 @@ namespace Match3.Items
     /// </summary>
     public abstract class Item : MonoBehaviour
     {
+        public const int VisualSortingOrder = 10;
+
         // === Static swap tracking ===
         public static Item Swap_A;
         public static Item Swap_B;
@@ -58,7 +60,17 @@ namespace Match3.Items
             m_CombineType = CombineType.None;
 
             gameObject.name = $"Item_{itemType}_{color}";
+            ApplyVisualSorting();
             SetColor(color);
+        }
+
+        public void ApplyVisualSorting()
+        {
+            var renderers = GetComponentsInChildren<SpriteRenderer>(true);
+            foreach (var renderer in renderers)
+            {
+                renderer.sortingOrder = VisualSortingOrder;
+            }
         }
 
         /// <summary>

@@ -73,6 +73,7 @@ namespace Match3.Managers
             if (panel != null)
             {
                 panel.m_Board = board;
+                panel.ApplyVisualSorting();
                 board.m_ListPanel.Add(panel);
             }
 

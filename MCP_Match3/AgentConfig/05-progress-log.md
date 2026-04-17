@@ -232,5 +232,8 @@ Assets/Scenes/Hall.unity             ← CONSERVADO (pendiente reconfigurar)
   - Fila 6: 4× Bread (cols 1,3,5,7)
   - Fila 7: 7× Wafer_floor (cols 1-7)
 - ✅ Prefabs de panel con colores diferenciados y sorting order=5
+- ✅ Fix visual post-fase: el sorting ya no depende del prefab; todos los Items fuerzan sorting order=10 y los paneles de bloqueo (IceCage, Fixed, Bread, Cracker) fuerzan sorting order=20 para verse por encima de la ficha
+- ✅ Fix gameplay post-fase: IceCage ahora bloquea el flujo de gravedad; una ficha enjaulada no puede caer ni ser arrastrada por gravedad a otra celda
+- ✅ Fix gameplay post-fase: IceCage vuelve a bloquear la interacción de swap; InputManager y MatchManager consultan el estado de paneles antes de intercambiar fichas, sin dañar la jaula por un intento de arrastre
 
 ### Próximo paso: Fase 8 (Gravedad Configurable)

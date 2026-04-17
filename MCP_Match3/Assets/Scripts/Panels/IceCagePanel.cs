@@ -10,6 +10,10 @@ namespace Match3.Panels
     /// </summary>
     public class IceCagePanel : Panel
     {
+        public override int VisualSortingOrder => OverlaySortingOrder;
+        public override bool BlocksItemSwitch => true;
+        public override bool BlocksGravity => m_Board != null && m_Board.m_Item != null;
+
         [SerializeField] private SpriteRenderer m_Sprite;
         [SerializeField] private Sprite m_Layer1Sprite;
         [SerializeField] private Sprite m_Layer2Sprite;
@@ -26,15 +30,38 @@ namespace Match3.Panels
             RefreshSprite();
         }
 
+        public override void ItemMatch()
+        {
+            Brust();
+        }
+
         public override void ItemSwitch()
         {
-            // Caged items cannot be swapped — consume the attempt as a hit
-            Brust();
+            // Caged items block swapping until the cage is destroyed by a match/burst.
         }
 
         protected override void OnDamage()
         {
             RefreshSprite();
+        }
+
+        protected override void OnDestroyed()
+        {
+            if (m_Board == null)
+                return;
+
+            bool hasAnotherCage = false;
+            for (int i = 0; i < m_Board.m_ListPanel.Count; i++)
+            {
+                var panel = m_Board.m_ListPanel[i];
+                if (panel != null && panel != this && panel.m_PanelType == PanelType.Ice_Cage)
+                {
+                    hasAnotherCage = true;
+                    break;
+                }
+            }
+
+            m_Board.IsPanelCage = hasAnotherCage;
         }
 
         private void RefreshSprite()

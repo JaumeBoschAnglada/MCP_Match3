@@ -306,7 +306,7 @@ namespace Match3.Core
                 }
 
                 Board dropFrom = b.DropBoard;
-                if (dropFrom == null || !dropFrom.IsActiveCell || dropFrom.IsPanelFixed)
+                if (dropFrom == null || !dropFrom.IsActiveCell || dropFrom.BlocksGravityFlow)
                 {
                     if (!m_ListDropStart.Contains(b))
                         m_ListDropStart.Add(b);
@@ -317,6 +317,22 @@ namespace Match3.Core
                         m_ListDropStart.Add(b);
                 }
             }
+        }
+
+        private void RefreshDropStartSetting()
+        {
+            m_ListDropStart.Clear();
+
+            for (int i = 0; i < 81; i++)
+            {
+                Board board = m_ListBoard[i];
+                if (board == null || !board.IsActiveCell) continue;
+
+                if (board.isListDrop)
+                    m_ListDropStart.Add(board);
+            }
+
+            GetBoardDropStartSetting();
         }
 
         /// <summary>
@@ -521,6 +537,16 @@ namespace Match3.Core
             if (itemA.m_Board == null || itemB.m_Board == null)
             {
                 Debug.LogWarning("[MatchManager] Items have no board reference.");
+                return;
+            }
+
+            if (itemA.m_Board.BlocksItemSwitch || itemB.m_Board.BlocksItemSwitch)
+            {
+                itemA.m_Board.NotifyItemSwitchAttempt();
+                if (itemB.m_Board != itemA.m_Board)
+                    itemB.m_Board.NotifyItemSwitchAttempt();
+
+                Debug.Log($"[MatchManager] Switching blocked by panel. A={itemA.m_Board.name} blocked={itemA.m_Board.BlocksItemSwitch}, B={itemB.m_Board.name} blocked={itemB.m_Board.BlocksItemSwitch}");
                 return;
             }
 
@@ -912,27 +938,15 @@ namespace Match3.Core
         {
             Debug.Log("[MatchManager] Co_Drop: Starting gravity and refill");
 
-            // Process gravity from bottom to top for each drop column
-            foreach (Board dropHead in m_ListDropHead)
+            RefreshDropStartSetting();
+
+            // Process gravity independently for each active segment.
+            foreach (Board dropStart in m_ListDropStart)
             {
-                if (dropHead == null || !dropHead.IsActiveCell) continue;
+                if (dropStart == null || !dropStart.IsActiveCell) continue;
 
-                // Find the bottom of this drop column by following GravitySource
-                // For DROP_DIR.U, this moves from top (y=0) toward bottom (y=8)
-                Board bottomBoard = dropHead;
-                while (bottomBoard != null && bottomBoard.IsActiveCell)
-                {
-                    Board next = bottomBoard.GravitySource;  // Move toward gravity origin
-                    if (next == null || !next.IsActiveCell) break;
-                    bottomBoard = next;
-                }
-
-                // Apply gravity from this bottom cell
-                if (bottomBoard != null)
-                {
-                    Debug.Log($"[MatchManager] Processing gravity for column starting at {bottomBoard.name}");
-                    bottomBoard.GravityDropItemRow();
-                }
+                Debug.Log($"[MatchManager] Processing gravity segment from {dropStart.name}");
+                dropStart.GravityDropItemRow();
             }
 
             // Wait for drop animations to start
@@ -990,22 +1004,13 @@ namespace Match3.Core
         /// </summary>
         public void Drop()
         {
-            foreach (Board dropHead in m_ListDropHead)
+            RefreshDropStartSetting();
+
+            foreach (Board dropStart in m_ListDropStart)
             {
-                if (dropHead == null || !dropHead.IsActiveCell) continue;
+                if (dropStart == null || !dropStart.IsActiveCell) continue;
 
-                Board bottomBoard = dropHead;
-                while (bottomBoard != null && bottomBoard.IsActiveCell)
-                {
-                    Board next = bottomBoard[bottomBoard.CurrentDropDir];
-                    if (next == null || !next.IsActiveCell) break;
-                    bottomBoard = next;
-                }
-
-                if (bottomBoard != null)
-                {
-                    bottomBoard.GravityDropItemRow();
-                }
+                dropStart.GravityDropItemRow();
             }
         }
     }

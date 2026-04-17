@@ -194,6 +194,7 @@ namespace Match3.Input
             if (item == null) return false;
             if (item.m_Board == null || !item.m_Board.IsActiveCell) return false;
             if (!item.Switch) return false;
+            if (item.m_Board.BlocksItemSwitch) return false;
             return true;
         }
 

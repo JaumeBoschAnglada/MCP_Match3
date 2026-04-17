@@ -50,6 +50,63 @@ namespace Match3.Core
         public bool m_IsWarpInBoard { get; set; }
         public Board m_WarpBoard { get; set; }
 
+        public bool HasIceCage
+        {
+            get
+            {
+                for (int i = 0; i < m_ListPanel.Count; i++)
+                {
+                    var panel = m_ListPanel[i];
+                    if (panel != null && panel.m_PanelType == PanelType.Ice_Cage)
+                        return true;
+                }
+
+                return false;
+            }
+        }
+
+        public bool BlocksItemSwitch
+        {
+            get
+            {
+                if (m_Item == null) return false;
+
+                for (int i = 0; i < m_ListPanel.Count; i++)
+                {
+                    var panel = m_ListPanel[i];
+                    if (panel != null && panel.BlocksItemSwitch)
+                        return true;
+                }
+
+                return false;
+            }
+        }
+
+        public bool BlocksGravityFlow
+        {
+            get
+            {
+                for (int i = 0; i < m_ListPanel.Count; i++)
+                {
+                    var panel = m_ListPanel[i];
+                    if (panel != null && panel.BlocksGravity)
+                        return true;
+                }
+
+                return false;
+            }
+        }
+
+        public void NotifyItemSwitchAttempt()
+        {
+            for (int i = 0; i < m_ListPanel.Count; i++)
+            {
+                var panel = m_ListPanel[i];
+                if (panel != null)
+                    panel.ItemSwitch();
+            }
+        }
+
         // Visual
         [SerializeField] private SpriteRenderer m_Displayer;
 
@@ -563,9 +620,8 @@ namespace Match3.Core
             // Burst panels on this cell (jaulas, wafer floor, etc.)
             PanelBrust();
 
-            // AroundBrust: notify adjacent cells' panels of a nearby explosion
-            if (item != null && item.ArountBrust)
-                AroundBrust();
+            // Normal matches also damage adjacent obstacle panels such as cages and crackers.
+            AroundBrust();
 
             // Phase 5: Generate special item after burst if a special was earned
             if (m_NextItemType != ItemType.None)
@@ -596,6 +652,9 @@ namespace Match3.Core
                 ObjectPool.Instance?.Restore(item.gameObject);
                 m_Item = null;
             }
+
+            PanelBrust();
+            AroundBrust();
 
             // Phase 5: Generate special item after burst if a special was earned
             if (m_NextItemType != ItemType.None)
@@ -671,6 +730,12 @@ namespace Match3.Core
 
             while (current != null && current.IsActiveCell)
             {
+                if (current.BlocksGravityFlow)
+                {
+                    Debug.Log($"  -> Gravity blocked at {current.name}");
+                    break;
+                }
+
                 if (current.m_Item == null && !current.m_DropAnim)
                 {
                     emptyBoard = current;
@@ -688,8 +753,16 @@ namespace Match3.Core
 
             // Find the first filled cell above the empty one (in direction of gravity destination)
             Board filledBoard = emptyBoard.GravityDestination;
+            bool blockedByPanel = false;
             while (filledBoard != null && filledBoard.IsActiveCell)
             {
+                if (filledBoard.BlocksGravityFlow)
+                {
+                    Debug.Log($"  -> Gravity source blocked by {filledBoard.name}");
+                    blockedByPanel = true;
+                    break;
+                }
+
                 if (filledBoard.m_Item != null && !filledBoard.m_DropAnim && !filledBoard.m_ItemBrusting)
                 {
                     Debug.Log($"  -> Found filled cell {filledBoard.name} above empty {emptyBoard.name}, initiating drop");
@@ -704,10 +777,18 @@ namespace Match3.Core
                 filledBoard = filledBoard.GravityDestination;
             }
 
+            if (blockedByPanel)
+            {
+                Debug.Log($"  -> No spawn beyond blocking panel for empty cell {emptyBoard.name}");
+                return;
+            }
+
             // No filled cell found above - need to spawn at top of column
             // Find the topmost cell (GravityDestination == null or inactive)
             Board topCell = emptyBoard;
-            while (topCell.GravityDestination != null && topCell.GravityDestination.IsActiveCell)
+            while (topCell.GravityDestination != null
+                && topCell.GravityDestination.IsActiveCell
+                && !topCell.GravityDestination.BlocksGravityFlow)
             {
                 topCell = topCell.GravityDestination;
             }
@@ -732,6 +813,11 @@ namespace Match3.Core
         public void ItemDrop(Board fromBoard)
         {
             if (fromBoard == null || fromBoard.m_Item == null) return;
+            if (fromBoard.BlocksGravityFlow || BlocksGravityFlow)
+            {
+                Debug.Log($"[Board {name}] ItemDrop blocked. Source={fromBoard.name} sourceBlocked={fromBoard.BlocksGravityFlow} targetBlocked={BlocksGravityFlow}");
+                return;
+            }
 
             Debug.Log($"[Board {name}] ItemDrop: Moving item from {fromBoard.name} (world {fromBoard.transform.position.x:F1},{fromBoard.transform.position.y:F1}) to {name} (world {transform.position.x:F1},{transform.position.y:F1})");
 
