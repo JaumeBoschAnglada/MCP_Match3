@@ -63,16 +63,55 @@ namespace Match3.Core
             }
 
             // Try to load a test level
-            int levelIndex = 2;
+            LoadLevel(3);
+        }
+
+        /// <summary>
+        /// Load and start a level by index. Clears current state first.
+        /// </summary>
+        public void LoadLevel(int levelIndex)
+        {
             TextAsset levelAsset = Resources.Load<TextAsset>("Levels/" + levelIndex);
             if (levelAsset != null)
             {
+                // Reset board and items before restarting
+                ResetGame();
                 Stage stage = JsonConvert.DeserializeObject<Stage>(levelAsset.text);
                 StartGame(stage);
+                Debug.Log($"[MatchManager] Loaded level {levelIndex}");
             }
             else
             {
-                Debug.Log("[MatchManager] No level found. Create a level JSON in Resources/Levels/" + levelIndex + ".json");
+                Debug.LogWarning($"[MatchManager] Level {levelIndex} not found in Resources/Levels/");
+            }
+        }
+
+        /// <summary>
+        /// Clears all items and panels from the board without destroying Board GameObjects.
+        /// </summary>
+        private void ResetGame()
+        {
+            SetMatchState(MatchState.PrepareGame);
+            for (int i = 0; i < 81; i++)
+            {
+                var board = m_ListBoard[i];
+                if (board == null) continue;
+
+                // Return item to pool
+                if (board.m_Item != null)
+                {
+                    var item = board.m_Item as Items.Item;
+                    if (item != null) ObjectPool.Instance?.Restore(item.gameObject);
+                    board.m_Item = null;
+                }
+
+                // Return panels to pool
+                for (int p = board.m_ListPanel.Count - 1; p >= 0; p--)
+                {
+                    var panel = board.m_ListPanel[p];
+                    if (panel != null) Managers.PanelManager.Instance?.RestorePanel(panel.gameObject);
+                }
+                board.m_ListPanel.Clear();
             }
         }
 
@@ -90,6 +129,7 @@ namespace Match3.Core
             StepInit();
             StageSetting(stage);
             BoardSetting(stage);
+            PanelSetting(stage);
             BoardPositionSetting();
             ItemSetting();
 
@@ -218,16 +258,21 @@ namespace Match3.Core
 
                 // Determine if the cell is active from panel data
                 bool isActive = true;
-                if (stage.panels != null && i < stage.panels.Length && stage.panels[i].listinfo != null)
+                if (stage.panels != null && i < stage.panels.Length && stage.panels[i]?.listinfo != null)
                 {
-                    for (int p = 0; p < stage.panels[i].listinfo.Count; p++)
+                    bool hasFullPanel = false;
+                    foreach (var pd in stage.panels[i].listinfo)
                     {
-                        if (stage.panels[i].listinfo[p].paneltype == PanelType.Default_Empty)
+                        if (pd.paneltype == PanelType.Default_Empty || pd.paneltype == PanelType.Fixed_Block)
                         {
                             isActive = false;
                             break;
                         }
+                        if (pd.paneltype == PanelType.Default_Full)
+                            hasFullPanel = true;
                     }
+                    // If panels exist but none is Default_Full or explicit Empty/Fixed, treat as active
+                    // (Ice_Cage, Bread, etc. sit ON TOP of a Default_Full cell)
                 }
 
                 board.IsActiveCell = isActive;
@@ -290,6 +335,59 @@ namespace Match3.Core
                     m_ListDropHead.Add(b);
                 }
             }
+        }
+
+        /// <summary>
+        /// Create panels on all board cells from stage data.
+        /// Each cell's panels[] array defines stacked panel types (bottom to top).
+        /// Called after BoardSetting so IsActiveCell is already set.
+        /// </summary>
+        private void PanelSetting(Stage stage)
+        {
+            var pm = Managers.PanelManager.Instance;
+            if (pm == null)
+            {
+                Debug.LogWarning("[MatchManager] PanelManager not found — skipping PanelSetting.");
+                return;
+            }
+
+            if (stage.panels == null)
+            {
+                Debug.LogWarning("[MatchManager] Stage has no panel data.");
+                return;
+            }
+
+            int panelCount = 0;
+            for (int i = 0; i < 81; i++)
+            {
+                var board = m_ListBoard[i];
+                if (i >= stage.panels.Length) break;
+
+                var pannels = stage.panels[i];
+                if (pannels?.listinfo == null) continue;
+
+                foreach (var info in pannels.listinfo)
+                {
+                    // Skip DefaultFull — the board visual already represents it
+                    if (info.paneltype == PanelType.Default_Full) continue;
+                    // Skip DefaultEmpty — handled by IsActiveCell already
+                    if (info.paneltype == PanelType.Default_Empty) continue;
+
+                    var panel = pm.CreatePanel(info.paneltype, board);
+                    if (panel == null) continue;
+                    panelCount++;
+
+                    // Apply extra data from JSON
+                    if (panel is Panels.IceCagePanel cage && info.value > 0)
+                        cage.SetLayers(info.value);
+
+                    // Sync Board flags from panels
+                    if (info.paneltype == PanelType.Fixed_Block)  board.IsPanelFixed = true;
+                    if (info.paneltype == PanelType.Ice_Cage)     board.IsPanelCage  = true;
+                }
+            }
+
+            Debug.Log($"[MatchManager] PanelSetting complete. {panelCount} special panels created.");
         }
 
         /// <summary>

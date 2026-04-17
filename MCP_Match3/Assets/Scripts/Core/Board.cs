@@ -3,6 +3,7 @@ using UnityEngine;
 using Match3.Data;
 using Match3.Items;
 using Match3.Managers;
+using Match3.Panels;
 
 namespace Match3.Core
 {
@@ -32,7 +33,7 @@ namespace Match3.Core
         // === Cell state ===
         // Item reference (will be typed as Item in Phase 2, using Component for now)
         [HideInInspector] public Component m_Item;
-        public List<Component> m_ListPanel = new List<Component>();
+        public List<Panel> m_ListPanel = new List<Panel>();
 
         public bool m_DropAnim;
         public bool m_ItemBrusting;
@@ -559,15 +560,12 @@ namespace Match3.Core
                 Managers.MissionManager.Instance?.AddScore(score);
             }
 
-            // Burst panels (jaulas, obstáculos, etc.)
-            // TODO Phase 7: Implement panel bursting
-            // PanelBrust();
+            // Burst panels on this cell (jaulas, wafer floor, etc.)
+            PanelBrust();
 
-            // TODO Phase 5: AroundBrust for special items
-            // if (item != null && item.ArountBrust)
-            // {
-            //     AroundBrust();
-            // }
+            // AroundBrust: notify adjacent cells' panels of a nearby explosion
+            if (item != null && item.ArountBrust)
+                AroundBrust();
 
             // Phase 5: Generate special item after burst if a special was earned
             if (m_NextItemType != ItemType.None)
@@ -607,6 +605,51 @@ namespace Match3.Core
                 m_NextItemType = ItemType.None;
                 GenItem(specialType, specialColor);
             }
+        }
+
+        // ========== PHASE 7: PANEL BURST ==========
+
+        /// <summary>
+        /// Notify all panels on this cell that an item was matched/burst here.
+        /// Panels with Defence > 0 lose one layer; at 0 they destroy themselves.
+        /// </summary>
+        public void PanelBrust()
+        {
+            // Iterate backwards — panels may remove themselves during iteration
+            for (int i = m_ListPanel.Count - 1; i >= 0; i--)
+            {
+                var panel = m_ListPanel[i];
+                if (panel != null)
+                    panel.ItemMatch();
+            }
+        }
+
+        /// <summary>
+        /// Notify adjacent cells that a burst occurred nearby (for bread, cracker, etc.).
+        /// Only hits panels that respond to adjacent bursts (Defence-based destructibles).
+        /// </summary>
+        public void AroundBrust()
+        {
+            Board[] neighbors = { Top, Bottom, Left, Right };
+            foreach (var nb in neighbors)
+            {
+                if (nb == null || !nb.IsActiveCell) continue;
+                for (int i = nb.m_ListPanel.Count - 1; i >= 0; i--)
+                {
+                    var panel = nb.m_ListPanel[i];
+                    // Only hit obstacle panels (Bread, Cracker, IceCage, WaferFloor)
+                    if (panel != null && IsDestructibleByAdjacent(panel))
+                        panel.Brust();
+                }
+            }
+        }
+
+        private static bool IsDestructibleByAdjacent(Panels.Panel panel)
+        {
+            var t = panel.m_PanelType;
+            return t == PanelType.Bread_Block
+                || t == PanelType.Cracker
+                || t == PanelType.Ice_Cage;
         }
 
         // ========== PHASE 3: GRAVITY & DROP ==========

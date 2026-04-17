@@ -185,3 +185,52 @@ Assets/Scenes/Hall.unity             ← CONSERVADO (pendiente reconfigurar)
 ### Compilación: ✅ 0 errores
 
 ### Próximo paso: Fase 7 (Paneles)
+
+---
+
+## Fase 7: Paneles (Modificadores de Celda) ✅ COMPLETADA
+
+### Scripts creados:
+- ✅ **Panel.cs** (Match3.Panels) — Base abstracta: Defence, Value, addData, m_Board, Brust(), ItemExist/Drop/Match/Switch, hooks OnDamage/OnDestroyed, DestroyPanel()
+- ✅ **DefaultFullPanel.cs** — Celda jugable, indestructible
+- ✅ **DefaultEmptyPanel.cs** — Celda inactiva, bloquea todo
+- ✅ **FixedPanel.cs** — Bloque fijo indestructible, bloquea gravedad y swap
+- ✅ **IceCagePanel.cs** — Jaula de hielo (1-2 capas), bloquea swap, SetLayers(n)
+- ✅ **BreadPanel.cs** — Obstáculo destruible por burst adyacente (1 hit)
+- ✅ **CrackerPanel.cs** — Obstáculo destruible por burst adyacente (2 hits)
+- ✅ **WaferFloorPanel.cs** — Suelo destruido cuando el item encima hace match
+- ✅ **PanelManager.cs** (Match3.Managers) — Singleton factoría: BuildMap, CreatePanel(type, board), RestorePanel
+
+### Board.cs modificado:
+- ✅ m_ListPanel tipado a List<Panel> (antes List<Component>)
+- ✅ PanelBrust() — notifica ItemMatch() a todos los paneles de la celda
+- ✅ AroundBrust() — burst adyacente para Bread/Cracker/IceCage en las 4 direcciones
+- ✅ Co_Brust() — llama PanelBrust() y AroundBrust() (antes eran TODOs)
+
+### MatchManager.cs modificado:
+- ✅ PanelSetting(stage) — crea paneles desde stage.panels[], sincroniza flags de Board
+- ✅ StartGame() llama PanelSetting() entre BoardSetting() e ItemSetting()
+
+### Escena Gameplay.unity:
+- ✅ CommonManager/PanelManager (con 7 prefabs asignados)
+- ✅ Prefabs en Assets/Prefabs/Panels/ (7 prefabs con SpriteRenderer de color diferente)
+
+### Criterio de "hecho": ✅
+- Board.m_ListPanel tipado correctamente
+- PanelSetting crea paneles desde JSON
+- Bursts activan PanelBrust y AroundBrust
+- PanelManager factoría con ObjectPool
+
+### Fix post-fase aplicado:
+- ✅ Fixed_Block ahora desactiva la celda en BoardSetting (antes solo Default_Empty lo hacía)
+- ✅ PanelSetting salta Default_Full y Default_Empty (solo crea paneles especiales)
+- ✅ Nivel 3 rediseñado con distribución clara por tipo de panel:
+  - Fila 1: 3× Ice_Cage 1 capa (cols 2,4,6)
+  - Fila 3: 2× Ice_Cage 2 capas (cols 3,5)
+  - Col 0 y Col 8, filas 2-6: Fixed_Block (pasillo lateral)
+  - Fila 5: 3× Cracker (cols 2,4,6)
+  - Fila 6: 4× Bread (cols 1,3,5,7)
+  - Fila 7: 7× Wafer_floor (cols 1-7)
+- ✅ Prefabs de panel con colores diferenciados y sorting order=5
+
+### Próximo paso: Fase 8 (Gravedad Configurable)
