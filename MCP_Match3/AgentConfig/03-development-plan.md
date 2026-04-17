@@ -321,72 +321,82 @@
 
 ---
 
-## Fase 7: Paneles (Modificadores de Celda) 🔲 PENDIENTE
+## Fase 7: Paneles (Modificadores de Celda) ✅ COMPLETADA
 
 ### Objetivo: Sistema de paneles apilables sobre celdas.
 
 ### Scripts NUEVOS:
-- [ ] **Panel.cs** (Match3.Panels) — Base abstracta
+- [x] **Panel.cs** (Match3.Panels) — Base abstracta
   - Defence, Value, addData
   - Virtuales: ItemExist, ItemDrop, ItemMatch, ItemSwitch
   - Brust() — virtual, destruye una capa
-- [ ] **DefaultFullPanel.cs** — Celda jugable
-- [ ] **DefaultEmptyPanel.cs** — Celda inexistente
+- [x] **DefaultFullPanel.cs** — Celda jugable
+- [x] **DefaultEmptyPanel.cs** — Celda inexistente
 - [ ] **CreatorEmptyPanel.cs** — Genera piezas sin ser visible
-- [ ] **FixedPanel.cs** — Bloque indestructible, bloquea caída
-- [ ] **IceCagePanel.cs** — Jaula de hielo (1-2 capas)
+- [x] **FixedPanel.cs** — Bloque indestructible, bloquea caída
+- [x] **IceCagePanel.cs** — Jaula de hielo (1-2 capas)
 - [ ] **BottleCagePanel.cs** — Jaula de botella
 - [ ] **LollyCagePanel.cs** — Jaula de piruleta
-- [ ] **BreadPanel.cs** — Obstáculo destructible
-- [ ] **CrackerPanel.cs** — Obstáculo destructible
-- [ ] **WaferFloorPanel.cs** — Suelo que se destruye con matches encima
-- [ ] **PanelManager.cs** (Match3.Managers) — Factoría Singleton
+- [x] **BreadPanel.cs** — Obstáculo destructible
+- [x] **CrackerPanel.cs** — Obstáculo destructible
+- [x] **WaferFloorPanel.cs** — Suelo que se destruye con matches encima
+- [x] **PanelManager.cs** (Match3.Managers) — Factoría Singleton
   - List_Panel: PanelType → Prefab mapping
   - CreatePanel(type, parent) → GetObject del pool
 
 ### Prefabs NUEVOS (uno por tipo):
-- [ ] DefaultFullPanel.prefab, FixedPanel.prefab, IceCagePanel.prefab, etc.
+- [x] DefaultFullPanel.prefab, FixedPanel.prefab, IceCagePanel.prefab, etc. (set base de Fase 7)
 
 ### En MatchManager.cs:
-- [ ] PanelSetting(stage) — crea paneles desde stage.panels[]
+- [x] PanelSetting(stage) — crea paneles desde stage.panels[]
 
 ### Criterio de "hecho":
-- Celdas con jaulas bloquean interacción
-- Jaulas se destruyen al hacer match adyacente (con defence)
-- Paneles apilados funcionan
-- Bloques fijos bloquean caída
+- ✅ Celdas con jaulas bloquean interacción
+- ✅ Jaulas se destruyen al hacer match adyacente (con defence)
+- ✅ Paneles apilados funcionan para el subset implementado de la fase
+- ✅ Bloques fijos bloquean caída
+
+### Nota de cierre de fase:
+- La fase se considera cerrada para el subset implementado en este repo: `Fixed`, `Ice_Cage`, `Bread`, `Cracker`, `Wafer_floor`, `Default_Full` y `Default_Empty`.
+- Los paneles avanzados de la referencia (`Bottle`, `Lolly`, `Jam`, `Ring`, etc.) se mueven de facto a fases posteriores porque dependen de otras mecanicas aun no implementadas.
 
 ---
 
-## Fase 8: Gravedad Configurable 🔲 PENDIENTE
+## Fase 8: Gravedad Configurable 🟡 EN CURSO
 
 ### Objetivo: Gravedad multidireccional (U/D/L/R) por celda.
 
 ### En Board.cs (ampliar):
-- [ ] PossibleDrop_Dirs[] — Múltiples direcciones posibles desde Stage.DropDirs
-- [ ] ChangeDropDir() — Elige dirección aleatoria de las disponibles
+- [x] PossibleDrop_Dirs[] — Múltiples direcciones posibles desde Stage.DropDirs
+- [x] ChangeDropDir() — Elige dirección aleatoria de las disponibles
 - [ ] SideDrop() — Busca piezas en diagonal relativa a la dirección de caída
-- [ ] Soporte para DROP_DIR.List → isListDrop
+- [x] Soporte para DROP_DIR.List → isListDrop
 
 ### En MatchManager.cs (ampliar):
-- [ ] m_ListDropStart — Celdas que son puntos de inicio de caída
-- [ ] m_ListDropHead — Cabeceras de columna de caída
-- [ ] GetBoardDropStartSetting() — Calcula drop starts
-- [ ] GetGravitySetting() — Calcula drop heads
+- [x] m_ListDropStart — Celdas que son puntos de inicio de caída
+- [x] m_ListDropHead — Cabeceras de columna de caída
+- [x] GetBoardDropStartSetting() — Calcula drop starts
+- [x] GetGravitySetting() — Calcula drop heads
 - [ ] TicTok alternancia en procesamiento de caída
 
 ### Paneles NUEVOS:
 - [ ] **WarpInPanel.cs**, **WarpOutPanel.cs** — Portales entre celdas
 
 ### En GravityDisplayer.cs:
-- [ ] Mostrar flecha de gravedad cuando isUseGravity == true
+- [x] Mostrar flecha de gravedad cuando isUseGravity == true
 - [ ] Se activa cuando el jugador toca una pieza
 
 ### Criterio de "hecho":
-- Niveles con gravedad lateral funcionan
-- Bifurcaciones (celdas con múltiples direcciones) funcionan
-- Warps teletransportan piezas
-- Indicador visual de gravedad
+- 🟡 Niveles con gravedad lateral: base de datos y navegacion implementada, resolucion completa pendiente
+- 🟡 Bifurcaciones (celdas con múltiples direcciones): soporte parcial
+- [ ] Warps teletransportan piezas
+- 🟡 Indicador visual de gravedad: componente base implementado, integracion completa pendiente
+
+### Pendiente real para cerrar la fase:
+- Implementar `SideDrop()` y conectar la caida diagonal relativa descrita en la referencia.
+- Añadir warps (`WarpInPanel`, `WarpOutPanel`) y su integracion en la ruta de caida.
+- Terminar la activacion visual del `GravityDisplayer` durante input y niveles con gravedad custom.
+- Validar niveles con gravedad lateral y bifurcaciones reales de extremo a extremo.
 
 ---
 

@@ -237,3 +237,27 @@ Assets/Scenes/Hall.unity             ← CONSERVADO (pendiente reconfigurar)
 - ✅ Fix gameplay post-fase: IceCage vuelve a bloquear la interacción de swap; InputManager y MatchManager consultan el estado de paneles antes de intercambiar fichas, sin dañar la jaula por un intento de arrastre
 
 ### Próximo paso: Fase 8 (Gravedad Configurable)
+
+---
+
+## Alineacion Documental — Abril 2026
+
+### Objetivo
+- Dejar consistente la lectura entre documentacion de referencia, estado del repo y roadmap ejecutable.
+
+### Mapa Doc vs Repo fijado
+- ✅ La documentacion principal ya se interpreta como mezcla de referencia funcional + notas del repo, no como fotografia exacta de implementacion.
+- ✅ Queda explicitado que la Fase 7 esta cerrada en este repo.
+- ✅ Queda explicitado que la Fase 8 esta empezada pero no terminada.
+- ✅ Queda explicitado que la referencia base si contempla caida diagonal (`SideDrop`), pero el repo aun no la implementa.
+
+### Estado real consolidado
+- ✅ Implementado: tablero 9x9, carga de `Stage`, matches, cascadas, piezas especiales base, misiones `OrderN`, victoria/derrota, paneles base de Fase 7.
+- ✅ Implementado parcial: gravedad configurable por celda (`PossibleDrop_Dirs`, `ChangeDropDir`, `DropLeft`, `DropRight`, `isListDrop`, `m_ListDropStart`, `m_ListDropHead`).
+- ❌ Pendiente de Fase 8: `SideDrop()` real, warps, validacion completa de gravedad lateral y bifurcaciones.
+- ❌ Pendiente de fases posteriores: paneles avanzados, items avanzados, steps post-match con logica real y `EffectManager` completo.
+
+### Decision de roadmap
+- ✅ Fase 7 queda oficialmente cerrada para el subset implementado.
+- 🟡 Fase 8 pasa a estado "en curso".
+- ✅ La siguiente continuacion operativa del proyecto se centra en cerrar Fase 8 antes de retomar paneles y mecanicas avanzadas de la referencia.

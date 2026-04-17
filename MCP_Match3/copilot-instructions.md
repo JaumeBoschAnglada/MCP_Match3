@@ -17,7 +17,7 @@ Toda la documentación del proyecto está en la carpeta `AgentConfig/`:
 
 Juego **Match 3 basado en turnos** para móviles en **Unity 6000.3.2f1 con URP**.
 - **Estado**: Se construye TODO desde cero. Solo se conserva el sistema de popups.
-- **Fase actual**: Fase 0 (Limpieza Total + Estructura Base)
+- **Fase actual**: Fase 8 (Gravedad Configurable, en curso)
 
 ## ⚠️ REGLA PRINCIPAL
 **NO reutilizar ningún script, prefab ni asset existente** salvo PopupManager, PopupBase,

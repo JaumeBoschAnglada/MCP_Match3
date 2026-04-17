@@ -1,7 +1,38 @@
 # Jewels Palace Match 3 — Documentación del Gameplay
 
 > Documentación técnica del sistema de juego Match 3 contenido en la carpeta `ThreematchSinMapa`.
+> En distintas ramas, builds o repositorios este mismo juego también aparece bajo el nombre `JewelHunterMatch3`.
 > Se excluye intencionalmente toda funcionalidad de la carpeta `1UP` y redes de analíticas.
+
+> Estado de lectura: este documento combina la referencia funcional del juego base con notas útiles para este repo. No todo lo descrito aquí está implementado todavía en `MCP_Match3`.
+
+---
+
+## Estado de Implementacion en Este Repo
+
+### Mapa Doc vs Repo
+
+| Sistema | Estado en este repo | Notas operativas |
+|---|---|---|
+| Tablero base 9x9 | Implementado | `Board`, `MatchManager`, carga de `Stage`, indices, vecinos y centradodel tablero funcionando. |
+| Deteccion de matches y cascadas | Implementado | Matches de 3, 4, 5, T/L y cuadrado ya existen con burst, caida y regeneracion. |
+| Piezas especiales base | Implementado | `Normal`, `Butterfly`, `Line_X`, `Line_Y`, `Line_C`, `Bomb`, `Rainbow`. |
+| Misiones base y victoria/derrota | Implementado parcial | Funciona bien para `OrderN`, movimientos, victoria y derrota. El resto de misiones del juego de referencia no esta completo. |
+| Paneles de Fase 7 | Implementado | `Fixed`, `Ice_Cage`, `Bread`, `Cracker`, `Wafer_floor`, `Default_Full`, `Default_Empty`. |
+| Bloqueo por panel | Implementado | `Ice_Cage` bloquea swap y gravedad de su propia ficha; `Fixed` bloquea paso completo. |
+| Gravedad configurable por celda | Implementado parcial | Existen `PossibleDrop_Dirs`, `ChangeDropDir`, `DropLeft`, `DropRight`, `isListDrop`, `m_ListDropStart` y `m_ListDropHead`. |
+| Caida diagonal relativa (`SideDrop`) | Pendiente | La referencia base la usa, pero en este repo aun no existe `SideDrop()` ni la logica diagonal real de relleno. |
+| Warps y rutas especiales | Pendiente | No existen `WarpInPanel` ni `WarpOutPanel` en codigo de produccion. |
+| Steps post-match avanzados | Stub | `TimeBomb`, `IceCream`, `ConveyerBelt`, `Chameleon`, `MagicColor`, `BearJump`, `BearSpawn` avanzan sin logica real. |
+| Panels avanzados de la referencia | Pendiente | `Bottle`, `Lolly`, `Jam`, `Ring`, `MagicColor`, `ConveyerBelt`, `IceCream`, `Cake`, `JewelTree`, `FoodArrive`, etc. |
+| Efectos visuales dedicados | Pendiente parcial | Hay estructura para burst y pooling, pero no el `EffectManager` completo de la referencia. |
+| Input | Implementado, pero distinto de la regla original del plan | El repo usa `InputManager` con Input System. La referencia original y el plan inicial hablaban de `OnMouseDown/Enter/Up`. |
+
+### Lectura Correcta de Este Documento
+
+- Cuando una seccion describe el juego base completo, debe leerse como referencia funcional, no como garantia de que el repo ya lo implemente.
+- Para saber el estado real del proyecto hay que cruzar este documento con `03-development-plan.md`, `05-progress-log.md` y el codigo actual.
+- A fecha de esta revision, la Fase 7 esta cerrada y la Fase 8 esta empezada pero no terminada: la base de gravedad configurable existe, pero la caida diagonal de la referencia sigue pendiente.
 
 ---
 
@@ -133,6 +164,23 @@ MatchManager (Singleton, MonoBehaviour)
 | **DOTween** | Animaciones programáticas (vuelo de mariposa, efectos de combinación, transiciones) |
 | **Newtonsoft.Json** | Serialización/deserialización de datos de nivel (Stage JSON) |
 | **Unity Addressables** | Carga asíncrona de assets (usado en DataManager) |
+
+### 2.5. Equivalencias de nomenclatura entre ramas/builds
+
+En este mismo juego conviven dos familias de nombres. La rama documentada arriba usa `MatchManager`/`Board`/`Panel`/`Item`; otra rama o build equivalente usa `GameMain`/`BoardManager`/`Slot`/`BlockInterface`/`Chip`.
+
+| Nomenclatura principal de este documento | Nomenclatura alternativa en otras ramas | Equivalencia práctica |
+|---|---|---|
+| `MatchManager` | `GameMain` | Orquestador principal de la partida |
+| `Board` | `Slot` | Celda lógica del tablero |
+| `Panel` | `BlockInterface` | Obstáculo o modificador fijo de la casilla |
+| `Item` | `Chip` | Ficha móvil o elemento que vive sobre la casilla |
+| `Stage` | `MapData` / `MapBoardData` | Datos serializados del nivel |
+| `PanelType` | `IBlockType` | Catálogo de obstáculos y casillas especiales |
+| `ItemType` | `ChipType` / `Powerup` | Catálogo de fichas, especiales y powerups |
+| `MissionType` / `MissionKind` | `GoalTarget` / `CollectBlockType` | Objetivos del nivel y elementos recolectables |
+
+La semántica es la misma: cambian la organización de clases y algunos nombres de runtime, pero no el hecho de que se trata del mismo Match 3.
 
 ---
 
@@ -767,6 +815,53 @@ Todos en `Assets/Prefab/`:
 | `MissionApply()` | Notifica al sistema de misiones que esta pieza fue destruida |
 | `SetColor(color)` / `SetColorRandom()` | Asigna color y sprite correspondiente |
 
+### 5.7. Qué hace realmente cada ficha
+
+| Ficha | Clase | Regla real verificada |
+|---|---|---|
+| `Normal` | `NormalItem` | Ficha básica. Puntúa con multiplicador de combo cuando la destrucción pertenece a una cascada. Es la referencia de las misiones por color. |
+| `Butterfly` | `ButterFlyItem` | Al activarse ejecuta `Ability_Butterfly` sobre su color. Tiene animación idle y de vuelo específica por color. |
+| `Line_X` | `LineXItem` | Ejecuta `Ability_LineX`, o sea barrido horizontal. Cuenta como misión `Line` y puede sumar `Line_Line` en combinación. |
+| `Line_Y` | `LineYItem` | Ejecuta `Ability_LineY`, o sea barrido vertical. Cuenta como misión `Line` y puede sumar `Line_Line` en combinación. |
+| `Line_C` | `LineCItem` | Ejecuta `Ability_Cross`: fila y columna al mismo tiempo. Puede sumar `Cross_Line` o `Cross_Cross`. |
+| `Bomb` | `BombItem` | Ejecuta `Ability_Bomb` con radio base 1. Sus combinaciones reales son con mariposa, líneas, cruz y otra bomba. |
+| `Rainbow` | `RainbowItem` | No usa color normal. Puede combinar con `Normal`, `Butterfly`, líneas, cruz, `Bomb`, otra `Rainbow` y también con `Mystery`, `Chameleon`, `JellyMon`, `JellyBear`, `TimeBomb` y `Key`. |
+| `Donut` | `DonutItem` | Obstáculo-ítem sin color. Al destruirse lanza su efecto propio y suma misión `Donut`. |
+| `Spiral` | `SpiralItem` | Obstáculo periódico sin color. Se destruye con efecto propio y suma misión `Spiral`. |
+| `JellyBear` | `JellyBearItem` | Oso de gelatina. Tiene sprite/animación por color, cuenta en misión `Bear` y es movido por `BearJumpStep` y generado por `BearSpawnStep`. |
+| `TimeBomb` | `TimeBombItem` | Lleva contador visible. Cada intercambio del jugador reduce el contador en 1 mediante `SwitchingApply()`. Si llega a 0, `TimeBombStep` marca derrota. |
+| `Mystery` | `MysteryItem` | La ficha por sí sola solo se destruye; la transformación real ocurre en `Board.MysteryChange`, que puede convertirla en normal, línea, bomba, rainbow, pan, helado, `JellyBear`, `Spiral`, `TimeBomb` o `Chameleon`. |
+| `Chameleon` | `ChameleonItem` | Cambia de color automáticamente en `ChameleonStep` y fuerza un color distinto al actual con `SetColorRandomOther()`. |
+| `JellyMon` | `JellyMon` | Monstruo de gelatina. Acumula comida hasta quedar lleno a 11. Solo lleno puede seleccionarse manualmente y soltarse sobre otra casilla. |
+| `Ghost` | `GhostItem` | Ficha especial resuelta por `Ability_Ghost`. Admite combinación con normales, especiales estándar y varias fichas de objetivo. |
+| `Key` | `KeyItem` | Al destruirse recorre todas las `BottleCagePanel` activas y les aplica `BottleBrust(this)`. La llave existe para abrir botellas. |
+| `BonusCross` | `BonusCrossItem` | Pieza exclusiva de `BonusTime`. Ejecuta `Ability_BonusCross`. |
+| `BonusBomb` | `BonusBombItem` | Pieza exclusiva de `BonusTime`. Ejecuta `Ability_BonusBomb`. |
+| `Misson_Food1..6` | `FoodItem` | Objetos de misión de comida. El progreso real ocurre al llegar a `FoodArrive`, no al explotar. |
+
+### 5.8. Reglas reales de spawn de fichas especiales
+
+- `Board.TopSpawnItem()` intenta crear en este orden: comida de misión, `Spiral`, `Donut`, `TimeBomb`, `Mystery`, `Chameleon`, `Key` y, si nada aplica, una `Normal`.
+- Los creadores especiales (`Creator_Food`, `Creator_Sprial`, `Creator_TimeBomb`, `Creator_Key` y variantes mixtas) reutilizan esa misma prioridad, pero forzando la fuente del spawn.
+- `ItemManager` no genera por probabilidad libre: cada familia usa `*_MinExist`, `*_MaxExist`, `*_Interval` y `*_SpawnCnt`.
+- `Key` solo se genera si todavía quedan `Bottle_Cage` activas.
+- `TimeBomb`, `Mystery`, `Chameleon` y `Key` dejan de generarse durante `BonusTime`.
+
+### 5.9. Equivalencias de fichas en la otra nomenclatura del mismo juego
+
+| Nomenclatura principal | Nomenclatura alternativa | Observación útil |
+|---|---|---|
+| `NormalItem` | `SimpleChip` | Ficha normal de color |
+| `BombItem` | `SimpleBomb` | Bomba radial |
+| `RainbowItem` | `RainbowBomb` | Bomba/arcoíris global por color |
+| `Line_X` / `Line_Y` | `HBomb` / `VBomb` | Barridos horizontal y vertical |
+| `ChameleonItem` | `SimpleChip` + `Powerup.Chameleon` | Mismo concepto con implementación distinta |
+| `FoodItem` | `BringDownChip` / objetivos de transporte | Objetos que deben llegar a destino |
+| `Cracker` como objetivo transportable en otra rama | `OreoCracker` | Objetivo de recorrido/recogida, no ficha normal |
+| secuencia especial de objetivo | `NumberChocolateChip` | Objetivo ordenado/encadenado |
+
+En la rama `BoardManager/Chip`, varios elementos que aquí aparecen como `ItemType` separados se resuelven como un `Chip` normal con powerup adicional o como un chip-objetivo especializado.
+
 ---
 
 ## 6. Sistema de colores
@@ -779,6 +874,14 @@ public enum ColorType { None, RED, YELLOW, GREEN, BLUE, PURPLE, ORANGE, Rnd }
 - `Rnd` indica asignación aleatoria al crear la pieza.
 - El sprite se selecciona por índice: `color - ColorType.RED` (0-based).
 - Las piezas del tipo `Rainbow` no tienen color asignado y actúan sobre un color elegido al explotar.
+
+### 6.1. Reglas de color que sí afectan al gameplay
+
+- `Item.SetColorRandom()` y `GetColorRandom()` siempre eligen desde `MatchManager.m_AppearColor`, no desde una lista fija global.
+- `Chameleon` y `MagicColor` no repiten el mismo color inmediatamente: usan `SetColorRandomOther()`.
+- `CrackerPanel` y `RingPanel` también almacenan color. Si el `def` del panel es `Rnd`, el color real se fija al inicializarlo usando `m_AppearColor`.
+- `Rainbow` se representa como `ColorType.None`; su selección de color ocurre al resolver la habilidad, no al instanciar la ficha.
+- El sistema Crazy Level puede reducir colores disponibles en `m_AppearColor`, alterando directamente la aleatoriedad de normales, camaleones, crackers aleatorios y anillos aleatorios.
 
 ---
 
@@ -881,6 +984,56 @@ Todos los prefabs de panel se encuentran en `Assets/Prefab/`:
 
 **Nota:** Los creadores combinados (ej: `CreatorFoodSprial`) generan alternadamente uno u otro tipo de ítem especial según los intervalos configurados en el nivel.
 
+### 7.5. Qué hace realmente cada panel
+
+| Panel | Clase | Regla real verificada |
+|---|---|---|
+| `Default_Full` | `DefaultPanel` | Solo define una casilla jugable y alterna sprite par/impar del tablero. No se destruye. |
+| `Default_Empty` | `EmptyPanel` | Casilla inexistente. No admite pieza ni interacción real. |
+| `Creator_Empty` | `CreatorEmptyPanel` | Cabeza de generación invisible. No se destruye y sirve como origen de spawn. |
+| `Fixed_Block` | `FixedPanel` | Casilla fija: no se destruye y bloquea caída, porque hace que `IsPanelFixed == true`. |
+| `Ice_Cage` | `IceCagePanel` | Jaula multicapa. Cada impacto baja `Defence`, cambia sprite y cuenta como misión `IceCage`. |
+| `Lolly_Cage` | `LollyCagePanel` | Misma idea que la jaula de hielo, con efectos propios. |
+| `Bottle_Cage` | `BottleCagePanel` | No se abre por match de color genérico: la destruye `KeyItem`. Cada llave anima un viaje hasta la botella, baja `Defence` y, al limpiar todas, las llaves restantes del tablero se convierten en fichas normales. |
+| `Bread_Block` | `BreadPanel` | Obstáculo multicapa directo. Cada golpe baja `Defence`; al llegar a 0 se elimina y suma misión `Bread`. |
+| `Cracker` | `CrackerPanel` | Panel con color. Solo se rompe si el impacto viene de una casilla vecina cuyo `m_Item.m_Color` coincide con el color del cracker. Si `arroundRoot == null`, acepta destrucción directa. |
+| `Wafer_floor` | `WaferPanel` | Suelo destructible por capas. Reduce `Defence` y suma misión `Wafer`. |
+| `Jam` | `JamPanel` | No se resuelve con `PanelBrust()` normal: la jalea se crea/expande con `JamPanelCreate()` y su progreso se aplica al crear una nueva casilla con jalea. |
+| `Cake_A..D` | `CakePanel` | Entidad 2x2 coordinada. Cada segmento comparte contador con `Cake_A`; al acumular 8 golpes totales dispara `Ability_CakePanel` y destruye los 4 paneles. |
+| `JewelTree_A..D` | `JewelTreePanel` | Árbol de joyas por fases. Cada golpe activa una joya visual; al cuarto, genera 4 ítems definidos por `Stage.JewelTreeItem[]` y `JewelTreeItemColor[]`, los lanza a casillas normales y marca matching. |
+| `S_Tree` | `S_TreePanel` | Al llegar a 0 no solo desaparece: genera un nuevo ítem según `S_TreeData` y `S_Tree_SettingType`. |
+| `Ring` | `RingPanel` | Panel con color. Consume temporalmente la pieza de la casilla, genera una `Line_X` o `Line_Y` del color del anillo y después se destruye. |
+| `MagicColor` | `MagicColorPanel` | No se destruye. Durante `MagicColorStep` rota visualmente y obliga a la pieza de su casilla a cambiar a otro color. |
+| `IceCream_Block` | `IceCreamPanel` | Obstáculo expansivo. Si una capa de helado se destruye, resetea el ciclo de expansión del helado. |
+| `IceCream_Creator` | `IceCreamCreatorPanel` | Generador de helado. No se destruye y, cuando toca expandirse, ejecuta animación antes de copiar helado a un vecino válido. |
+| `ConveyerBelt` | `ConveyerBeltPanel` | Panel logístico. Lee `ConveyerBeltInfo` desde `addInfo`, distingue inicio/medio/final y mueve ítems por animación en `ConveyerBeltStep`. |
+| `Warp_In` / `Warp_Out` | `WarpInPanel`, `WarpOutPanel` | Portales. `Board` enlaza ambas casillas mediante el campo `value` y modifica tanto la caída real como la simulación virtual. |
+| `FoodArrive` | `FoodArvPanel` | Meta de comida. No se destruye; marca una casilla final válida para recoger `FoodItem`. |
+| `JellyBearStart` | panel especial | Punto de aparición de osos. `BearSpawnStep` lo usa para decidir dónde generar nuevos `JellyBear`. |
+| `Creator_*` | `CreatorPanel` | Fuentes de spawn especiales. No se destruyen; al generar una pieza ejecutan `AddAction()` para animar visualmente el creador. |
+
+### 7.6. Reglas estructurales del sistema de paneles
+
+- `Board.PanelBrust()` solo intenta romper el panel destruible más alto de la pila y salta explícitamente `JamPanel`.
+- Si el panel recibe daño “de alrededor” (`arroundRoot != null`), solo se procesa cuando `panel.ArountBrust == true`.
+- Una celda se considera jaula (`IsPanelCage`) cuando algún panel permite existencia de ítem pero bloquea la caída.
+- Una celda se considera fija (`IsPanelFixed`) cuando algún panel impide existencia de ítem y además nunca se destruye.
+
+### 7.7. Equivalencias de obstáculos y casillas especiales en la otra nomenclatura
+
+| Nomenclatura principal | Nomenclatura alternativa | Regla equivalente |
+|---|---|---|
+| `CrackerPanel` con color | `SpriteDrink` por color | Objetivo restringido por color: solo baja con impactos del color correcto |
+| `Bottle_Cage` + `KeyItem` | bloque con llave/activación específica | Apertura condicionada por otro elemento de tablero |
+| `Bread_Block` / `Wafer_floor` / `Ice_Cage` | `Crunky`, `Dig`, `ChocolateJail`, `RockCandy` | Obstáculos multicapa o bloqueantes de casilla |
+| `Creator_*` | `SlotGenerator` | Fuentes de generación especiales |
+| `FoodArrive` | `bringDownEndSlot` / `Pocket` | Casilla destino de recogida |
+| `JellyBearStart` | spawn de objetivo móvil | Punto de aparición controlado por step/sistema |
+| `JamPanel` | `Slot.IsPaintedJelly` / `JellyLayer` | Casilla pintada/contagiada, no obstáculo de HP clásico |
+| `Warp_In` / `Warp_Out` | `teleportTarget` / rail especial | Redirección del recorrido de caída |
+
+La diferencia principal es de modelado: aquí muchos comportamientos viven en `Panel`; en la otra rama, varias de esas reglas viven directamente en `Slot`, `BlockInterface` o en generadores del tablero.
+
 ---
 
 ## 8. Sistema de input
@@ -959,6 +1112,17 @@ public class BaseStep
     public virtual void Step_Process();  // Se ejecuta cada frame mientras el step está activo
 }
 ```
+
+### 9.3. Comportamiento concreto de los steps especiales
+
+- `TimeBombStep` no decrementa bombas: solo comprueba si alguna ya llegó a 0. El decremento ocurre en cada intercambio del jugador porque `TimeBombItem` se suscribe a `MatchManager.SwitchingApply`.
+- `IceCreamStep` solo expande si no se ha destruido helado en ese ciclo. Si `IceCreamPanel.m_IceCreamBrust == true`, resetea intervalos y aplaza la expansión.
+- `IceCreamStep` copia helado solo a vecinos cardinales que tengan una `NormalItem`, que sean destruibles y que no estén sobre cinta transportadora.
+- `ConveyerBeltStep` primero guarda temporalmente el ítem actual de cada cinta en `CoveyerItem`, luego mueve todos los tramos y solo al final apaga las flechas visuales.
+- `ChameleonStep` recorre todas las casillas con `ChameleonItem`, reproduce animación y al terminar marca `m_MatchingCheck = true` para forzar reevaluación del tablero.
+- `MagicColorStep` solo actúa si en la casilla hay un ítem con color distinto de `None`. También deja `m_MatchingCheck = true` al acabar.
+- `BearJumpStep` intenta mover cada `JellyBear` hacia su salida real de caída. Si el oso alcanza salida válida o un warp sin continuidad, se sustituye por una ficha normal del mismo color y se considera rescatado.
+- `BearSpawnStep` respeta `Bear_MaxExist` y `Bear_Interval`, y evita sobreescribir especiales potentes si todavía quedan otros puntos de aparición disponibles.
 
 ---
 
@@ -1183,6 +1347,13 @@ Las celdas con `Warp_Out` se conectan a una celda `Warp_In`. Cuando una pieza ca
 
 Las `ConveyerBeltPanel` mueven las piezas en una dirección fija cada turno, independiente de la gravedad.
 
+### 13.6. Sistemas equivalentes de recorrido y caída en otras ramas
+
+- En la nomenclatura `Slot`/`BoardManager`, cada celda también guarda una dirección de caída propia (`DropDirection`).
+- Los generadores equivalentes a `Creator_*` calculan el offset de aparición en función de esa dirección (`Up`, `Down`, `Left`, `Right`).
+- Los portales, rails y rutas especiales cumplen la misma función que aquí realizan `Warp_In`, `Warp_Out`, bifurcaciones de `DropDirs` y listas de caída.
+- El concepto de “objetivo que debe llegar a una salida” es el mismo que aquí usan `FoodArrive` y `JellyBear` cuando alcanzan una casilla final válida.
+
 ---
 
 ## 14. Sistema de misiones y condiciones de victoria/derrota
@@ -1214,6 +1385,36 @@ Las misiones se definen en los datos del nivel (`Stage.missionInfo`). Cada misi�
 - Cantidad objetivo.
 
 Al destruir una pieza, se llama a `Item.MissionApply()` que notifica a `MissionManager`.
+
+### 14.4. Cómo se recalculan realmente los objetivos al iniciar el nivel
+
+- `MissionManager.MissionSetting()` corrige varios contadores a partir del tablero real, no del número escrito en JSON.
+- `Bread`, `LollyCage`, `IceCage`, `Bottle`, `S_Tree`, `Wafer` e `IceCream` recalculan su total contando paneles existentes en el tablero.
+- `Cracker` usa una variante especial porque el objetivo es cuántos crackers quedan, no cuántas capas de defensa suman.
+- `TimeBomb` en misión `OrderS` también se recalcula desde las bombas realmente colocadas al inicio.
+- Si el nivel tiene `Stele` en el tablero pero no la incluyó en `missionInfo`, `MissionManager` inserta automáticamente una misión `Stele` al comenzar.
+- En misiones de `Food`, el manager clona la lista de objetivos en `List_MsInfo_Food` y además arranca los contadores internos de spawn en función de la comida ya precolocada.
+
+### 14.5. Relación real entre destrucción y misión
+
+- Las piezas normales notifican por color.
+- Las especiales notifican tanto su misión base como varias combinaciones derivadas, por ejemplo `Bomb_Line`, `Cross_Line`, `Rainbow_Bomb` o `Rainbow_Rainbow`.
+- Muchos paneles solo aplican misión cuando su destrucción termina realmente en `Board.Co_PanelBrustComplete()`, no en el instante del impacto.
+- `Jam` suma progreso cuando se crea o expande a una nueva casilla, no cuando “se rompe”.
+- `FoodItem` aplica misión al ser recogido en destino, no al explotar.
+
+### 14.6. Equivalencias de objetivos en la otra nomenclatura
+
+| Sistema de este documento | Sistema alternativo | Equivalencia práctica |
+|---|---|---|
+| `MissionType.OrderN` por color | `CollectBlockType.Normal*` | Recoger fichas normales por color |
+| `MissionType.OrderS` | `CollectBlockType.Make*` o collects de especial | Crear o destruir especiales concretas |
+| `MissionType.Food` | `GoalTarget.BringDown`, `PocketCandy`, objetivos transportables | Llevar un objeto hasta su salida |
+| `MissionType.Jam` | `GoalTarget.Jelly` | Pintar/ocupar casillas del tablero |
+| `MissionType.Bear` | objetivos móviles de rescate | Rescatar un ente del tablero |
+| `MissionKind.Cracker` | `CollectCracker` / `OreoCracker` / `CarbonatedDrink` según rama | Objetivo especial asociado al tema “cracker/bebida/recogida condicionada” |
+
+Cambian los enums y los nombres de collect, pero la intención de diseño sigue siendo la misma: destruir, crear, transportar o pintar objetivos de tablero.
 
 ---
 
@@ -1389,6 +1590,17 @@ Durante la partida, el jugador puede usar ítems comprados o ganados. El `TouchS
 5. El ítem se consume del inventario del jugador.
 6. `m_TouchState` vuelve a `Switching`.
 
+### 20.3. Equivalencias de boosters en otras ramas
+
+| Nomenclatura principal | Nomenclatura alternativa | Equivalencia |
+|---|---|---|
+| `Cash_Hammer` | `BoosterMagicHammer` | Golpe directo sobre ficha u obstáculo |
+| `Cash_Bomb` | `BoosterCandyPack` o booster explosivo equivalente | Limpieza localizada con animación especial |
+| `Cash_Thunder` | `BoosterHBomb` / `BoosterVBomb` | Barrido horizontal o vertical inmediato |
+| shuffle de UI | `BoosterShuffle` | Reordenación del tablero |
+
+La interfaz concreta puede variar entre ramas, pero el set funcional de boosters del mismo juego es equivalente.
+
 ---
 
 ## 21. Resumen de prefabs del gameplay
@@ -1406,3 +1618,6 @@ Todos los prefabs del gameplay se encuentran en `Assets/Prefab/`. Se organizan e
 | **Misceláneos** | `GateWay`, `GetStarEffect`, `CircleEffect`, `ItemChangeEffect` | ~10 |
 
 **Total**: ~186 prefabs en `Assets/Prefab/`
+
+---
+
