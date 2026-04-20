@@ -110,6 +110,8 @@ namespace Match3.Core
         // Visual
         [SerializeField] private SpriteRenderer m_Displayer;
 
+        private const float SpawnOffsetDistance = 1.15f;
+
         /// <summary>
         /// Indexer by SQR_DIR for neighbor access.
         /// </summary>
@@ -400,6 +402,11 @@ namespace Match3.Core
         /// </summary>
         public void TopSpawnItem()
         {
+            TopSpawnItem(true);
+        }
+
+        public void TopSpawnItem(bool animateIntoCell)
+        {
             if (!IsActiveCell) return;
 
             var itemMgr = Match3.Items.ItemManager.Instance;
@@ -412,7 +419,34 @@ namespace Match3.Core
             // Set random color from level's available colors
             var item = m_Item as Match3.Items.Item;
             if (item != null)
+            {
                 item.SetColorRandom();
+
+                item.transform.position = GetSpawnWorldPosition();
+
+                if (animateIntoCell)
+                {
+                    m_DropAnim = true;
+                    MatchManager.Instance?.StartCoroutine(Co_ItemDropAnimation(item));
+                }
+            }
+        }
+
+        private Vector3 GetSpawnWorldPosition()
+        {
+            return transform.position + GetSpawnOffsetDirection() * SpawnOffsetDistance;
+        }
+
+        private Vector3 GetSpawnOffsetDirection()
+        {
+            switch (CurrentDropDir)
+            {
+                case DROP_DIR.U: return Vector3.up;
+                case DROP_DIR.D: return Vector3.down;
+                case DROP_DIR.L: return Vector3.left;
+                case DROP_DIR.R: return Vector3.right;
+                default: return Vector3.up;
+            }
         }
 
         // ========== PHASE 3: MATCH DETECTION ==========
@@ -858,7 +892,7 @@ namespace Match3.Core
             }
 
             Debug.Log($"  -> No filled cell found above {emptyBoard.name}, spawning at top cell {topCell.name}");
-            topCell.TopSpawnItem();
+            topCell.TopSpawnItem(topCell == emptyBoard);
 
             // After spawning, the new item needs to drop down to fill emptyBoard
             if (topCell != emptyBoard && topCell.m_Item != null)
