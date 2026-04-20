@@ -109,6 +109,9 @@ namespace Match3.Core
 
         // Visual
         [SerializeField] private SpriteRenderer m_Displayer;
+        [SerializeField] private Sprite m_LightDisplayerSprite;
+        [SerializeField] private Sprite m_DarkDisplayerSprite;
+
 
         private const float SpawnOffsetDistance = 1.15f;
 
@@ -339,11 +342,22 @@ namespace Match3.Core
         {
             if (m_Displayer != null)
             {
+                Sprite targetSprite = ((X + Y) & 1) == 0 ? m_LightDisplayerSprite : m_DarkDisplayerSprite;
+                if (targetSprite != null && m_Displayer.sprite != targetSprite)
+                {
+                    m_Displayer.sprite = targetSprite;
+                }
+
                 Color c = m_Displayer.color;
-                c.a = active ? 0.15f : 0f;
+                c.r = 1f;
+                c.g = 1f;
+                c.b = 1f;
+                c.a = active ? 1f : 0f;
                 m_Displayer.color = c;
             }
         }
+
+
 
         /// <summary>
         /// Generate and place an item in this cell.

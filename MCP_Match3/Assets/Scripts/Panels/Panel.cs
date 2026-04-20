@@ -13,6 +13,7 @@ namespace Match3.Panels
         public const int BackgroundSortingOrder = 0;
         public const int OverlaySortingOrder = 20;
 
+
         // === Data ===
         public PanelType m_PanelType  { get; protected set; }
         public int       Defence      { get; protected set; } = 0;  // Hits needed to destroy
@@ -34,6 +35,8 @@ namespace Match3.Panels
                 renderer.sortingOrder = VisualSortingOrder;
             }
         }
+
+
 
         // ── Virtual lifecycle ─────────────────────────────────────────
 
