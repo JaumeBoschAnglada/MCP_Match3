@@ -16,8 +16,11 @@ namespace Match3.Managers
         [Header("Panel Prefabs (assign in Inspector)")]
         [SerializeField] private GameObject m_DefaultFullPrefab;
         [SerializeField] private GameObject m_DefaultEmptyPrefab;
+        [SerializeField] private GameObject m_CreatorEmptyPrefab;
         [SerializeField] private GameObject m_FixedPrefab;
         [SerializeField] private GameObject m_IceCagePrefab;
+        [SerializeField] private GameObject m_BottleCagePrefab;
+        [SerializeField] private GameObject m_LollyCagePrefab;
         [SerializeField] private GameObject m_BreadPrefab;
         [SerializeField] private GameObject m_CrackerPrefab;
         [SerializeField] private GameObject m_WaferFloorPrefab;
@@ -37,8 +40,11 @@ namespace Match3.Managers
             {
                 { PanelType.Default_Full,  m_DefaultFullPrefab  },
                 { PanelType.Default_Empty, m_DefaultEmptyPrefab },
+                { PanelType.Creator_Empty, m_CreatorEmptyPrefab },
                 { PanelType.Fixed_Block,   m_FixedPrefab        },
                 { PanelType.Ice_Cage,      m_IceCagePrefab      },
+                { PanelType.Bottle_Cage,   m_BottleCagePrefab   },
+                { PanelType.Lolly_Cage,    m_LollyCagePrefab    },
                 { PanelType.Bread_Block,   m_BreadPrefab        },
                 { PanelType.Cracker,       m_CrackerPrefab      },
                 { PanelType.Wafer_floor,   m_WaferFloorPrefab   },

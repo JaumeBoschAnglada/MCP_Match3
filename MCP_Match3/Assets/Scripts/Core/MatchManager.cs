@@ -394,12 +394,22 @@ namespace Match3.Core
                     panelCount++;
 
                     // Apply extra data from JSON
-                    if (panel is Panels.IceCagePanel cage && info.value > 0)
-                        cage.SetLayers(info.value);
+                    if (info.value > 0)
+                    {
+                        if (panel is Panels.IceCagePanel iceCage)
+                            iceCage.SetLayers(info.value);
+                        else if (panel is Panels.LollyCagePanel lollyCage)
+                            lollyCage.SetLayers(info.value);
+                        else if (panel is Panels.BottleCagePanel bottleCage)
+                            bottleCage.SetLayers(info.value);
+                    }
 
                     // Sync Board flags from panels
                     if (info.paneltype == PanelType.Fixed_Block)  board.IsPanelFixed = true;
-                    if (info.paneltype == PanelType.Ice_Cage)     board.IsPanelCage  = true;
+                    if (info.paneltype == PanelType.Ice_Cage
+                        || info.paneltype == PanelType.Lolly_Cage
+                        || info.paneltype == PanelType.Bottle_Cage)
+                        board.IsPanelCage = true;
                 }
             }
 
@@ -938,45 +948,60 @@ namespace Match3.Core
         {
             Debug.Log("[MatchManager] Co_Drop: Starting gravity and refill");
 
-            RefreshDropStartSetting();
+            int passCount = 0;
+            int totalWaitCount = 0;
+            const int maxPasses = 20;
 
-            // Process gravity independently for each active segment.
-            foreach (Board dropStart in m_ListDropStart)
+            while (passCount < maxPasses)
             {
-                if (dropStart == null || !dropStart.IsActiveCell) continue;
+                RefreshDropStartSetting();
 
-                Debug.Log($"[MatchManager] Processing gravity segment from {dropStart.name}");
-                dropStart.GravityDropItemRow();
-            }
+                bool anyGravityChange = false;
 
-            // Wait for drop animations to start
-            yield return new UnityEngine.WaitForSeconds(0.5f);
-
-            // Ensure all drops completed
-            bool stillDropping = true;
-            int maxWait = 20;
-            int waitCount = 0;
-
-            while (stillDropping && waitCount < maxWait)
-            {
-                stillDropping = false;
-                for (int i = 0; i < 81; i++)
+                // Process gravity independently for each active segment.
+                foreach (Board dropStart in m_ListDropStart)
                 {
-                    if (m_ListBoard[i].m_DropAnim)
+                    if (dropStart == null || !dropStart.IsActiveCell) continue;
+
+                    Debug.Log($"[MatchManager] Processing gravity segment from {dropStart.name} (pass {passCount + 1})");
+                    if (dropStart.GravityDropItemRow())
+                        anyGravityChange = true;
+                }
+
+                if (!anyGravityChange)
+                    break;
+
+                // Wait for this pass animations to settle before recalculating segments again.
+                yield return new UnityEngine.WaitForSeconds(0.5f);
+
+                bool stillDropping = true;
+                int waitCount = 0;
+                const int maxWait = 20;
+
+                while (stillDropping && waitCount < maxWait)
+                {
+                    stillDropping = false;
+                    for (int i = 0; i < 81; i++)
                     {
-                        stillDropping = true;
-                        break;
+                        if (m_ListBoard[i].m_DropAnim)
+                        {
+                            stillDropping = true;
+                            break;
+                        }
+                    }
+
+                    if (stillDropping)
+                    {
+                        yield return new UnityEngine.WaitForSeconds(0.1f);
+                        waitCount++;
                     }
                 }
 
-                if (stillDropping)
-                {
-                    yield return new UnityEngine.WaitForSeconds(0.1f);
-                    waitCount++;
-                }
+                totalWaitCount += waitCount;
+                passCount++;
             }
 
-            Debug.Log($"[MatchManager] Co_Drop: Completed. Waited {waitCount} cycles.");
+            Debug.Log($"[MatchManager] Co_Drop: Completed after {passCount} passes. Waited {totalWaitCount} cycles.");
         }
 
         /// <summary>
@@ -1004,13 +1029,26 @@ namespace Match3.Core
         /// </summary>
         public void Drop()
         {
-            RefreshDropStartSetting();
+            int passCount = 0;
+            const int maxPasses = 20;
 
-            foreach (Board dropStart in m_ListDropStart)
+            while (passCount < maxPasses)
             {
-                if (dropStart == null || !dropStart.IsActiveCell) continue;
+                RefreshDropStartSetting();
+                bool anyGravityChange = false;
 
-                dropStart.GravityDropItemRow();
+                foreach (Board dropStart in m_ListDropStart)
+                {
+                    if (dropStart == null || !dropStart.IsActiveCell) continue;
+
+                    if (dropStart.GravityDropItemRow())
+                        anyGravityChange = true;
+                }
+
+                if (!anyGravityChange)
+                    break;
+
+                passCount++;
             }
         }
     }

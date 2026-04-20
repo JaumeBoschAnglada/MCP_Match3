@@ -332,11 +332,11 @@
   - Brust() — virtual, destruye una capa
 - [x] **DefaultFullPanel.cs** — Celda jugable
 - [x] **DefaultEmptyPanel.cs** — Celda inexistente
-- [ ] **CreatorEmptyPanel.cs** — Genera piezas sin ser visible
+- [x] **CreatorEmptyPanel.cs** — Genera piezas sin ser visible
 - [x] **FixedPanel.cs** — Bloque indestructible, bloquea caída
 - [x] **IceCagePanel.cs** — Jaula de hielo (1-2 capas)
-- [ ] **BottleCagePanel.cs** — Jaula de botella
-- [ ] **LollyCagePanel.cs** — Jaula de piruleta
+- [x] **BottleCagePanel.cs** — Jaula de botella
+- [x] **LollyCagePanel.cs** — Jaula de piruleta
 - [x] **BreadPanel.cs** — Obstáculo destructible
 - [x] **CrackerPanel.cs** — Obstáculo destructible
 - [x] **WaferFloorPanel.cs** — Suelo que se destruye con matches encima
@@ -357,8 +357,8 @@
 - ✅ Bloques fijos bloquean caída
 
 ### Nota de cierre de fase:
-- La fase se considera cerrada para el subset implementado en este repo: `Fixed`, `Ice_Cage`, `Bread`, `Cracker`, `Wafer_floor`, `Default_Full` y `Default_Empty`.
-- Los paneles avanzados de la referencia (`Bottle`, `Lolly`, `Jam`, `Ring`, etc.) se mueven de facto a fases posteriores porque dependen de otras mecanicas aun no implementadas.
+- La fase se considera cerrada para el subset implementado en este repo: `Fixed`, `Ice_Cage`, `Bottle_Cage`, `Lolly_Cage`, `Bread`, `Cracker`, `Wafer_floor`, `Creator_Empty`, `Default_Full` y `Default_Empty`.
+- Los paneles avanzados restantes de la referencia (`Jam`, `Ring`, `MagicColor`, `IceCream`, `Cake`, `JewelTree`, etc.) se mueven a fases posteriores porque dependen de otras mecanicas aun no implementadas.
 
 ---
 
@@ -369,7 +369,7 @@
 ### En Board.cs (ampliar):
 - [x] PossibleDrop_Dirs[] — Múltiples direcciones posibles desde Stage.DropDirs
 - [x] ChangeDropDir() — Elige dirección aleatoria de las disponibles
-- [ ] SideDrop() — Busca piezas en diagonal relativa a la dirección de caída
+- [x] SideDrop() — Busca piezas en diagonal relativa a la dirección de caída
 - [x] Soporte para DROP_DIR.List → isListDrop
 
 ### En MatchManager.cs (ampliar):
@@ -387,13 +387,12 @@
 - [ ] Se activa cuando el jugador toca una pieza
 
 ### Criterio de "hecho":
-- 🟡 Niveles con gravedad lateral: base de datos y navegacion implementada, resolucion completa pendiente
-- 🟡 Bifurcaciones (celdas con múltiples direcciones): soporte parcial
+- 🟡 Niveles con gravedad lateral: base de datos, navegacion y side-drop implementados; validacion completa pendiente
+- 🟡 Bifurcaciones (celdas con múltiples direcciones): soporte parcial, falta validacion con niveles dedicados
 - [ ] Warps teletransportan piezas
 - 🟡 Indicador visual de gravedad: componente base implementado, integracion completa pendiente
 
 ### Pendiente real para cerrar la fase:
-- Implementar `SideDrop()` y conectar la caida diagonal relativa descrita en la referencia.
 - Añadir warps (`WarpInPanel`, `WarpOutPanel`) y su integracion en la ruta de caida.
 - Terminar la activacion visual del `GravityDisplayer` durante input y niveles con gravedad custom.
 - Validar niveles con gravedad lateral y bifurcaciones reales de extremo a extremo.

@@ -714,13 +714,71 @@ namespace Match3.Core
         // ========== PHASE 3: GRAVITY & DROP ==========
 
         /// <summary>
+        /// Try to fill this empty cell from a diagonal source relative to the current gravity direction.
+        /// A side-drop is only allowed when the candidate cannot continue falling straight in its own lane.
+        /// </summary>
+        public bool SideDrop()
+        {
+            if (!IsActiveCell || m_Item != null || m_DropAnim || BlocksGravityFlow)
+                return false;
+
+            Board firstCandidate = DropLeft;
+            Board secondCandidate = DropRight;
+
+            // Simple alternating priority to avoid persistent left/right bias.
+            if (((X + Y) & 1) == 1)
+            {
+                firstCandidate = DropRight;
+                secondCandidate = DropLeft;
+            }
+
+            if (TrySideDropFrom(firstCandidate))
+                return true;
+
+            return TrySideDropFrom(secondCandidate);
+        }
+
+        private bool TrySideDropFrom(Board candidate)
+        {
+            if (!CanSideDropFrom(candidate))
+                return false;
+
+            Debug.Log($"[Board {name}] SideDrop: moving item from {candidate.name}");
+            ItemDrop(candidate);
+            return true;
+        }
+
+        private bool CanSideDropFrom(Board candidate)
+        {
+            if (candidate == null || !candidate.IsActiveCell || candidate.BlocksGravityFlow)
+                return false;
+
+            if (candidate.m_Item == null || candidate.m_DropAnim || candidate.m_ItemBrusting)
+                return false;
+
+            var item = candidate.m_Item as Match3.Items.Item;
+            if (item != null && !item.Drop)
+                return false;
+
+            // If the candidate can continue falling straight in its own lane, do not steal it diagonally.
+            Board straightDropBoard = candidate.DropBoard;
+            if (straightDropBoard == null || !straightDropBoard.IsActiveCell || straightDropBoard.BlocksGravityFlow)
+                return true;
+
+            if (straightDropBoard.m_Item == null && !straightDropBoard.m_DropAnim)
+                return false;
+
+            return true;
+        }
+
+        /// <summary>
         /// Recursive gravity drop for standard upward gravity (DROP_DIR.U).
         /// Fills empty cells by pulling items from above.
         /// THIS board is the starting point (usually bottom of column).
         /// </summary>
-        public void GravityDropItemRow()
+        public bool GravityDropItemRow()
         {
-            if (!IsActiveCell) return;
+            if (!IsActiveCell) return false;
 
             Debug.Log($"[Board {name}] GravityDropItemRow starting");
 
@@ -748,7 +806,7 @@ namespace Match3.Core
             if (emptyBoard == null)
             {
                 Debug.Log($"  -> No empty cells found in column");
-                return;
+                return false;
             }
 
             // Find the first filled cell above the empty one (in direction of gravity destination)
@@ -772,15 +830,21 @@ namespace Match3.Core
 
                     // Recursively fill the cell that just became empty (restart from bottom)
                     this.GravityDropItemRow();
-                    return;
+                    return true;
                 }
                 filledBoard = filledBoard.GravityDestination;
+            }
+
+            if (emptyBoard.SideDrop())
+            {
+                this.GravityDropItemRow();
+                return true;
             }
 
             if (blockedByPanel)
             {
                 Debug.Log($"  -> No spawn beyond blocking panel for empty cell {emptyBoard.name}");
-                return;
+                return false;
             }
 
             // No filled cell found above - need to spawn at top of column
@@ -805,6 +869,7 @@ namespace Match3.Core
 
             // Recursively process remaining empty cells
             this.GravityDropItemRow();
+            return true;
         }
 
         /// <summary>

@@ -235,6 +235,7 @@ Assets/Scenes/Hall.unity             ← CONSERVADO (pendiente reconfigurar)
 - ✅ Fix visual post-fase: el sorting ya no depende del prefab; todos los Items fuerzan sorting order=10 y los paneles de bloqueo (IceCage, Fixed, Bread, Cracker) fuerzan sorting order=20 para verse por encima de la ficha
 - ✅ Fix gameplay post-fase: IceCage ahora bloquea el flujo de gravedad; una ficha enjaulada no puede caer ni ser arrastrada por gravedad a otra celda
 - ✅ Fix gameplay post-fase: IceCage vuelve a bloquear la interacción de swap; InputManager y MatchManager consultan el estado de paneles antes de intercambiar fichas, sin dañar la jaula por un intento de arrastre
+- ✅ Cierre de checks pendientes de Fase 7: añadidos `CreatorEmptyPanel`, `BottleCagePanel` y `LollyCagePanel` con integracion minima en `PanelManager` y `PanelSetting`; `Bottle_Cage` y `Lolly_Cage` quedan registrados como jaulas del sistema aunque su mecanica avanzada siga pendiente de fases posteriores
 
 ### Próximo paso: Fase 8 (Gravedad Configurable)
 
@@ -253,11 +254,16 @@ Assets/Scenes/Hall.unity             ← CONSERVADO (pendiente reconfigurar)
 
 ### Estado real consolidado
 - ✅ Implementado: tablero 9x9, carga de `Stage`, matches, cascadas, piezas especiales base, misiones `OrderN`, victoria/derrota, paneles base de Fase 7.
-- ✅ Implementado parcial: gravedad configurable por celda (`PossibleDrop_Dirs`, `ChangeDropDir`, `DropLeft`, `DropRight`, `isListDrop`, `m_ListDropStart`, `m_ListDropHead`).
-- ❌ Pendiente de Fase 8: `SideDrop()` real, warps, validacion completa de gravedad lateral y bifurcaciones.
+- ✅ Implementado parcial: gravedad configurable por celda (`PossibleDrop_Dirs`, `ChangeDropDir`, `DropLeft`, `DropRight`, `isListDrop`, `m_ListDropStart`, `m_ListDropHead`, `SideDrop()`).
+- ❌ Pendiente de Fase 8: warps, validacion completa de gravedad lateral y bifurcaciones.
 - ❌ Pendiente de fases posteriores: paneles avanzados, items avanzados, steps post-match con logica real y `EffectManager` completo.
 
 ### Decision de roadmap
 - ✅ Fase 7 queda oficialmente cerrada para el subset implementado.
 - 🟡 Fase 8 pasa a estado "en curso".
 - ✅ La siguiente continuacion operativa del proyecto se centra en cerrar Fase 8 antes de retomar paneles y mecanicas avanzadas de la referencia.
+
+### Avance nuevo en Fase 8
+- ✅ `Board.SideDrop()` implementado e integrado en la gravedad actual.
+- ✅ La prioridad de relleno queda alineada con la referencia: caida directa, luego caida diagonal relativa, y solo despues spawn.
+- 🟡 Sigue pendiente validar con un nivel de gravedad custom real y cerrar warps / indicador visual.
