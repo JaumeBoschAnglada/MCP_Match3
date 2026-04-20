@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using Match3.Core;
 using Match3.Managers;
+using TMPro;
 
 namespace Match3.UI
 {
@@ -10,6 +12,7 @@ namespace Match3.UI
 
         [SerializeField] private MovesDisplay movesDisplay;
         [SerializeField] private ScoreDisplay scoreDisplay;
+        [SerializeField] private TextMeshProUGUI levelFileText;
 
         [Header("Missions (dynamic)")]
         [SerializeField] private Transform missionsContainer;
@@ -38,6 +41,16 @@ namespace Match3.UI
 
             BuildDisplays();
             Refresh();
+            SetLevelFileName(MatchManager.Instance?.LoadedLevelFileName);
+        }
+
+        public void SetLevelFileName(string levelFileName)
+        {
+            if (levelFileText == null) return;
+            if (string.IsNullOrEmpty(levelFileName))
+                levelFileText.text = "Level: unknown";
+            else
+                levelFileText.text = "Level: " + levelFileName;
         }
 
         /// <summary>
@@ -71,6 +84,7 @@ namespace Match3.UI
 
             movesDisplay?.UpdateMoves(missionMgr.MovesRemaining);
             scoreDisplay?.UpdateScore(missionMgr.CurrentScore);
+            SetLevelFileName(MatchManager.Instance?.LoadedLevelFileName);
 
             for (int i = 0; i < m_ActiveDisplays.Count; i++)
             {

@@ -2,6 +2,7 @@
 using UnityEngine;
 using Match3.Data;
 using Match3.Steps;
+using Match3.UI;
 using Newtonsoft.Json;
 
 namespace Match3.Core
@@ -18,6 +19,7 @@ namespace Match3.Core
 
         // === Stage data ===
         public Stage m_CSD { get; private set; }
+        public string LoadedLevelFileName { get; private set; }
         public List<ColorType> m_AppearColor { get; private set; } = new List<ColorType>();
 
         // === State ===
@@ -71,6 +73,7 @@ namespace Match3.Core
         /// </summary>
         public void LoadLevel(int levelIndex)
         {
+            LoadedLevelFileName = levelIndex + ".json";
             TextAsset levelAsset = Resources.Load<TextAsset>("Levels/" + levelIndex);
             if (levelAsset != null)
             {
@@ -97,6 +100,7 @@ namespace Match3.Core
                 return;
             }
 
+            LoadedLevelFileName = levelName + ".json";
             TextAsset levelAsset = Resources.Load<TextAsset>("Levels/" + levelName);
             if (levelAsset != null)
             {
@@ -163,6 +167,8 @@ namespace Match3.Core
 
             SetMatchState(MatchState.Playing);
             SetStep(StepType.Wait);
+
+            TopUIController.Instance?.SetLevelFileName(LoadedLevelFileName);
         }
 
         private void Update()
