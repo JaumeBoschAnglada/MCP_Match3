@@ -118,8 +118,8 @@
     ["U"],["U"],["U"],["U"],["U"],["U"],["U"],["U"],["U"]
   ],
       "defaultSpawnLine": [
-        false,
-        false,
+        true,
+        true,
         true,
         true,
         true,

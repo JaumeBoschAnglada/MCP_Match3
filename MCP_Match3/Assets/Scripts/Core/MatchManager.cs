@@ -651,9 +651,6 @@ namespace Match3.Core
             itemA.CheckCombine();
             itemB.CheckCombine();
 
-            // Check if either swapped item is a special item that should activate on swap
-            bool specialActivation = IsSpecialItem(itemA.m_ItemType) || IsSpecialItem(itemB.m_ItemType);
-
             // Record swap boards so CheckMatchCondition places specials at the right position
             m_LastSwapBoardA = boardA;
             m_LastSwapBoardB = boardB;
@@ -661,16 +658,16 @@ namespace Match3.Core
             // Detect matches on both swapped items
             bool hasMatch = CheckMatchCondition();
 
-            // Special items always activate when swapped (even without a color match)
-            if (specialActivation && !hasMatch)
+            // Special + special: swapping two special pieces together is always valid
+            // (the actual combine effects will be resolved in Fase 5 CheckCombine)
+            if (!hasMatch && IsSpecialItem(itemA.m_ItemType) && IsSpecialItem(itemB.m_ItemType))
             {
-                // Mark the special item(s) for burst
-                if (IsSpecialItem(itemA.m_ItemType)) itemA.m_Board.m_isMatchBrust = true;
-                if (IsSpecialItem(itemB.m_ItemType)) itemB.m_Board.m_isMatchBrust = true;
+                itemA.m_Board.m_isMatchBrust = true;
+                itemB.m_Board.m_isMatchBrust = true;
                 hasMatch = true;
             }
 
-            Debug.Log($"[MatchManager] Swap completed. HasMatch: {hasMatch} (specialActivation: {specialActivation})");
+            Debug.Log($"[MatchManager] Swap completed. HasMatch: {hasMatch}");
 
             if (!hasMatch)
             {
@@ -736,7 +733,7 @@ namespace Match3.Core
 
         /// <summary>
         /// Returns true if the item type is a special (activatable) item — not a Normal piece.
-        /// Special items burst on swap regardless of color match.
+        /// Special items activate via color match or special+special swap.
         /// </summary>
         private static bool IsSpecialItem(ItemType t)
         {
