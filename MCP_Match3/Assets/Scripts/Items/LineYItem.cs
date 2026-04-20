@@ -36,7 +36,7 @@ namespace Match3.Items
             while (top.Top != null && top.Top.IsActiveCell) top = top.Top;
             var cur = top;
             while (cur != null && cur.IsActiveCell) { cur.m_isMatchBrust = true; cur = cur.Bottom; }
-            onComplete?.Invoke();
+            StartCoroutine(Co_DestroyAnim(onComplete));
         }
 
         private Sprite GetSprite(ColorType c)

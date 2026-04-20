@@ -36,7 +36,7 @@ namespace Match3.Items
             while (left.Left != null && left.Left.IsActiveCell) left = left.Left;
             var cur = left;
             while (cur != null && cur.IsActiveCell) { cur.m_isMatchBrust = true; cur = cur.Right; }
-            onComplete?.Invoke();
+            StartCoroutine(Co_DestroyAnim(onComplete));
         }
 
         private Sprite GetSprite(ColorType c)

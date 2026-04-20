@@ -66,7 +66,7 @@ namespace Match3.Items
                     break;
             }
 
-            onComplete?.Invoke();
+            StartCoroutine(Co_DestroyAnim(onComplete));
         }
 
         private Sprite GetSprite(ColorType c)

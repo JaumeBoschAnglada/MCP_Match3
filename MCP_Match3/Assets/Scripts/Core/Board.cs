@@ -41,6 +41,8 @@ namespace Match3.Core
         public bool m_MatchingCheck;
         public bool m_isMatchBrust;
         public ItemType m_NextItemType = ItemType.None;
+        /// <summary>World position toward which this board's item should animate when it forms part of a special merge group.</summary>
+        public Vector3? m_FusionTargetPos;
 
         // Panel flags
         public bool IsPanelFixed { get; set; }
@@ -140,8 +142,7 @@ namespace Match3.Core
         /// <summary>
         /// Indexer by DROP_DIR for gravity-based neighbor access.
         /// Returns the board in the direction pieces come FROM.
-        /// NOTE: With localPosition.y = -y, visual "top" (y=0) has higher world.y than "bottom" (y=8).
-        /// DROP_DIR.U means gravity pulls UP (toward higher world.y), so pieces come FROM bottom (y+1).
+        /// NOTE: With localPosition.y = -y, the visual top is y=0 and visual bottom is y=8.
         /// </summary>
         public Board this[DROP_DIR dir]
         {
@@ -426,16 +427,29 @@ namespace Match3.Core
             var itemMgr = Match3.Items.ItemManager.Instance;
             if (itemMgr == null) return;
 
-            // For now, always spawn normal items with random color
-            // TODO: Add special item logic based on spawn intervals in Phase 3+
+            // --- defaultSpawnLine filter ---
+            // defaultSpawnLine[X]: gates spawn by column. If false for this column, no spawn.
+            // defaultSpawnLineY[Y]: only checked when using custom gravity; gates spawn by row.
+            var stage = MatchManager.Instance?.m_CSD;
+            if (stage != null)
+            {
+                if (stage.defaultSpawnLine != null && stage.defaultSpawnLine.Length > X && !stage.defaultSpawnLine[X])
+                    return;
+
+                if (stage.isUseGravity
+                    && stage.defaultSpawnLineY != null
+                    && stage.defaultSpawnLineY.Length > Y
+                    && !stage.defaultSpawnLineY[Y])
+                    return;
+            }
+
+            // TODO Phase 9: spawn priority chain (food → spiral → donut → timebomb → mystery → chameleon → key → normal)
             GenItem(ItemType.Normal, ColorType.None);
 
-            // Set random color from level's available colors
             var item = m_Item as Match3.Items.Item;
             if (item != null)
             {
                 item.SetColorRandom();
-
                 item.transform.position = GetSpawnWorldPosition();
 
                 if (animateIntoCell)
@@ -643,6 +657,13 @@ namespace Match3.Core
                 ItemType burstType = item.m_ItemType;
 
                 Debug.Log($"[Board {name}] Bursting item {burstType}/{burstColor}");
+
+                // Transfer fusion target to item so it animates toward the special spawn board
+                if (m_FusionTargetPos.HasValue)
+                {
+                    item.m_BurstFusionTarget = m_FusionTargetPos.Value;
+                    m_FusionTargetPos = null;
+                }
 
                 // Call item's Brust method (visual effects will be added in Phase 10)
                 bool burstComplete = false;
@@ -907,6 +928,13 @@ namespace Match3.Core
 
             Debug.Log($"  -> No filled cell found above {emptyBoard.name}, spawning at top cell {topCell.name}");
             topCell.TopSpawnItem(topCell == emptyBoard);
+
+            // If spawn was blocked by the spawn line filter, no item was created — stop recursing.
+            if (topCell.m_Item == null)
+            {
+                Debug.Log($"  -> Spawn blocked for column {topCell.X}, stopping gravity for this column");
+                return false;
+            }
 
             // After spawning, the new item needs to drop down to fill emptyBoard
             if (topCell != emptyBoard && topCell.m_Item != null)

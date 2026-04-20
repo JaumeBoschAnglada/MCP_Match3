@@ -43,7 +43,7 @@ namespace Match3.Items
                     var t = boards[nx + ny * 9];
                     if (t != null && t.IsActiveCell) t.m_isMatchBrust = true;
                 }
-            onComplete?.Invoke();
+            StartCoroutine(Co_DestroyAnim(onComplete));
         }
 
         private Sprite GetSprite(ColorType c)

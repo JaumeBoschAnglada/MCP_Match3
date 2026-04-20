@@ -57,7 +57,7 @@ namespace Match3.Items
                 candidates.RemoveAt(randomIdx); // Avoid targeting same piece twice
             }
 
-            onComplete?.Invoke();
+            StartCoroutine(Co_DestroyAnim(onComplete));
         }
 
         private Sprite GetSprite(ColorType c)

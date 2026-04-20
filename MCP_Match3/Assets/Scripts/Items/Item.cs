@@ -28,6 +28,10 @@ namespace Match3.Items
         public Board m_Board { get; set; }
         protected MatchManager m_MatchMgr;
 
+        // === Burst animation ===
+        /// <summary>World position to move toward during destroy animation (set by MatchManager for fusion effect).</summary>
+        public Vector3? m_BurstFusionTarget { get; set; }
+
         // === Visual ===
         [SerializeField] protected SpriteRenderer m_Sprite;
 
@@ -58,6 +62,8 @@ namespace Match3.Items
             m_ItemType = itemType;
             m_Color = color;
             m_CombineType = CombineType.None;
+            transform.localScale = Vector3.one;  // reset after pool reuse
+            m_BurstFusionTarget = null;
 
             gameObject.name = $"Item_{itemType}_{color}";
             ApplyVisualSorting();
@@ -173,10 +179,38 @@ namespace Match3.Items
 
         /// <summary>
         /// Burst/destroy this item with visual effect.
+        /// Plays a scale-to-zero animation; if m_BurstFusionTarget is set, also moves toward that position.
         /// </summary>
         public virtual void Brust(Action onComplete = null)
         {
-            // TODO: Add particle effects, animations, sound
+            StartCoroutine(Co_DestroyAnim(onComplete));
+        }
+
+        /// <summary>
+        /// Scale this item from 1 to 0 over a short duration, optionally sliding toward a fusion target.
+        /// </summary>
+        protected System.Collections.IEnumerator Co_DestroyAnim(Action onComplete)
+        {
+            Vector3? fusionTarget = m_BurstFusionTarget;
+            m_BurstFusionTarget = null;
+
+            float duration = 0.25f;
+            float elapsed = 0f;
+            Vector3 startPos = transform.position;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                if (fusionTarget.HasValue)
+                    transform.position = Vector3.Lerp(startPos, fusionTarget.Value, t);
+                else
+                    transform.localScale = Vector3.Lerp(Vector3.one, Vector3.zero, t);
+                yield return null;
+            }
+
+            if (!fusionTarget.HasValue)
+                transform.localScale = Vector3.zero;
             onComplete?.Invoke();
         }
 

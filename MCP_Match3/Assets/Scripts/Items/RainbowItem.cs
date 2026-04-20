@@ -41,7 +41,7 @@ namespace Match3.Items
                 if (item != null && item.m_Color == target)
                     b.m_isMatchBrust = true;
             }
-            onComplete?.Invoke();
+            StartCoroutine(Co_DestroyAnim(onComplete));
         }
     }
 }

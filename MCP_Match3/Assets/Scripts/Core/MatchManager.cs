@@ -34,6 +34,11 @@ namespace Match3.Core
         // === Combo ===
         public int ComboCnt { get; set; }
 
+        // === Special spawn positioning ===
+        /// <summary>Boards involved in the last player-initiated swap; used to decide where a special item spawns.</summary>
+        public Board m_LastSwapBoardA { get; private set; }
+        public Board m_LastSwapBoardB { get; private set; }
+
         // === Step system (Phase 4) ===
         private Dictionary<StepType, BaseStep> m_DicStep;
         private BaseStep m_CurrentStep;
@@ -649,6 +654,10 @@ namespace Match3.Core
             // Check if either swapped item is a special item that should activate on swap
             bool specialActivation = IsSpecialItem(itemA.m_ItemType) || IsSpecialItem(itemB.m_ItemType);
 
+            // Record swap boards so CheckMatchCondition places specials at the right position
+            m_LastSwapBoardA = boardA;
+            m_LastSwapBoardB = boardB;
+
             // Detect matches on both swapped items
             bool hasMatch = CheckMatchCondition();
 
@@ -705,6 +714,8 @@ namespace Match3.Core
 
                 // Burst → Drop → Cascade loop
                 yield return StartCoroutine(Co_MatchBurst());
+                m_LastSwapBoardA = null; // cascades after the first burst have no swap board
+                m_LastSwapBoardB = null;
                 yield return StartCoroutine(Co_Drop());
 
                 while (CheckMatchCondition())
@@ -746,6 +757,42 @@ namespace Match3.Core
         }
 
         /// <summary>
+        /// From a match group, pick the best board for spawning the special item.
+        /// Prefers whichever board the player last swapped to; falls back to the board nearest the group center.
+        /// </summary>
+        private Board FindSpecialSpawnBoard(System.Collections.Generic.List<Board> matchGroup)
+        {
+            if (m_LastSwapBoardA != null && matchGroup.Contains(m_LastSwapBoardA))
+                return m_LastSwapBoardA;
+            if (m_LastSwapBoardB != null && matchGroup.Contains(m_LastSwapBoardB))
+                return m_LastSwapBoardB;
+
+            // Cascade — find the board closest to the geometric center of the group
+            Vector3 avg = Vector3.zero;
+            foreach (var b in matchGroup) avg += b.transform.position;
+            avg /= matchGroup.Count;
+
+            Board closest = matchGroup[0];
+            float bestDist = float.MaxValue;
+            foreach (var b in matchGroup)
+            {
+                float d = (b.transform.position - avg).sqrMagnitude;
+                if (d < bestDist) { bestDist = d; closest = b; }
+            }
+            return closest;
+        }
+
+        /// <summary>
+        /// Set m_FusionTargetPos on every board in the group so their items slide toward spawnBoard on destroy.
+        /// </summary>
+        private void SetFusionTargets(System.Collections.Generic.IEnumerable<Board> group, Board spawnBoard)
+        {
+            Vector3 targetPos = spawnBoard.transform.position;
+            foreach (var b in group)
+                b.m_FusionTargetPos = targetPos;
+        }
+
+        /// <summary>
         /// Check all boards for matches and mark them for bursting.
         /// Returns true if any matches were found.
         /// </summary>
@@ -774,13 +821,17 @@ namespace Match3.Core
                 if (horizontal.Count >= 5)
                 {
                     foreach (var b in horizontal) b.m_isMatchBrust = true;
-                    board.m_NextItemType = ItemType.Rainbow;
+                    var spawnH = FindSpecialSpawnBoard(horizontal);
+                    spawnH.m_NextItemType = ItemType.Rainbow;
+                    SetFusionTargets(horizontal, spawnH);
                     foundMatch = true;
                 }
                 else if (vertical.Count >= 5)
                 {
                     foreach (var b in vertical) b.m_isMatchBrust = true;
-                    board.m_NextItemType = ItemType.Rainbow;
+                    var spawnV = FindSpecialSpawnBoard(vertical);
+                    spawnV.m_NextItemType = ItemType.Rainbow;
+                    SetFusionTargets(vertical, spawnV);
                     foundMatch = true;
                 }
             }
@@ -835,10 +886,13 @@ namespace Match3.Core
                 foreach (var b in vertical) combined.Add(b);
                 foreach (var b in combined) b.m_isMatchBrust = true;
 
+                var combinedList = new System.Collections.Generic.List<Board>(combined);
+                var spawnCross = FindSpecialSpawnBoard(combinedList);
                 if (isLShape)
-                    board.m_NextItemType = ItemType.Bomb;    // L → Bomb
+                    spawnCross.m_NextItemType = ItemType.Bomb;    // L → Bomb
                 else
-                    board.m_NextItemType = ItemType.Line_C;  // T or + → Line_C (cross)
+                    spawnCross.m_NextItemType = ItemType.Line_C;  // T or + → Line_C (cross)
+                SetFusionTargets(combinedList, spawnCross);
 
                 foundMatch = true;
             }
@@ -857,13 +911,17 @@ namespace Match3.Core
                 if (vertical.Count == 4)
                 {
                     foreach (var b in vertical) b.m_isMatchBrust = true;
-                    board.m_NextItemType = ItemType.Line_X; // 4 vertical → destroys row (perpendicular)
+                    var spawnLineX = FindSpecialSpawnBoard(vertical);
+                    spawnLineX.m_NextItemType = ItemType.Line_X; // 4 vertical → destroys row (perpendicular)
+                    SetFusionTargets(vertical, spawnLineX);
                     foundMatch = true;
                 }
                 else if (horizontal.Count == 4)
                 {
                     foreach (var b in horizontal) b.m_isMatchBrust = true;
-                    board.m_NextItemType = ItemType.Line_Y; // 4 horizontal → destroys column (perpendicular)
+                    var spawnLineY = FindSpecialSpawnBoard(horizontal);
+                    spawnLineY.m_NextItemType = ItemType.Line_Y; // 4 horizontal → destroys column (perpendicular)
+                    SetFusionTargets(horizontal, spawnLineY);
                     foundMatch = true;
                 }
             }
@@ -882,7 +940,9 @@ namespace Match3.Core
                     foreach (var b in square) b.m_isMatchBrust = true;
                     if (!squarePivotAssigned)
                     {
-                        board.m_NextItemType = ItemType.Butterfly;
+                        var spawnButterfly = FindSpecialSpawnBoard(square);
+                        spawnButterfly.m_NextItemType = ItemType.Butterfly;
+                        SetFusionTargets(square, spawnButterfly);
                         squarePivotAssigned = true;
                     }
                     foundMatch = true;
