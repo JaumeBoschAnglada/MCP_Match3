@@ -7,6 +7,9 @@ namespace Match3.Core
         private bool m_IsSlowMo = false;
         private bool m_ShowBoardInfo = false;
         private bool m_PanelVisible = false;
+        private bool m_ShowTestLevels = false;
+        private string[] m_TestLevels = null;
+        private string m_SelectedLevel = "level_fase8";
         private GUIStyle m_BtnStyle;
         private GUIStyle m_LabelStyle;
         private GUIStyle m_CellStyle;
@@ -43,20 +46,71 @@ namespace Match3.Core
             // ── Panel de herramientas (bajo el TopUI) ────────────────
             float y = k_TopUIHeight;
 
-            GUILayout.BeginArea(new Rect(10, y, 320, 120));
+            // Cargar lista de niveles de test si no está inicializada
+            if (m_TestLevels == null)
+            {
+                // Solo archivos que empiecen por "level_fase" y terminen en .json
+                var levels = Resources.LoadAll<TextAsset>("Levels");
+                System.Collections.Generic.List<string> found = new System.Collections.Generic.List<string>();
+                foreach (var l in levels)
+                {
+                    if (l.name.StartsWith("level_fase"))
+                        found.Add(l.name);
+                }
+                found.Sort();
+                m_TestLevels = found.ToArray();
+                // Por defecto selecciona el de la fase 8 si existe
+                if (System.Array.IndexOf(m_TestLevels, "level_fase8") >= 0)
+                    m_SelectedLevel = "level_fase8";
+                else if (m_TestLevels.Length > 0)
+                    m_SelectedLevel = m_TestLevels[m_TestLevels.Length-1];
+            }
+
+            GUILayout.BeginArea(new Rect(10, y, 320, 180));
             GUI.color = m_IsSlowMo ? Color.yellow : Color.green;
-            if (GUILayout.Button(m_IsSlowMo ? "TimeScale: 0.1x" : "TimeScale: 1.0x", m_BtnStyle, GUILayout.Height(50)))
+            if (GUILayout.Button(m_IsSlowMo ? "TimeScale: 0.1x" : "TimeScale: 1.0x", m_BtnStyle, GUILayout.Height(40)))
             {
                 m_IsSlowMo = !m_IsSlowMo;
                 Time.timeScale = m_IsSlowMo ? 0.1f : 1f;
             }
             GUI.color = m_ShowBoardInfo ? Color.cyan : Color.white;
-            if (GUILayout.Button(m_ShowBoardInfo ? "Board Info: ON" : "Board Info: OFF", m_BtnStyle, GUILayout.Height(50)))
+            if (GUILayout.Button(m_ShowBoardInfo ? "Board Info: ON" : "Board Info: OFF", m_BtnStyle, GUILayout.Height(40)))
             {
                 m_ShowBoardInfo = !m_ShowBoardInfo;
             }
+            GUI.color = m_ShowTestLevels ? Color.yellow : Color.white;
+            if (GUILayout.Button("Niveles de Test", m_BtnStyle, GUILayout.Height(40)))
+            {
+                m_ShowTestLevels = !m_ShowTestLevels;
+            }
             GUI.color = Color.white;
             GUILayout.EndArea();
+
+            // Panel de selección de niveles de test
+            if (m_ShowTestLevels && m_TestLevels != null && m_TestLevels.Length > 0)
+            {
+                GUILayout.BeginArea(new Rect(340, y, 220, 40 + 48 * m_TestLevels.Length));
+                GUILayout.Label("Selecciona nivel de test:", m_LabelStyle);
+                for (int i = 0; i < m_TestLevels.Length; ++i)
+                {
+                    string lvl = m_TestLevels[i];
+                    bool isSelected = lvl == m_SelectedLevel;
+                    GUI.color = isSelected ? Color.green : Color.white;
+                    if (GUILayout.Button(lvl, m_BtnStyle, GUILayout.Height(40)))
+                    {
+                        m_SelectedLevel = lvl;
+                        m_ShowTestLevels = false;
+                        // Llama a cargar el nivel
+                        var matchMgr = MatchManager.Instance;
+                        if (matchMgr != null)
+                        {
+                            matchMgr.LoadLevel(lvl);
+                        }
+                    }
+                }
+                GUI.color = Color.white;
+                GUILayout.EndArea();
+            }
 
             // State info
             var mgr = MatchManager.Instance;

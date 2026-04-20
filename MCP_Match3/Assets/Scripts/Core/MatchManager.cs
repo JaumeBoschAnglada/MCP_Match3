@@ -62,8 +62,8 @@ namespace Match3.Core
                 DontDestroyOnLoad(go);
             }
 
-            // Try to load a test level
-            LoadLevel(3);
+            // Carga inicial: nivel de test de la fase actual (fase 8)
+            LoadLevel("level_fase8");
         }
 
         /// <summary>
@@ -83,6 +83,32 @@ namespace Match3.Core
             else
             {
                 Debug.LogWarning($"[MatchManager] Level {levelIndex} not found in Resources/Levels/");
+            }
+        }
+
+        /// <summary>
+        /// Load and start a level by name (e.g. 'level_fase8'). Clears current state first.
+        /// </summary>
+        public void LoadLevel(string levelName)
+        {
+            if (string.IsNullOrEmpty(levelName))
+            {
+                Debug.LogWarning("[MatchManager] LoadLevel called with null or empty name.");
+                return;
+            }
+
+            TextAsset levelAsset = Resources.Load<TextAsset>("Levels/" + levelName);
+            if (levelAsset != null)
+            {
+                // Reset board and items before restarting
+                ResetGame();
+                Stage stage = JsonConvert.DeserializeObject<Stage>(levelAsset.text);
+                StartGame(stage);
+                Debug.Log($"[MatchManager] Loaded level '{levelName}'");
+            }
+            else
+            {
+                Debug.LogWarning($"[MatchManager] Level '{levelName}' not found in Resources/Levels/");
             }
         }
 
