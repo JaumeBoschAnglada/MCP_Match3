@@ -951,12 +951,13 @@ namespace Match3.Core
             int passCount = 0;
             int totalWaitCount = 0;
             const int maxPasses = 20;
+            bool anyGravityChange = false;
 
             while (passCount < maxPasses)
             {
                 RefreshDropStartSetting();
 
-                bool anyGravityChange = false;
+                anyGravityChange = false;
 
                 // Process gravity independently for each active segment.
                 foreach (Board dropStart in m_ListDropStart)
@@ -970,13 +971,14 @@ namespace Match3.Core
 
                 if (!anyGravityChange)
                     break;
+                passCount++;
+            }
 
-                // Wait for this pass animations to settle before recalculating segments again.
-                yield return new UnityEngine.WaitForSeconds(0.5f);
-
+            if (anyGravityChange || passCount > 0)
+            {
                 bool stillDropping = true;
                 int waitCount = 0;
-                const int maxWait = 20;
+                const int maxWait = 40;
 
                 while (stillDropping && waitCount < maxWait)
                 {
@@ -992,13 +994,12 @@ namespace Match3.Core
 
                     if (stillDropping)
                     {
-                        yield return new UnityEngine.WaitForSeconds(0.1f);
+                        yield return null;
                         waitCount++;
                     }
                 }
 
                 totalWaitCount += waitCount;
-                passCount++;
             }
 
             Debug.Log($"[MatchManager] Co_Drop: Completed after {passCount} passes. Waited {totalWaitCount} cycles.");

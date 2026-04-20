@@ -893,6 +893,7 @@ namespace Match3.Core
             var item = m_Item as Match3.Items.Item;
             if (item != null)
             {
+                m_DropAnim = true;
                 item.m_Board = this;
                 // NOTE: Item stays at same parent (Field), just changes position
                 // No SetParent() call needed - items are siblings of boards
@@ -908,8 +909,6 @@ namespace Match3.Core
         /// </summary>
         private System.Collections.IEnumerator Co_ItemDropAnimation(Match3.Items.Item item)
         {
-            m_DropAnim = true;
-
             Vector3 startPos = item.transform.position;
             Vector3 targetPos = transform.position; // Target = Board's world position
 
