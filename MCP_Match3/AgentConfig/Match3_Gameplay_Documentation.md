@@ -277,36 +277,113 @@ Cada nivel es un archivo `.txt` que contiene un objeto JSON serializado de la cl
 
 ```json
 "DropDirs": [
-    ["U"],           // Celda 0: cae desde arriba (estándar)
-    ["L"],           // Celda 1: cae desde la izquierda
-    ["R", "L"],      // Celda 4: puede recibir de derecha O izquierda
+    ["U"],           // Celda 0: gravedad estándar (las piezas caen hacia abajo)
+    ["L"],           // Celda 1: gravedad lateral izquierda (las piezas caen hacia la izquierda)
+    ["R", "L"],      // Celda 4: bifurcación (puede recibir piezas de izquierda O derecha)
+    ["List"],        // Celda N: marcada como drop start explícito
     ...
 ]
 ```
 
-**Tipo:** `List<DROP_DIR[]>` — Array de 81 elementos, uno por celda (recorrido fila a fila, de izquierda a derecha, de arriba a abajo).
+**Tipo:** `List<DROP_DIR[]>` — 81 elementos, uno por celda. El recorrido es fila a fila, de izquierda a derecha, de arriba a abajo (índice = `X + Y * 9`).
 
-Cada celda tiene un array de una o más direcciones de caída:
+---
 
-| Valor | Significado | Las piezas llegan desde... |
-|---|---|---|
-| `"U"` | Up (por defecto) | Arriba de la celda |
-| `"D"` | Down | Debajo de la celda |
-| `"L"` | Left | La izquierda de la celda |
-| `"R"` | Right | La derecha de la celda |
+#### Semántica de DROP_DIR
 
-**Cuando una celda tiene múltiples direcciones** (ej: `["R", "L"]`), la celda puede recibir piezas desde cualquiera de esas direcciones. En `Board.Init()` se cargan todas en `PossibleDrop_Dirs`. Cuando la celda queda vacía, `ChangeDropDir()` elige aleatoriamente una de las disponibles y busca la que tenga pieza.
+Cada valor indica **la dirección en la que la celda busca su celda fuente de piezas** — es decir, de qué vecino toma las piezas que caerán hacia ella. La animación de caída es la opuesta visualmente:
 
-**Ejemplo del nivel 102 (gravedad lateral):**
+| Valor JSON | `DROP_DIR` | La celda busca su fuente en... | Animación visual de la pieza |
+|---|---|---|---|
+| `"U"` | `U` (Up) | `Top` → fila `Y-1` (encima) | Cae **hacia abajo** ↓ |
+| `"D"` | `D` (Down) | `Bottom` → fila `Y+1` (debajo) | Cae **hacia arriba** ↑ |
+| `"L"` | `L` (Left) | `Left` → columna `X-1` (a la izquierda) | Cae **hacia la derecha** → |
+| `"R"` | `R` (Right) | `Right` → columna `X+1` (a la derecha) | Cae **hacia la izquierda** ← |
+
+> **Mnemotécnica:** El valor indica de dónde viene la pieza ("viene desde arriba" = `"U"`), lo cual coincide con la dirección de la fuente, no con la dirección de la animación.
+
+En código, `Board.Drop` devuelve `this[this.Drop_Dir]`, que es el vecino en esa dirección. El vector de animación se obtiene con `GetDropVector()`:
+```csharp
+// Board.cs — GetDropVector()
+case DROP_DIR.U: return Vector3.up;    // Pieza llega desde arriba → animación descendente
+case DROP_DIR.D: return Vector3.down;
+case DROP_DIR.L: return Vector3.left;
+case DROP_DIR.R: return Vector3.right;
 ```
-Columnas 0-3: ["L"]  → las piezas entran desde la izquierda
-Columna 4:    ["R","L"] → bifurcación, puede recibir de ambos lados
-Columnas 5-8: ["R"]  → las piezas entran desde la derecha
+
+---
+
+#### Inversión en el editor visual (`DropEBoard`)
+
+El editor de niveles muestra una **flecha visual por celda** que indica de dónde llegan las piezas. Sin embargo, el componente `DropEBoard` almacena los valores con **sentido inverso** al JSON:
+
+```csharp
+// DropEBoard.cs — DropComps (lo que el editor guarda internamente)
+if (Drop_U.enabled) list.Add(DROP_DIR.D);   // ← Icono ↑ activo → guarda "D"
+if (Drop_D.enabled) list.Add(DROP_DIR.U);   // ← Icono ↓ activo → guarda "U"
+if (Drop_L.enabled) list.Add(DROP_DIR.R);   // ← Icono ← activo → guarda "R"
+if (Drop_R.enabled) list.Add(DROP_DIR.L);   // ← Icono → activo → guarda "L"
 ```
 
-**`isUseGravity`:** Si es `true`, el JSON contiene un `DropDirs` explícito. Si es `false`, `Stage.CreateGravity()` genera un array con todas las celdas en `"U"` (gravedad estándar hacia abajo).
+El icono del editor muestra la **dirección de llegada visual de la pieza** (hacia dónde cae), pero el JSON almacena la **dirección de búsqueda de fuente** (lo opuesto). Al leer un `.txt` de nivel, el valor en el JSON es el definitivo para el engine.
 
-**Valor especial `DROP_DIR.List`:** Si una celda contiene `"List"` en su `DropDirs`, se elimina esa entrada y se marca `isListDrop = true` en el `Board`. Esto indica que esa celda es un **punto de inicio de caída** (drop start) y se añade a `m_ListDropStart` directamente.
+---
+
+#### Celdas con múltiples direcciones (bifurcaciones)
+
+Cuando `DropDirs[i]` tiene más de un valor (ej: `["R", "L"]`), la celda puede recibir piezas de múltiples fuentes. En `Board.Init()`:
+
+```csharp
+PossibleDrop_Dirs.AddRange(m_CSD.DropDirs[this.Index]);
+Drop_Dir = PossibleDrop_Dirs[0];  // Dirección activa inicial
+```
+
+Cuando la celda queda vacía y ninguna fuente tiene pieza disponible, `ChangeDropDir()` selecciona aleatoriamente una de las direcciones posibles. Si alguna sí tiene pieza, se prefiere esa dirección.
+
+---
+
+#### Valor especial `"List"` (`DROP_DIR.List`)
+
+Si una celda contiene `"List"` en su array, ese valor se extrae durante `Board.Init()`:
+
+```csharp
+if (PossibleDrop_Dirs.Contains(DROP_DIR.List)) {
+    PossibleDrop_Dirs.Remove(DROP_DIR.List);
+    isListDrop = true;
+}
+```
+
+La celda se marca como **punto de inicio de caída explícito** (`isListDrop = true`) y se añade directamente a `m_ListDropStart` al cargar el nivel, con independencia de su posición en el tablero. Es útil para niveles con gravedad personalizada donde los drop starts no se pueden deducir automáticamente.
+
+---
+
+#### `isUseGravity` — Modo de gravedad
+
+| Valor | Comportamiento |
+|---|---|
+| `false` (por defecto) | `Stage.CreateGravity()` rellena todos los `DropDirs` con `["U"]`. El JSON puede omitir `DropDirs` o contenerlos todos en `"U"`. |
+| `true` | El JSON contiene un `DropDirs` explícito con las direcciones reales de cada celda. Se activan las flechas visuales en el editor y se consultan `*SpawnLineY` para el spawn. |
+
+---
+
+#### Ejemplo completo: nivel con gravedad lateral
+
+En un nivel con gravedad que empuja las piezas desde los laterales hacia el centro:
+
+```
+Tablero 9 columnas, gravedad lateral:
+
+  Col:  0    1    2    3    4      5    6    7    8
+       ["L"]["L"]["L"]["L"]["R","L"]["R"]["R"]["R"]["R"]
+
+  "L" → la celda busca su fuente en Left (columna X-1)
+       → las piezas se mueven visualmente hacia la derecha →
+  "R" → la celda busca su fuente en Right (columna X+1)
+       → las piezas se mueven visualmente hacia la izquierda ←
+  ["R","L"] → bifurcación central: puede recibir de X+1 o de X-1
+```
+
+El spawn de piezas nuevas ocurre en los extremos del tablero (columna 0 para el lado izquierdo, columna 8 para el lado derecho), que son las celdas cuya fuente (`Drop`) es `null`.
 
 ### 3.3. `panels` — Forma del tablero y obstáculos
 
@@ -668,6 +745,7 @@ Fila 8:  .  .  .  .  .  .  ■  .  .
 ### 3.14. Ejemplo con gravedad lateral: Nivel 102
 
 ```json
+"isUseGravity": true,
 "DropDirs": [
     ["L"], ["L"], ["L"], ["L"], ["R","L"], ["R"], ["R"], ["R"], ["R"],
     ["L"], ["L"], ["L"], ["L"], ["R","L"], ["R"], ["R"], ["R"], ["R"],
@@ -675,10 +753,17 @@ Fila 8:  .  .  .  .  .  .  ■  .  .
 ]
 ```
 
-Las piezas caen hacia los laterales en lugar de hacia abajo:
-- Columnas 0-3: gravedad hacia la izquierda (las piezas entran por la izquierda).
-- Columna 4: punto de bifurcación, puede recibir de ambos lados.
-- Columnas 5-8: gravedad hacia la derecha (las piezas entran por la derecha).
+Con esta configuración, las piezas fluyen desde los bordes laterales hacia el centro:
+
+| Columnas | Valor | La celda busca su fuente en... | Movimiento visual de la pieza |
+|---|---|---|---|
+| 0–3 | `["L"]` | `Left` → columna X-1 (más a la izquierda) | Fluye **hacia la derecha** → |
+| 4 | `["R","L"]` | `Right` (X+1) **o** `Left` (X-1) | Bifurcación: recibe de ambos lados |
+| 5–8 | `["R"]` | `Right` → columna X+1 (más a la derecha) | Fluye **hacia la izquierda** ← |
+
+Las piezas nuevas se generan en las columnas 0 (para el lado derecho del flujo) y 8 (para el lado izquierdo del flujo), ya que son las celdas cuya fuente (`Drop = this[Drop_Dir]`) es `null`.
+
+> **Nota:** Los valores en el JSON son la **dirección de búsqueda de fuente**, no la dirección visual. `"L"` = "busca en el vecino izquierdo" = la pieza viene de la izquierda y se mueve visualmente hacia la derecha.
 
 ### 3.15. Flujo de carga de un nivel
 
@@ -1433,48 +1518,62 @@ Cuando el jugador intercambia dos piezas especiales, en lugar de buscar match se
 
 ### 13.1. Dirección de gravedad
 
-Cada celda tiene un `DROP_DIR` configurable que determina de dónde recibe piezas:
+Cada celda tiene un `DROP_DIR` que define **en qué vecino busca su fuente de piezas**. El valor se lee de `DropDirs[index]` en el JSON y se almacena en `PossibleDrop_Dirs`:
 
-- `U` (Up): las piezas caen desde arriba (por defecto).
-- `D` (Down): caen desde abajo.
-- `L` (Left): caen desde la izquierda.
-- `R` (Right): caen desde la derecha.
+| `DROP_DIR` | La celda busca piezas en... | Movimiento visual de la pieza |
+|---|---|---|
+| `U` | `Top` → fila `Y-1` (celda de arriba) | La pieza cae **hacia abajo** ↓ (comportamiento por defecto) |
+| `D` | `Bottom` → fila `Y+1` (celda de abajo) | La pieza sube **hacia arriba** ↑ (gravedad invertida) |
+| `L` | `Left` → columna `X-1` (celda a la izquierda) | La pieza fluye **hacia la derecha** → |
+| `R` | `Right` → columna `X+1` (celda a la derecha) | La pieza fluye **hacia la izquierda** ← |
 
-Esto permite diseñar niveles con gravedad invertida o lateral.
+La propiedad `Board.Drop` devuelve `this[this.Drop_Dir]`, que es el vecino en la dirección indicada. Las celdas cuyo `Drop` es `null` son los **puntos de spawn** donde se generan piezas nuevas.
 
-### 13.2. GravityDropItemRow
+### 13.2. GravityDropItemRow — Método principal de caída
 
 ```csharp
 public bool GravityDropItemRow(Board pb)
 ```
 
-Es el método principal de caída. Se ejecuta recursivamente desde las celdas inferiores hacia arriba:
+Se llama desde `m_ListDropStart` de forma recursiva. Su lógica en orden:
 
-1. Si la celda tiene ítem, intenta propagar la caída hacia arriba.
-2. Si la celda está vacía y no hay celda superior, intenta generar un ítem desde un creador (`TopSpawnItem`).
-3. Si la celda superior tiene un ítem que puede caer, lo mueve hacia abajo (`ItemDrop`).
-4. Si no hay ítem disponible arriba, busca lateralmente (`SideDrop`) para llenar la celda.
+1. **Celda fija (`IsPanelFixed`):** Retorna `false` — no hay caída.
+2. **Bifurcación (`PossibleDrop_Dirs.Count > 1`):** Si hay pieza, no hace nada. Si está vacía, llama a `ChangeDropDir()` para elegir dirección activa.
+3. **La celda tiene pieza:** Propaga la caída llamando recursivamente en su celda fuente (`GetDropBoard()`).
+4. **La celda está vacía y su fuente es `null`:** Genera nueva pieza con `TopSpawnItem()`.
+5. **La celda está vacía y su fuente existe:** Intenta `CreatorSpawnItem()`, luego mueve pieza con `ItemDrop()`, luego propaga recursivamente. Si se agota la columna, busca en diagonal (`SideDrop`) o en creadores laterales (`CreatorSpawnItem_Side`).
 
-### 13.3. Drop lateral
+### 13.3. Drop lateral (`SideDrop`)
 
-Cuando una celda no puede recibir piezas desde su dirección principal, busca en las celdas `DropLeft` y `DropRight` (celdas diagonales relativas a la dirección de caída).
+Cuando la columna principal se agota, `SideDrop()` busca en celdas diagonales relativas a `Drop_Dir`:
 
-### 13.4. Warps
+- `Drop_Dir = U`: `DropLeft = Top.Left`, `DropRight = Top.Right`
+- `Drop_Dir = D`: `DropLeft = Bottom.Right`, `DropRight = Bottom.Left`
+- `Drop_Dir = L`: `DropLeft = Left.Bottom`, `DropRight = Left.Top`
+- `Drop_Dir = R`: `DropLeft = Right.Top`, `DropRight = Right.Bottom`
 
-Las celdas con `Warp_Out` se conectan a una celda `Warp_In`. Cuando una pieza cae por un warp out, reaparece en el warp in correspondiente.
+### 13.4. Puntos de inicio de caída (`m_ListDropStart`)
 
-### 13.5. Cintas transportadoras
+Celdas que el engine itera cada turno. Se construyen con `GetBoardDropStartSetting()`:
+- Celdas con `PossibleDrop_Dirs.Count > 1` (bifurcaciones).
+- Celdas cuyo `Drop` es `null`, fijo o también una bifurcación.
+- Celdas marcadas con `isListDrop = true` (valor `"List"` en el JSON).
 
-Las `ConveyerBeltPanel` mueven las piezas en una dirección fija cada turno, independiente de la gravedad.
+### 13.5. Warps
 
-### 13.6. Sistemas equivalentes de recorrido y caída en otras ramas
+Celdas `Warp_Out` conectadas a `Warp_In`. `GetDropBoard()` y `GetTopBoard()` devuelven la celda `Warp_In`, redirigiendo el flujo a través del portal.
 
-- En la nomenclatura `Slot`/`BoardManager`, cada celda también guarda una dirección de caída propia (`DropDirection`).
-- Los generadores equivalentes a `Creator_*` calculan el offset de aparición en función de esa dirección (`Up`, `Down`, `Left`, `Right`).
-- Los portales, rails y rutas especiales cumplen la misma función que aquí realizan `Warp_In`, `Warp_Out`, bifurcaciones de `DropDirs` y listas de caída.
-- El concepto de “objetivo que debe llegar a una salida” es el mismo que aquí usan `FoodArrive` y `JellyBear` cuando alcanzan una casilla final válida.
+### 13.6. Cintas transportadoras (`ConveyerBelt`)
+
+Los paneles `ConveyerBeltPanel` mueven las piezas en dirección fija (configurada en `addData`) cada turno, gestionado por `ConveyerBeltStep`.
+
+### 13.7. Sistemas equivalentes en otras ramas del proyecto
+
+- Los portales, rails y rutas especiales cumplen la misma función que `Warp_In`/`Warp_Out` y bifurcaciones de `DropDirs`.
+- El concepto de "objetivo que debe llegar a una salida" es el mismo que usan `FoodArrive` y `JellyBear` cuando alcanzan una casilla final válida.
 
 ---
+
 
 ## 14. Sistema de misiones y condiciones de victoria/derrota
 

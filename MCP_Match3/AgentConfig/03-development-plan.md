@@ -208,6 +208,18 @@
 - Las reacciones en cadena (cascading) funcionan
 - El sistema determina qué pieza especial crear (aunque no se instancien aún - Phase 5)
 
+### ⚠️ Correcciones pendientes (detectadas en auditoría — prioridad alta):
+- [x] **`Board.TopSpawnItem()`** — Aplicar filtro `stage.defaultSpawnLine[X]` antes de generar cualquier pieza. Si `isUseGravity == true`, aplicar también `stage.defaultSpawnLineY[Y]`. Si no pasa el filtro, retornar sin generar nada. ✅
+- [ ] **Cadena de prioridad de spawn** en `TopSpawnItem()` — Requiere items de Fase 9. Anotado como `TODO Phase 9` en el código. Prioridad:
+  1. Comida de misión (`MissionManager.CreatFoodItem`)
+  2. Espiral (`IsCreateSpiral`)
+  3. Donut (`IsCreateDonut`)
+  4. Bomba de tiempo (`IsCreateTimeBomb`)
+  5. Misterio (`IsCreateMystery`)
+  6. Camaleón (`IsCreateChameleon`)
+  7. Llave (`IsCreateKey`)
+  8. Normal (fallback)
+
 ---
 
 ## Fase 4: Steps (Máquina de Estados del Turno) ✅ COMPLETADA
@@ -273,6 +285,17 @@
 - Matches de 4+ generan piezas especiales visuales en el tablero
 - Cada tipo explota con su efecto correcto (fila, columna, cruz, 3×3, color)
 - Prefabs con sprites diferenciados por tipo
+
+### ⚠️ Correcciones pendientes (detectadas en auditoría — prioridad alta):
+- [ ] **`Item.CheckCombine()`** — Actualmente vacío en la base. Implementar override en cada ítem especial para combinaciones al hacer swap contra otro especial. Pares a cubrir:
+  - `LineX/Y` + `LineX/Y` → destruye fila completa + columna completa (cruz en el destino)
+  - `LineX/Y` + `Bomb` → activa la línea 3 veces (fila, columna y diagonal)
+  - `Bomb` + `Bomb` → área de explosión 5×5
+  - `Rainbow` + `Normal` → destruye todas las piezas del color del Normal
+  - `Rainbow` + `LineX/Y` → convierte cada pieza del color en un LineX/Y y las activa
+  - `Rainbow` + `Bomb` → convierte cada pieza del color en una Bomb y las activa
+  - `Rainbow` + `Rainbow` → destruye todo el tablero
+- [ ] **`Coroutine_Switching()`** en MatchManager — Leer `m_CombineType` de ambos ítems tras `CheckCombine()` y derivar al burst de combinación en vez del normal si hay tipo de combinación activo
 
 ---
 
@@ -377,25 +400,29 @@
 - [x] m_ListDropHead — Cabeceras de columna de caída
 - [x] GetBoardDropStartSetting() — Calcula drop starts
 - [x] GetGravitySetting() — Calcula drop heads
-- [ ] TicTok alternancia en procesamiento de caída
+- [ ] **TicTok** — Alternar la dirección de procesamiento de `m_ListDropStart` en cada llamada a `Co_Drop()` para evitar asimetría en gravedad lateral (flag booleano `m_TicTok` que invierte el orden de iteración)
+
+### En GravityDisplayer.cs (completar):
+- [x] `Show()` / `Hide()` — Muestra/oculta la flecha y rota según `CurrentDropDir`
+- [ ] **`Board.cs`** — Llamar a `GetComponent<GravityDisplayer>().Init(this)` durante `Init()` para conectar el displayer a su celda
+- [ ] **`InputManager.cs`** — Llamar `GravityDisplayer.Show()` en la celda tocada al iniciar drag si `isUseGravity == true` ; `Hide()` al soltar
 
 ### Paneles NUEVOS:
-- [ ] **WarpInPanel.cs**, **WarpOutPanel.cs** — Portales entre celdas
-
-### En GravityDisplayer.cs:
-- [x] Mostrar flecha de gravedad cuando isUseGravity == true
-- [ ] Se activa cuando el jugador toca una pieza
+- [ ] **WarpInPanel.cs** — Portal de entrada: guarda referencia a su WarpOutPanel; en la ruta de caída redirige la pieza al WarpOutPanel
+- [ ] **WarpOutPanel.cs** — Portal de salida: recibe piezas del WarpInPanel; integrar en `GravityDropItemRow()` como fuente alternativa
+- [ ] Conectar flags `m_IsWarpInBoard` / `m_IsWarpOutBoard` / `m_WarpBoard` en Board.cs con los paneles creados
 
 ### Criterio de "hecho":
 - 🟡 Niveles con gravedad lateral: base de datos, navegacion y side-drop implementados; validacion completa pendiente
 - 🟡 Bifurcaciones (celdas con múltiples direcciones): soporte parcial, falta validacion con niveles dedicados
 - [ ] Warps teletransportan piezas
-- 🟡 Indicador visual de gravedad: componente base implementado, integracion completa pendiente
+- 🟡 Indicador visual de gravedad: `Show()`/`Hide()` implementados, init y activación por input pendientes
 
 ### Pendiente real para cerrar la fase:
-- Añadir warps (`WarpInPanel`, `WarpOutPanel`) y su integracion en la ruta de caida.
-- Terminar la activacion visual del `GravityDisplayer` durante input y niveles con gravedad custom.
-- Validar niveles con gravedad lateral y bifurcaciones reales de extremo a extremo.
+1. **TicTok** — Añadir alternancia de iteración en `Co_Drop()` (flag `m_TicTok`)
+2. **GravityDisplayer conectado** — Llamar `Init(this)` desde `Board.Init()` ; activar/desactivar desde `InputManager`
+3. **WarpInPanel + WarpOutPanel** — Crear scripts, registrar en `PanelManager`, integrar en ruta de caída de `GravityDropItemRow()`
+4. **Validación end-to-end** — Nivel `level_fase8.json` con gravedad lateral y warps reales
 
 ---
 
