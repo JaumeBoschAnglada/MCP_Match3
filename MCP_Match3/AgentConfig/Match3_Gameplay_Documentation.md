@@ -4,36 +4,6 @@
 > En distintas ramas, builds o repositorios este mismo juego también aparece bajo el nombre `JewelHunterMatch3`.
 > Se excluye intencionalmente toda funcionalidad de la carpeta `1UP` y redes de analíticas.
 
-> Estado de lectura: este documento combina la referencia funcional del juego base con notas útiles para este repo. No todo lo descrito aquí está implementado todavía en `MCP_Match3`.
-
----
-
-## Estado de Implementacion en Este Repo
-
-### Mapa Doc vs Repo
-
-| Sistema | Estado en este repo | Notas operativas |
-|---|---|---|
-| Tablero base 9x9 | Implementado | `Board`, `MatchManager`, carga de `Stage`, indices, vecinos y centradodel tablero funcionando. |
-| Deteccion de matches y cascadas | Implementado | Matches de 3, 4, 5, T/L y cuadrado ya existen con burst, caida y regeneracion. |
-| Piezas especiales base | Implementado | `Normal`, `Butterfly`, `Line_X`, `Line_Y`, `Line_C`, `Bomb`, `Rainbow`. |
-| Misiones base y victoria/derrota | Implementado parcial | Funciona bien para `OrderN`, movimientos, victoria y derrota. El resto de misiones del juego de referencia no esta completo. |
-| Paneles de Fase 7 | Implementado | `Fixed`, `Ice_Cage`, `Bread`, `Cracker`, `Wafer_floor`, `Default_Full`, `Default_Empty`. |
-| Bloqueo por panel | Implementado | `Ice_Cage` bloquea swap y gravedad de su propia ficha; `Fixed` bloquea paso completo. |
-| Gravedad configurable por celda | Implementado parcial | Existen `PossibleDrop_Dirs`, `ChangeDropDir`, `DropLeft`, `DropRight`, `isListDrop`, `m_ListDropStart` y `m_ListDropHead`. |
-| Caida diagonal relativa (`SideDrop`) | Pendiente | La referencia base la usa, pero en este repo aun no existe `SideDrop()` ni la logica diagonal real de relleno. |
-| Warps y rutas especiales | Pendiente | No existen `WarpInPanel` ni `WarpOutPanel` en codigo de produccion. |
-| Steps post-match avanzados | Stub | `TimeBomb`, `IceCream`, `ConveyerBelt`, `Chameleon`, `MagicColor`, `BearJump`, `BearSpawn` avanzan sin logica real. |
-| Panels avanzados de la referencia | Pendiente | `Bottle`, `Lolly`, `Jam`, `Ring`, `MagicColor`, `ConveyerBelt`, `IceCream`, `Cake`, `JewelTree`, `FoodArrive`, etc. |
-| Efectos visuales dedicados | Pendiente parcial | Hay estructura para burst y pooling, pero no el `EffectManager` completo de la referencia. |
-| Input | Implementado, pero distinto de la regla original del plan | El repo usa `InputManager` con Input System. La referencia original y el plan inicial hablaban de `OnMouseDown/Enter/Up`. |
-
-### Lectura Correcta de Este Documento
-
-- Cuando una seccion describe el juego base completo, debe leerse como referencia funcional, no como garantia de que el repo ya lo implemente.
-- Para saber el estado real del proyecto hay que cruzar este documento con `03-development-plan.md`, `05-progress-log.md` y el codigo actual.
-- A fecha de esta revision, la Fase 7 esta cerrada y la Fase 8 esta empezada pero no terminada: la base de gravedad configurable existe, pero la caida diagonal de la referencia sigue pendiente.
-
 ---
 
 ## Índice
@@ -196,29 +166,110 @@ Cada nivel es un archivo `.txt` que contiene un objeto JSON serializado de la cl
 
 ```json
 {
-  "DropDirs": [...],            // Gravedad por celda
-  "isUseGravity": true,         // Si usa gravedad personalizada
-  "panels": [...],              // Paneles de cada celda (forma del tablero + obstáculos)
-  "items": [...],               // Tipo de pieza inicial en cada celda
-  "colors": [...],              // Color de la pieza inicial en cada celda
-  "focus": [],                  // Índices de celdas para foco visual inicial
-  "defaultSpawnLine": [...],    // Líneas X que generan piezas normales
-  "foodSpawnLine": [...],       // Líneas X que generan comida
-  "SpiralSpawnLine": [...],     // Líneas X que generan espirales
-  "DonutSpawnLine": [...],      // Líneas X que generan donuts
-  "TimeBombSpawnLine": [...],   // Líneas X que generan bombas de tiempo
-  "MysterySpawnLine": [...],    // Líneas X que generan piezas misteriosas
-  "ChameleonSpawnLine": [...],  // Líneas X que generan camaleones
-  "KeySpawnLine": [...],        // Líneas X que generan llaves
-  "appearColor": [...],         // Qué colores aparecen en este nivel
-  "scoreStar1": 5000,           // Puntuación para 1 estrella
-  "scoreStar2": 10000,          // Puntuación para 2 estrellas
-  "scoreStar3": 18000,          // Puntuación para 3 estrellas
-  "limit_Move": 30,             // Movimientos disponibles
-  "missionType": "OrderN",      // Tipo de misión principal
-  "isOrderNMission": true,      // Flags de tipo de misión activos
-  "missionInfo": [...],         // Lista de objetivos
-  // ... parámetros de spawn de ítems especiales ...
+  // ── TABLERO ──────────────────────────────────────────────────────────────
+  "DropDirs": [...],              // Array[81]: dirección de gravedad por celda
+  "isUseGravity": false,          // true = gravedad personalizada (lateral/invertida)
+  "panels": [...],                // Array[81]: paneles de cada celda (tipo + obstáculos)
+  "items": [...],                 // Array[81]: tipo de pieza inicial en cada celda
+  "colors": [...],                // Array[81]: color de la pieza inicial en cada celda
+  "focus": [],                    // List<int>: índices de celdas con foco visual
+
+  // ── SPAWN DE PIEZAS NORMALES ─────────────────────────────────────────────
+  "defaultSpawnLine":    [9×bool], // Columnas X habilitadas para spawn de piezas normales
+  "defaultSpawnLineY":   [9×bool], // Filas Y habilitadas (solo activo si isUseGravity=true)
+
+  // ── SPAWN DE ÍTEMS ESPECIALES (columna X) ────────────────────────────────
+  "foodSpawnLine":       [9×bool], // Columnas X donde puede aparecer comida
+  "SpiralSpawnLine":     [9×bool], // Columnas X donde puede aparecer una espiral
+  "DonutSpawnLine":      [9×bool], // Columnas X donde puede aparecer un donut
+  "TimeBombSpawnLine":   [9×bool], // Columnas X donde puede aparecer una bomba de tiempo
+  "MysterySpawnLine":    [9×bool], // Columnas X donde puede aparecer una pieza misteriosa
+  "ChameleonSpawnLine":  [9×bool], // Columnas X donde puede aparecer un camaleón
+  "KeySpawnLine":        [9×bool], // Columnas X donde puede aparecer una llave
+
+  // ── SPAWN DE ÍTEMS ESPECIALES (fila Y, solo si isUseGravity=true) ────────
+  "foodSpawnLineY":      [9×bool],
+  "SpiralSpawnLineY":    [9×bool],
+  "DonutSpawnLineY":     [9×bool],
+  "TimeBombSpawnLineY":  [9×bool],
+  "MysterySpawnLineY":   [9×bool],
+  "ChameleonSpawnLineY": [9×bool],
+  "KeySpawnLineY":       [9×bool],
+
+  // ── COLORES Y PUNTUACIÓN ─────────────────────────────────────────────────
+  "appearColor": [6×bool],        // Qué colores (RED/YEL/GRN/BLU/PRP/ORG) están activos
+  "scoreStar1": 5000,             // Puntuación mínima para 1 estrella
+  "scoreStar2": 10000,            // Puntuación mínima para 2 estrellas
+  "scoreStar3": 18000,            // Puntuación mínima para 3 estrellas
+  "limit_Move": 30,               // Movimientos disponibles en el nivel
+
+  // ── MISIONES ─────────────────────────────────────────────────────────────
+  "missionType": "OrderN",        // Tipo de misión principal (MissionType enum)
+  "isOrderNMission":   false,     // Recoger piezas normales por color
+  "isOrderSMission":   false,     // Recoger piezas especiales
+  "isWaferMission":    false,     // Destruir suelos de oblea
+  "isFoodMission":     false,     // Llevar comida al destino
+  "isBearMission":     false,     // Rescatar osos de gelatina
+  "isIceCreamMission": false,     // Misión de helado
+  "isJamMission":      false,     // Expandir/destruir jalea
+  "isScoreMission":    false,     // Alcanzar puntuación objetivo
+  "missionInfo": [...],           // List<MissionInfo>: objetivos concretos
+
+  // ── SPAWN: COMIDA ─────────────────────────────────────────────────────────
+  "food_MaxExist":  0,            // Máximo de unidades de comida simultáneas en tablero
+  "food_Interval":  0,            // Cada cuántos movimientos se intenta generar comida
+  "food_SpawnCnt":  0,            // Máximo de spawns de comida por ciclo de intervalo
+
+  // ── SPAWN: ESPIRAL ────────────────────────────────────────────────────────
+  "Spiral_MinExist": 0,           // Mínimo de espirales antes de dejar de generar
+  "Spiral_MaxExist": 0,           // Máximo simultáneo de espirales en tablero
+  "Spiral_Interval": 0,           // Cada cuántos movimientos se intenta generar una espiral
+  "Spiral_SpawnCnt": 0,           // Máximo de spawns de espiral por ciclo de intervalo
+
+  // ── SPAWN: DONUT ─────────────────────────────────────────────────────────
+  "Donut_MinExist": 0,
+  "Donut_MaxExist": 0,
+  "Donut_Interval": 0,
+  "Donut_SpawnCnt": 0,
+
+  // ── SPAWN: BOMBA DE TIEMPO ────────────────────────────────────────────────
+  "TimeBomb_MinExist":   0,
+  "TimeBomb_MaxExist":   0,
+  "TimeBomb_Interval":   0,
+  "TimeBomb_SpawnCnt":   0,
+  "TimeBomb_FirstCount": 15,      // Contador inicial de cada bomba de tiempo (default: 15)
+
+  // ── SPAWN: OSO DE GELATINA ────────────────────────────────────────────────
+  "Bear_MaxExist": 0,             // Máximo de osos simultáneos (sin Min ni SpawnCnt)
+  "Bear_Interval": 0,             // Cada cuántos movimientos se genera un oso
+
+  // ── SPAWN: HELADO ─────────────────────────────────────────────────────────
+  "IceCream_Interval":        1,  // Cada cuántos turnos se expande el helado
+  "IceCreamCreator_Interval": 1,  // Cada cuántos turnos el creador genera helado nuevo
+
+  // ── SPAWN: MISTERIO ───────────────────────────────────────────────────────
+  "Mystery_SettingType": "Mystery_Basic", // Dificultad de la pieza misteriosa
+  "Mystery_MinExist": 0,
+  "Mystery_MaxExist": 0,
+  "Mystery_Interval": 0,
+  "Mystery_SpawnCnt": 0,
+
+  // ── SPAWN: CAMALEÓN ───────────────────────────────────────────────────────
+  "Chameleon_MinExist": 0,
+  "Chameleon_MaxExist": 0,
+  "Chameleon_Interval": 0,
+  "Chameleon_SpawnCnt": 0,
+
+  // ── SPAWN: LLAVE ──────────────────────────────────────────────────────────
+  "Key_MinExist": 0,
+  "Key_MaxExist": 0,
+  "Key_Interval": 0,
+  "Key_SpawnCnt": 0,
+
+  // ── ÁRBOL DE JOYAS ────────────────────────────────────────────────────────
+  "S_Tree_SettingType":  "Basic", // Dificultad del árbol de joyas
+  "JewelTreeItem":       [4×ItemType],  // Ítems de los 4 niveles del árbol
+  "JewelTreeItemColor":  [4×ColorType]  // Color de esos ítems
 }
 ```
 
@@ -363,43 +414,91 @@ for (int i = 0; i < m_CSD.focus.Count; i++)
 
 ### 3.7. SpawnLines — Líneas de generación de piezas
 
-Existen **8 pares de arrays** booleanos de 9 elementos cada uno (uno por columna X y otro por fila Y):
+Cada tipo de ítem que puede aparecer dinámicamente tiene **dos arrays booleanos** de 9 elementos que controlan desde qué columna (X) o fila (Y) puede generarse:
 
-| Campo (X) | Campo (Y) | Qué controla |
+| Array X | Array Y | Ítem controlado |
 |---|---|---|
-| `defaultSpawnLine[9]` | `defaultSpawnLineY[9]` | ¿Se generan piezas normales en esta columna/fila? |
-| `foodSpawnLine[9]` | `foodSpawnLineY[9]` | ¿Se genera comida en esta columna/fila? |
-| `SpiralSpawnLine[9]` | `SpiralSpawnLineY[9]` | ¿Se generan espirales en esta columna/fila? |
-| `DonutSpawnLine[9]` | `DonutSpawnLineY[9]` | ¿Se generan donuts en esta columna/fila? |
-| `TimeBombSpawnLine[9]` | `TimeBombSpawnLineY[9]` | ¿Se generan bombas de tiempo en esta columna/fila? |
-| `MysterySpawnLine[9]` | `MysterySpawnLineY[9]` | ¿Se generan piezas misteriosas en esta columna/fila? |
-| `ChameleonSpawnLine[9]` | `ChameleonSpawnLineY[9]` | ¿Se generan camaleones en esta columna/fila? |
-| `KeySpawnLine[9]` | `KeySpawnLineY[9]` | ¿Se generan llaves en esta columna/fila? |
+| `defaultSpawnLine[9]` | `defaultSpawnLineY[9]` | Piezas normales (y todos los ítems especiales vía `TopSpawnItem`) |
+| `foodSpawnLine[9]` | `foodSpawnLineY[9]` | Comida de misión |
+| `SpiralSpawnLine[9]` | `SpiralSpawnLineY[9]` | Espirales |
+| `DonutSpawnLine[9]` | `DonutSpawnLineY[9]` | Donuts |
+| `TimeBombSpawnLine[9]` | `TimeBombSpawnLineY[9]` | Bombas de tiempo |
+| `MysterySpawnLine[9]` | `MysterySpawnLineY[9]` | Piezas misteriosas |
+| `ChameleonSpawnLine[9]` | `ChameleonSpawnLineY[9]` | Camaleones |
+| `KeySpawnLine[9]` | `KeySpawnLineY[9]` | Llaves |
 
-Cada array tiene 9 booleanos (`true`/`false`), uno por columna (X) o fila (Y).
+Cada posición del array corresponde a la columna (X) o fila (Y) con el mismo índice (0–8). `true` = esa línea puede generar ese tipo de ítem; `false` = no puede.
 
-**Ejemplo:**
+**Ejemplo JSON:**
 ```json
-"defaultSpawnLine": [true, true, true, true, true, true, true, true, true],
-"TimeBombSpawnLine": [false, false, false, true, true, true, false, false, false]
+"defaultSpawnLine":  [true, true, true, true, true, true, true, true, true],
+"TimeBombSpawnLine": [false, false, false, true, true, true, false, false, false],
+"TimeBombSpawnLineY": [true, true, true, true, true, true, true, true, true]
 ```
-En este caso, las piezas normales se generan en todas las columnas, pero las bombas de tiempo solo se generan en las columnas 3, 4 y 5.
+En este ejemplo las bombas de tiempo solo pueden entrar por las columnas 3, 4 y 5.
 
-**Cómo se usan en el código** (`Board.TopSpawnItem()`):
+---
+
+#### Cómo funcionan en el código
+
+**`defaultSpawnLine` / `defaultSpawnLineY`** son la puerta de entrada de TODO el spawn superior. En `Board.TopSpawnItem()` es la **primera comprobación**; si falla, no se genera nada en esa celda, ni piezas normales ni especiales:
+
 ```csharp
-// Una pieza normal solo se genera si la columna X y la fila Y lo permiten
-if (!m_CSD.defaultSpawnLine[this.X] || (m_CSD.isUseGravity && !m_CSD.defaultSpawnLineY[this.Y]))
+// Board.cs — TopSpawnItem()
+if (!m_CSD.defaultSpawnLine[this.X] ||
+    (m_CSD.isUseGravity && !m_CSD.defaultSpawnLineY[this.Y]))
+    return false;  // ← No spawn en esta celda, sin excepción
+```
+
+Solo si `defaultSpawnLine[X]` es `true` (y `defaultSpawnLineY[Y]` también cuando `isUseGravity` es `true`), se continúa con el orden de prioridad de spawn:
+
+```
+1. Comida de misión   (MissionManager.CreatFoodItem)
+2. Espiral            (ItemManager.IsCreateSpiral)
+3. Donut              (ItemManager.IsCreateDonut)
+4. Bomba de tiempo    (ItemManager.IsCreateTimeBomb)
+5. Misterio           (ItemManager.IsCreateMystery)
+6. Camaleón           (ItemManager.IsCreateChameleon)
+7. Llave              (ItemManager.IsCreateKey)
+8. Normal             (fallback: siempre)
+```
+
+**Los arrays `*SpawnLine[X]` de cada ítem especial** añaden un segundo filtro por columna **dentro** de cada `IsCreate*()`. La tabla a continuación indica en qué escenarios se aplica ese filtro:
+
+| Ítem | Se filtra por columna X desde `TopSpawnItem` | Se ignora el filtro X en creadores especiales |
+|---|:-:|:-:|
+| Comida (`foodSpawnLine`) | ✅ (`istop=true`) | ✅ (pasa `istop=false`) |
+| Espiral (`SpiralSpawnLine`) | ✅ (`istop=true`) | ✅ (pasa `istop=false`) |
+| Donut (`DonutSpawnLine`) | ✅ (sin `istop`, siempre filtra) | ❌ (siempre filtra, incluso desde creadores) |
+| Bomba de tiempo (`TimeBombSpawnLine`) | ✅ (`istop=true`) | ✅ (pasa `istop=false`) |
+| Misterio (`MysterySpawnLine`) | ✅ (sin `istop`, siempre filtra) | ❌ (siempre filtra, incluso desde creadores) |
+| Camaleón (`ChameleonSpawnLine`) | ✅ (sin `istop`, siempre filtra) | ❌ (siempre filtra, incluso desde creadores) |
+| Llave (`KeySpawnLine`) | ✅ (`istop=true`) | ✅ (pasa `istop=false`) |
+
+> **Nota `istop`:** Los ítems con `istop` tienen la firma `IsCreate*(Board bd, bool istop = true)`. Cuando el spawn lo inicia `TopSpawnItem` (borde superior del tablero), `istop=true` y el filtro de columna se aplica. Cuando lo inicia un panel creador especial (`Creator_Sprial`, `Creator_TimeBomb`, `Creator_Key`…), se pasa `istop=false` y el filtro X se omite, porque el creador ya define físicamente la columna.
+
+---
+
+#### Arrays `*SpawnLineY` — Solo activos con gravedad personalizada
+
+Los arrays Y (fila) **no se usan en ningún `IsCreate*()` de ítems especiales**. Únicamente `defaultSpawnLineY` tiene comprobación activa, y solo cuando `isUseGravity == true`:
+
+```csharp
+// Solo defaultSpawnLine tiene comprobación Y
+if (!m_CSD.defaultSpawnLine[this.X] ||
+    (m_CSD.isUseGravity && !m_CSD.defaultSpawnLineY[this.Y]))
     return false;
 ```
 
-Para los ítems especiales, la comprobación se hace en `ItemManager.IsCreate*()`:
-```csharp
-// Ejemplo: espiral
-if (!MatchMgr.m_CSD.SpiralSpawnLine[bd.X])
-    return false;
-```
+Los demás `*SpawnLineY` están declarados en `Stage` y serializados en el JSON, pero **el engine runtime solo consulta el array X**. Los arrays Y se reservan para uso futuro del editor o extensibilidad.
 
-**Nota:** Los arrays `*SpawnLineY` **solo se usan cuando `isUseGravity == true`** (gravedad personalizada). Con gravedad estándar solo se consulta la columna X.
+**Valor por defecto en `Stage()` (constructor):**
+- `defaultSpawnLine[9]` → todos `false` (sin inicializar; el editor los pone a `true` en `NewStage()`)
+- `defaultSpawnLineY[9]` → todos `true` (inicializados explícitamente en el constructor)
+- Resto de `*SpawnLine[9]` → todos `false`
+- Resto de `*SpawnLineY[9]` → todos `true`
+
+**Implicación práctica:** si `isUseGravity == false` (gravedad estándar, la mayoría de niveles), los arrays `*SpawnLineY` están en el JSON pero **no tienen efecto en gameplay**. Solo `defaultSpawnLine[X]` importa.
 
 ### 3.8. `appearColor` — Colores disponibles en el nivel
 
@@ -481,18 +580,18 @@ enum MissionKind {
 
 ### 3.11. Parámetros de spawn de ítems especiales
 
-Cada tipo de ítem especial que se genera dinámicamente durante la partida tiene 4 parámetros:
+Cada tipo de ítem que puede aparecer dinámicamente tiene hasta 4 parámetros que controlan su frecuencia. La lógica es idéntica para todos: en `IsCreate*()` se comprueba primero si el número actual en tablero supera el máximo (`*_MaxExist`), luego si el intervalo de movimientos se ha cumplido (`*_Interval`), y finalmente si el spawn por ciclo no ha superado el límite (`*_SpawnCnt`).
 
-| Parámetro | Significado |
-|---|---|
-| `*_MinExist` | Nº mínimo que debe haber en el tablero antes de dejar de generar |
-| `*_MaxExist` | Nº máximo permitido en el tablero simultáneamente |
-| `*_Interval` | Cada cuántos movimientos del jugador se genera uno nuevo |
-| `*_SpawnCnt` | Nº máximo de spawns permitidos por ciclo de intervalo |
+| Parámetro | Tipo | Descripción |
+|---|---|---|
+| `*_MinExist` | `int` | Si el número actual en tablero **es mayor** que este valor, no se genera más. (Umbral mínimo de población.) |
+| `*_MaxExist` | `int` | Máximo absoluto simultáneo en tablero. Si se alcanza, no se genera nada. |
+| `*_Interval` | `int` | El contador interno se incrementa cada movimiento; solo se genera si `contador >= Interval`. |
+| `*_SpawnCnt` | `int` | Máximo de spawns permitidos por ciclo de intervalo. Al generar uno se incrementa el contador; cuando supera este límite + `MinExist`, se bloquea. |
 
-**Ítems con estos parámetros:**
+**Ítems con los 4 parámetros (`Min`, `Max`, `Interval`, `SpawnCnt`):**
 
-| Prefijo | Ítem |
+| Prefijo JSON | Ítem |
 |---|---|
 | `Spiral_*` | Espirales |
 | `Donut_*` | Donuts |
@@ -500,20 +599,25 @@ Cada tipo de ítem especial que se genera dinámicamente durante la partida tien
 | `Mystery_*` | Piezas misteriosas |
 | `Chameleon_*` | Camaleones |
 | `Key_*` | Llaves |
-| `food_*` | Comida (`food_MaxExist`, `food_Interval`, `food_SpawnCnt`) |
-| `Bear_*` | Osos (`Bear_MaxExist`, `Bear_Interval`, sin Min/SpawnCnt) |
 
-**Parámetros adicionales:**
+**Ítems con parámetros reducidos:**
+
+| Prefijo JSON | Ítem | Parámetros disponibles |
+|---|---|---|
+| `food_*` | Comida | `food_MaxExist`, `food_Interval`, `food_SpawnCnt` (sin `Min`) |
+| `Bear_*` | Osos de gelatina | `Bear_MaxExist`, `Bear_Interval` (sin `Min` ni `SpawnCnt`) |
+
+**Parámetros adicionales de ítems especiales:**
 
 | Campo | Tipo | Descripción |
 |---|---|---|
-| `TimeBomb_FirstCount` | `int` | Valor inicial del contador de las bombas de tiempo (default: 15) |
-| `IceCream_Interval` | `int` | Cada cuántos turnos se expande el helado |
-| `IceCreamCreator_Interval` | `int` | Cada cuántos turnos el creador genera helado |
-| `Mystery_SettingType` | `MysterySettingType` | Dificultad de la pieza misteriosa |
-| `S_Tree_SettingType` | `S_TreeSettingType` | Dificultad del árbol |
-| `JewelTreeItem[4]` | `ItemType[4]` | Qué ítems salen de los 4 niveles del árbol de joyas |
-| `JewelTreeItemColor[4]` | `ColorType[4]` | Color de esos ítems |
+| `TimeBomb_FirstCount` | `int` | Valor inicial del contador de cada bomba de tiempo al generarse (default en constructor: `15`) |
+| `IceCream_Interval` | `int` | Cada cuántos turnos se expande el bloque de helado existente (default: `1`) |
+| `IceCreamCreator_Interval` | `int` | Cada cuántos turnos el panel `IceCream_Creator` genera un nuevo bloque de helado (default: `1`) |
+| `Mystery_SettingType` | `MysterySettingType` | Preset de dificultad/comportamiento de la pieza misteriosa |
+| `S_Tree_SettingType` | `S_TreeSettingType` | Preset del árbol de joyas |
+| `JewelTreeItem[4]` | `ItemType[4]` | Qué ítem sale de cada uno de los 4 niveles del árbol (default: todos `Line_X`) |
+| `JewelTreeItemColor[4]` | `ColorType[4]` | Color de ese ítem (default: todos `Rnd`) |
 
 **`MysterySettingType`:**
 ```csharp
@@ -841,11 +945,27 @@ Todos en `Assets/Prefab/`:
 
 ### 5.8. Reglas reales de spawn de fichas especiales
 
-- `Board.TopSpawnItem()` intenta crear en este orden: comida de misión, `Spiral`, `Donut`, `TimeBomb`, `Mystery`, `Chameleon`, `Key` y, si nada aplica, una `Normal`.
-- Los creadores especiales (`Creator_Food`, `Creator_Sprial`, `Creator_TimeBomb`, `Creator_Key` y variantes mixtas) reutilizan esa misma prioridad, pero forzando la fuente del spawn.
+`Board.TopSpawnItem()` es el punto de entrada de todo el spawn superior. Su lógica completa es:
+
+1. **Filtro de columna/fila:** Si `defaultSpawnLine[X]` es `false`, o si `isUseGravity=true` y `defaultSpawnLineY[Y]` es `false`, **no se genera nada** y retorna `false`. Este filtro bloquea absolutamente todo el spawn de esa celda.
+2. **Tutorial seed:** Si hay semilla de tutorial activa, genera la pieza predefinida.
+3. **Orden de prioridad de spawn** (el primero que cumpla sus condiciones gana):
+   1. Comida de misión (`MissionManager.CreatFoodItem`)
+   2. Espiral (`ItemManager.IsCreateSpiral`)
+   3. Donut (`ItemManager.IsCreateDonut`)
+   4. Bomba de tiempo (`ItemManager.IsCreateTimeBomb`)
+   5. Misterio (`ItemManager.IsCreateMystery`)
+   6. Camaleón (`ItemManager.IsCreateChameleon`)
+   7. Llave (`ItemManager.IsCreateKey`)
+   8. Normal (fallback — siempre ocurre si nada anterior aplica)
+
+Los creadores especiales (`Creator_Food`, `Creator_Sprial`, `Creator_TimeBomb`, `Creator_Key` y variantes mixtas como `Creator_Sprial_TimeBomb`) también pasan por estos métodos pero con `istop=false`, lo que les permite ignorar el filtro de columna X de su ítem específico (el creador ya está físicamente en la columna correcta).
+
+Restricciones adicionales:
 - `ItemManager` no genera por probabilidad libre: cada familia usa `*_MinExist`, `*_MaxExist`, `*_Interval` y `*_SpawnCnt`.
-- `Key` solo se genera si todavía quedan `Bottle_Cage` activas.
+- `Key` solo se genera si todavía quedan paneles `Bottle_Cage` activos en el tablero.
 - `TimeBomb`, `Mystery`, `Chameleon` y `Key` dejan de generarse durante `BonusTime`.
+- `Donut`, `Mystery` y `Chameleon` **siempre** comprueban su `*SpawnLine[X]`, incluso cuando el spawn procede de un creador (no tienen parámetro `istop`).
 
 ### 5.9. Equivalencias de fichas en la otra nomenclatura del mismo juego
 
