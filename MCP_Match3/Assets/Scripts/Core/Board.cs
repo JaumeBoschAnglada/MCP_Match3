@@ -883,20 +883,20 @@ namespace Match3.Core
                 filledBoard = filledBoard.GravityDestination;
             }
 
-            if (emptyBoard.SideDrop())
-            {
-                this.GravityDropItemRow();
-                return true;
-            }
-
             if (blockedByPanel)
             {
+                if (emptyBoard.SideDrop())
+                {
+                    this.GravityDropItemRow();
+                    return true;
+                }
+
                 Debug.Log($"  -> No spawn beyond blocking panel for empty cell {emptyBoard.name}");
                 return false;
             }
 
-            // No filled cell found above - need to spawn at top of column
-            // Find the topmost cell (GravityDestination == null or inactive)
+            // No filled cell found in this column - spawn new piece from the current lane first.
+            // Side-drops from adjacent lanes are only allowed when the current lane cannot spawn.
             Board topCell = emptyBoard;
             while (topCell.GravityDestination != null
                 && topCell.GravityDestination.IsActiveCell
