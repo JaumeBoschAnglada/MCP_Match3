@@ -685,22 +685,23 @@ namespace Match3.Core
                 bool burstComplete = false;
                 item.Brust(() => burstComplete = true);
 
-                // Release this cell for gravity immediately so new pieces start falling
-                // while the scale-down animation is still playing.
-                // For special-generating bursts, m_IsSpecialGenerating already pauses all
-                // gravity board-wide, so we keep m_ItemBrusting=true there to signal that
-                // this cell is still mid-burst (GenItem must not fire until after pool restore).
-                m_Item = null;
-                if (pendingSpecialType == ItemType.None)
-                    m_ItemBrusting = false;
-
-                // Wait for the animation to finish before restoring to pool
+                // Wait for the animation to finish before clearing the cell.
+                // Keeping m_Item non-null while the burst plays means the cell appears
+                // occupied (old item scaling to zero) and gravity won't try to fill it yet.
+                // This prevents a visible gap at any TimeScale: gravity only runs after the
+                // burst visual ends, so the replacement drop starts when the cell is truly
+                // empty — never leaving an empty-looking hole while a piece is scaling away.
                 yield return new UnityEngine.WaitUntil(() => burstComplete);
 
                 Debug.Log($"[Board {name}] Burst animation complete, restoring to pool");
 
-                // Return item to pool
+                // Return item to pool (already at scale 0 — no visible change)
                 ObjectPool.Instance?.Restore(item.gameObject);
+
+                // NOW release the cell so gravity can fill it on the next cascade frame.
+                m_Item = null;
+                if (pendingSpecialType == ItemType.None)
+                    m_ItemBrusting = false;
 
                 // MissionApply: notifica la pieza destruida a MissionManager
                 item.MissionApply();
@@ -728,13 +729,7 @@ namespace Match3.Core
                 // m_DropAnim=true prevents this cell from being used as a gravity source/dest.
                 // m_IsSpecialGenerating keeps the global gravity pause active (set in Co_DynamicCascade).
                 m_DropAnim = true;
-                float holdElapsed = 0f;
-                const float holdDuration = 0.1f;
-                while (holdElapsed < holdDuration)
-                {
-                    holdElapsed += UnityEngine.Time.deltaTime;
-                    yield return null;
-                }
+                yield return new UnityEngine.WaitForSeconds(0.1f);
                 m_DropAnim = false;
             }
 
@@ -1040,7 +1035,7 @@ namespace Match3.Core
                 }
 
                 elapsed += UnityEngine.Time.deltaTime;
-                float t = elapsed / duration;
+                float t = Mathf.Clamp01(elapsed / duration);
 
                 // Ease-in: accelerates toward destination (t²)
                 float easedT = t * t;

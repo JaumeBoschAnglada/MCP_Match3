@@ -134,7 +134,7 @@
     { "type": "OrderN", "kind": "Red", "count": 500 },
     { "type": "OrderN", "kind": "Blue", "count": 500 }
   ],
-  "limit_Move": 20,
+  "limit_Move": 200,
   "scoreStar1": 200,
   "scoreStar2": 500,
   "scoreStar3": 900,

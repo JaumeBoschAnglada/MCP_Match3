@@ -4,11 +4,13 @@ namespace Match3.Core
 {
     public class DebugManager : MonoBehaviour
     {
-        private bool m_IsSlowMo = false;
+        private float m_TimeScale = 1f;
         private bool m_ShowBoardInfo = false;
         private bool m_PanelVisible = false;
         private bool m_ShowTestLevels = false;
         private bool m_LogsEnabled = true;
+        private static readonly float[] k_TimeScales = { 0.05f, 0.1f, 0.25f, 0.5f, 1f, 2f, 3f };
+        private static readonly string[] k_TimeScaleLabels = { "0.05x", "0.1x", "0.25x", "0.5x", "1x", "2x", "3x" };
         private string[] m_TestLevels = null;
         private string m_SelectedLevel = "level_fase8";
         private GUIStyle m_BtnStyle;
@@ -18,6 +20,8 @@ namespace Match3.Core
         // Offset Y para no solaparse con el TopUI (120px de alto)
         private const float k_TopUIHeight = 130f;
         private const float k_ToggleSize  = 36f;
+        private GUIStyle m_TimeScaleBtnActive;
+        private GUIStyle m_TimeScaleBtnInactive;
 
         private void OnGUI()
         {
@@ -33,6 +37,8 @@ namespace Match3.Core
                     fontStyle = FontStyle.Bold
                 };
                 m_CellStyle.normal.background = Texture2D.grayTexture;
+                m_TimeScaleBtnActive   = new GUIStyle(GUI.skin.button) { fontSize = 20, fontStyle = FontStyle.Bold };
+                m_TimeScaleBtnInactive = new GUIStyle(GUI.skin.button) { fontSize = 20 };
             }
 
             // ── Botón toggle arriba-izquierda ────────────────────────
@@ -67,13 +73,24 @@ namespace Match3.Core
                     m_SelectedLevel = m_TestLevels[m_TestLevels.Length-1];
             }
 
-            GUILayout.BeginArea(new Rect(10, y, 320, 225));
-            GUI.color = m_IsSlowMo ? Color.yellow : Color.green;
-            if (GUILayout.Button(m_IsSlowMo ? "TimeScale: 0.1x" : "TimeScale: 1.0x", m_BtnStyle, GUILayout.Height(40)))
+            GUILayout.BeginArea(new Rect(10, y, 320, 280));
+            // ── TimeScale ────────────────────────────────────────────
+            GUI.color = Color.white;
+            GUILayout.Label($"TimeScale: {m_TimeScale:0.##}x", m_LabelStyle, GUILayout.Height(32));
+            GUILayout.BeginHorizontal();
+            for (int ti = 0; ti < k_TimeScales.Length; ti++)
             {
-                m_IsSlowMo = !m_IsSlowMo;
-                Time.timeScale = m_IsSlowMo ? 0.1f : 1f;
+                bool active = Mathf.Approximately(m_TimeScale, k_TimeScales[ti]);
+                GUI.color = active ? Color.yellow : Color.white;
+                if (GUILayout.Button(k_TimeScaleLabels[ti], active ? m_TimeScaleBtnActive : m_TimeScaleBtnInactive, GUILayout.Height(36)))
+                {
+                    m_TimeScale = k_TimeScales[ti];
+                    Time.timeScale = m_TimeScale;
+                }
             }
+            GUILayout.EndHorizontal();
+            GUI.color = Color.white;
+            // ── Resto de botones ─────────────────────────────────────
             GUI.color = m_ShowBoardInfo ? Color.cyan : Color.white;
             if (GUILayout.Button(m_ShowBoardInfo ? "Board Info: ON" : "Board Info: OFF", m_BtnStyle, GUILayout.Height(40)))
             {
@@ -124,7 +141,7 @@ namespace Match3.Core
             if (mgr == null) return;
 
             m_LabelStyle.normal.textColor = Color.white;
-            GUI.Label(new Rect(10, y + 125, 700, 50),
+            GUI.Label(new Rect(10, y + 190, 700, 50),
                 $"Step: {mgr.m_StepType}  State: {mgr.m_MatchState}  Combo: {mgr.ComboCnt}",
                 m_LabelStyle);
 

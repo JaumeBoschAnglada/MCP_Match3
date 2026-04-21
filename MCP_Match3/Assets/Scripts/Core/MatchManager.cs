@@ -639,7 +639,7 @@ namespace Match3.Core
             while (elapsed < duration)
             {
                 elapsed += Time.deltaTime;
-                float t = elapsed / duration;
+                float t = Mathf.Clamp01(elapsed / duration);
 
                 itemA.transform.position = Vector3.Lerp(posA, posB, t);
                 itemB.transform.position = Vector3.Lerp(posB, posA, t);
@@ -695,7 +695,7 @@ namespace Match3.Core
                 while (elapsed < duration)
                 {
                     elapsed += Time.deltaTime;
-                    float t = elapsed / duration;
+                    float t = Mathf.Clamp01(elapsed / duration);
 
                     itemA.transform.position = Vector3.Lerp(currentPosA, posA, t);
                     itemB.transform.position = Vector3.Lerp(currentPosB, posB, t);
