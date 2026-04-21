@@ -108,22 +108,30 @@ namespace Match3.Input
         /// </summary>
         private void OnPressCanceled(InputAction.CallbackContext context)
         {
-            if (m_IsDragging)
+            CancelSwap();
+        }
+
+        /// <summary>
+        /// While a drag is in progress, check every frame if the threshold is crossed.
+        /// This fires the swap without waiting for the finger to be lifted.
+        /// </summary>
+        private void Update()
+        {
+            if (!m_IsDragging || m_SwapA == null) return;
+
+            Vector2 currentPos = m_PointAction.ReadValue<Vector2>();
+            Vector2 dragDelta = currentPos - m_DragStartPos;
+
+            if (dragDelta.magnitude > m_MinDragDistance)
             {
-                // Check if we dragged enough to trigger a swap
-                Vector2 currentPos = m_PointAction.ReadValue<Vector2>();
-                Vector2 dragDelta = currentPos - m_DragStartPos;
-
-                if (dragDelta.magnitude > m_MinDragDistance)
+                Items.Item target = GetNeighborInDirection(m_SwapA, dragDelta);
+                if (target != null)
                 {
-                    Items.Item target = GetNeighborInDirection(m_SwapA, dragDelta);
-                    if (target != null)
-                    {
-                        m_SwapB = target;
-                        ExecuteSwap();
-                    }
+                    m_SwapB = target;
+                    ExecuteSwap();
                 }
-
+                // Cancel regardless of whether a valid neighbor was found,
+                // so one drag gesture = one swap attempt.
                 CancelSwap();
             }
         }
