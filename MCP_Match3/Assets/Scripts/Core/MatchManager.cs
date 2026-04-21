@@ -39,6 +39,13 @@ namespace Match3.Core
         public Board m_LastSwapBoardA { get; private set; }
         public Board m_LastSwapBoardB { get; private set; }
 
+        // === Drop stagger (cascade animation) ===
+        /// <summary>Per-column piece counter; each piece that drops in column X gets index [X]++, giving a within-column cascade.</summary>
+        private readonly int[] m_DropStaggerPerCol = new int[9];
+        private const float DropStaggerStep = 0.1f;
+        /// <summary>Returns the stagger delay for the next piece dropping in the given column. All columns start at 0 each gravity pass.</summary>
+        public float GetDropDelay(int column) => m_DropStaggerPerCol[column]++ * DropStaggerStep;
+
         // === Step system (Phase 4) ===
         private Dictionary<StepType, BaseStep> m_DicStep;
         private BaseStep m_CurrentStep;
@@ -1040,13 +1047,14 @@ namespace Match3.Core
             int passCount = 0;
             int totalWaitCount = 0;
             const int maxPasses = 20;
-            bool anyGravityChange = false;
-
             while (passCount < maxPasses)
             {
                 RefreshDropStartSetting();
 
-                anyGravityChange = false;
+                bool anyGravityChange = false;
+
+                // Reset per-column stagger counters so every column's first piece of each pass has no delay.
+                System.Array.Clear(m_DropStaggerPerCol, 0, m_DropStaggerPerCol.Length);
 
                 // Process gravity independently for each active segment.
                 foreach (Board dropStart in m_ListDropStart)
@@ -1060,15 +1068,11 @@ namespace Match3.Core
 
                 if (!anyGravityChange)
                     break;
-                passCount++;
-            }
 
-            if (anyGravityChange || passCount > 0)
-            {
-                bool stillDropping = true;
+                // Wait for all drop animations (including stagger delays) to finish before next pass.
                 int waitCount = 0;
-                const int maxWait = 40;
-
+                const int maxWait = 300; // covers up to 20*0.15s delay + 0.3s animation at 60fps
+                bool stillDropping = true;
                 while (stillDropping && waitCount < maxWait)
                 {
                     stillDropping = false;
@@ -1080,15 +1084,14 @@ namespace Match3.Core
                             break;
                         }
                     }
-
                     if (stillDropping)
                     {
                         yield return null;
                         waitCount++;
                     }
                 }
-
                 totalWaitCount += waitCount;
+                passCount++;
             }
 
             Debug.Log($"[MatchManager] Co_Drop: Completed after {passCount} passes. Waited {totalWaitCount} cycles.");

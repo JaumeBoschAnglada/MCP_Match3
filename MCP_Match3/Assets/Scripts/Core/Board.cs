@@ -36,6 +36,8 @@ namespace Match3.Core
         public List<Panel> m_ListPanel = new List<Panel>();
 
         public bool m_DropAnim;
+        /// <summary>Seconds to wait before starting the drop animation (cascade stagger by column).</summary>
+        public float m_DropDelay;
         public bool m_ItemBrusting;
         public bool m_PanelBrusting;
         public bool m_MatchingCheck;
@@ -286,6 +288,7 @@ namespace Match3.Core
 
             // Reset flags
             m_DropAnim = false;
+            m_DropDelay = 0f;
             m_ItemBrusting = false;
             m_PanelBrusting = false;
             m_MatchingCheck = false;
@@ -455,6 +458,7 @@ namespace Match3.Core
                 if (animateIntoCell)
                 {
                     m_DropAnim = true;
+                    m_DropDelay = MatchManager.Instance?.GetDropDelay(X) ?? 0f;  // new pieces stagger by column
                     MatchManager.Instance?.StartCoroutine(Co_ItemDropAnimation(item));
                 }
             }
@@ -940,7 +944,8 @@ namespace Match3.Core
             if (topCell != emptyBoard && topCell.m_Item != null)
             {
                 Debug.Log($"  -> Dropping newly spawned item from {topCell.name} to {emptyBoard.name}");
-                emptyBoard.ItemDrop(topCell);
+                float spawnDelay = MatchManager.Instance?.GetDropDelay(X) ?? 0f;
+                emptyBoard.ItemDrop(topCell, spawnDelay);
             }
 
             // Recursively process remaining empty cells
@@ -951,7 +956,7 @@ namespace Match3.Core
         /// <summary>
         /// Animate an item dropping from this board to the destination board.
         /// </summary>
-        public void ItemDrop(Board fromBoard)
+        public void ItemDrop(Board fromBoard, float spawnDelay = 0f)
         {
             if (fromBoard == null || fromBoard.m_Item == null) return;
             if (fromBoard.BlocksGravityFlow || BlocksGravityFlow)
@@ -970,6 +975,7 @@ namespace Match3.Core
             if (item != null)
             {
                 m_DropAnim = true;
+                m_DropDelay = spawnDelay;  // 0 for existing pieces, stagger delay for newly spawned
                 item.m_Board = this;
                 // NOTE: Item stays at same parent (Field), just changes position
                 // No SetParent() call needed - items are siblings of boards
@@ -985,6 +991,14 @@ namespace Match3.Core
         /// </summary>
         private System.Collections.IEnumerator Co_ItemDropAnimation(Match3.Items.Item item)
         {
+            // Stagger: wait the column-based delay before animating
+            if (m_DropDelay > 0f)
+            {
+                float d = m_DropDelay;
+                m_DropDelay = 0f;
+                yield return new UnityEngine.WaitForSeconds(d);
+            }
+
             Vector3 startPos = item.transform.position;
             Vector3 targetPos = transform.position; // Target = Board's world position
 
@@ -998,8 +1012,8 @@ namespace Match3.Core
                 elapsed += UnityEngine.Time.deltaTime;
                 float t = elapsed / duration;
 
-                // Ease-in gravity
-                float easedT = 1f - (1f - t) * (1f - t);
+                // Ease-in: accelerates toward destination (t²)
+                float easedT = t * t;
 
                 item.transform.position = Vector3.Lerp(startPos, targetPos, easedT);
                 yield return null;
