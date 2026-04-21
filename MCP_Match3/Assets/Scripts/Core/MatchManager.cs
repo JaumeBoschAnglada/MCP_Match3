@@ -713,21 +713,12 @@ namespace Match3.Core
             }
             else
             {
-                // Valid match - trigger match detection and burst sequence
+                // Valid match - run the continuous dynamic cascade
                 SetStep(StepType.Matching);
 
-                // Burst → Drop → Cascade loop
-                yield return StartCoroutine(Co_MatchBurst());
-                m_LastSwapBoardA = null; // cascades after the first burst have no swap board
+                m_LastSwapBoardA = null;
                 m_LastSwapBoardB = null;
-                yield return StartCoroutine(Co_Drop());
-
-                while (CheckMatchCondition())
-                {
-                    ComboCnt++;
-                    yield return StartCoroutine(Co_MatchBurst());
-                    yield return StartCoroutine(Co_Drop());
-                }
+                yield return StartCoroutine(Co_DynamicCascade());
             }
 
             // Advance through the post-match step chain:
@@ -995,106 +986,93 @@ namespace Match3.Core
         // ========== PHASE 3: BURST & GRAVITY ==========
 
         /// <summary>
-        /// Execute burst on all marked cells.
-        /// Coroutine version for sequential animation.
+        /// Continuous reactive cascade loop.
+        /// Every frame: fires pending bursts, applies gravity, detects new matches.
+        /// Exits only when the board is fully stable (no animations, no pending actions).
+        /// This gives fluid, dynamic gameplay — a piece that lands and forms a match
+        /// is processed immediately, even if the rest of the column is still falling.
         /// </summary>
-        private System.Collections.IEnumerator Co_MatchBurst()
+        private System.Collections.IEnumerator Co_DynamicCascade()
         {
-            Debug.Log("[MatchManager] Co_MatchBurst: Collecting burst coroutines");
+            const int maxFrames = 1200; // safety cap: ~20s at 60fps
+            int frameCount = 0;
 
-            // Keep bursting in waves until no more flags remain.
-            // Each wave may generate new flags via special item effects (Line, Bomb, etc.)
-            // All waves are resolved before returning, so Co_Drop only runs once per turn.
-            int waveLimit = 20; // safety cap against infinite loops
-            while (HasPendingBursts() && waveLimit-- > 0)
+            while (frameCount++ < maxFrames)
             {
-                // Snapshot boards flagged for this wave
-                var boardsToBurst = new List<Board>();
-                for (int i = 0; i < 81; i++)
+                bool didAnything = false;
+
+                // --- A: Fire burst coroutines for newly-flagged cells ---
+                // Mark m_ItemBrusting immediately so match-check skips them this same frame.
+                // Use a repeat loop: special items (e.g. LineX) call Brust() synchronously
+                // inside StartCoroutine, which can mark boards with lower indices that the
+                // forward pass already skipped. Repeating until no new boards are found
+                // ensures those lower-index boards are caught before CheckMatchCondition
+                // (step C) clears all m_isMatchBrust flags.
+                bool foundBurst;
+                do
                 {
-                    Board board = m_ListBoard[i];
-                    if (board.m_isMatchBrust && board.m_Item != null)
-                    {
-                        Debug.Log($"  -> Queueing burst for {board.name} with item {board.m_Item.name}");
-                        boardsToBurst.Add(board);
-                    }
-                    // Clear ALL flags now — specials will re-set flags for their targets
-                    board.m_isMatchBrust = false;
-                }
-
-                if (boardsToBurst.Count == 0) break;
-
-                Debug.Log($"[MatchManager] Co_MatchBurst: Starting {boardsToBurst.Count} burst coroutines");
-
-                foreach (var board in boardsToBurst)
-                    StartCoroutine(board.Co_Brust());
-
-                // Wait for this wave's animations to finish before starting the next wave
-                yield return new UnityEngine.WaitForSeconds(0.35f);
-            }
-
-            Debug.Log("[MatchManager] Co_MatchBurst: Complete");
-        }
-
-        /// <summary>
-        /// Apply gravity and refill empty cells.
-        /// Coroutine version for animated drops.
-        /// </summary>
-        private System.Collections.IEnumerator Co_Drop()
-        {
-            Debug.Log("[MatchManager] Co_Drop: Starting gravity and refill");
-
-            int passCount = 0;
-            int totalWaitCount = 0;
-            const int maxPasses = 20;
-            while (passCount < maxPasses)
-            {
-                RefreshDropStartSetting();
-
-                bool anyGravityChange = false;
-
-                // Reset per-column stagger counters so every column's first piece of each pass has no delay.
-                System.Array.Clear(m_DropStaggerPerCol, 0, m_DropStaggerPerCol.Length);
-
-                // Process gravity independently for each active segment.
-                foreach (Board dropStart in m_ListDropStart)
-                {
-                    if (dropStart == null || !dropStart.IsActiveCell) continue;
-
-                    Debug.Log($"[MatchManager] Processing gravity segment from {dropStart.name} (pass {passCount + 1})");
-                    if (dropStart.GravityDropItemRow())
-                        anyGravityChange = true;
-                }
-
-                if (!anyGravityChange)
-                    break;
-
-                // Wait for all drop animations (including stagger delays) to finish before next pass.
-                int waitCount = 0;
-                const int maxWait = 300; // covers up to 20*0.15s delay + 0.3s animation at 60fps
-                bool stillDropping = true;
-                while (stillDropping && waitCount < maxWait)
-                {
-                    stillDropping = false;
+                    foundBurst = false;
                     for (int i = 0; i < 81; i++)
                     {
-                        if (m_ListBoard[i].m_DropAnim)
+                        Board board = m_ListBoard[i];
+                        if (board.m_isMatchBrust && board.m_Item != null && !board.m_ItemBrusting)
                         {
-                            stillDropping = true;
-                            break;
+                            board.m_isMatchBrust = false;
+                            board.m_ItemBrusting = true;
+                            // Flag BEFORE StartCoroutine so step B can see it in the same frame.
+                            if (board.m_NextItemType != ItemType.None)
+                                board.m_IsSpecialGenerating = true;
+                            StartCoroutine(board.Co_Brust());
+                            didAnything = true;
+                            foundBurst = true;
                         }
                     }
-                    if (stillDropping)
+                } while (foundBurst);
+
+                // --- B: Apply gravity to any empty cells ---
+                // Pause gravity board-wide while any special item is being generated so the
+                // player sees the new special before pieces start falling around it.
+                bool anySpecialGenerating = false;
+                for (int sg = 0; sg < 81; sg++)
+                    if (m_ListBoard[sg].m_IsSpecialGenerating) { anySpecialGenerating = true; break; }
+
+                if (!anySpecialGenerating)
+                {
+                    RefreshDropStartSetting();
+                    System.Array.Clear(m_DropStaggerPerCol, 0, m_DropStaggerPerCol.Length);
+                    foreach (Board dropStart in m_ListDropStart)
                     {
-                        yield return null;
-                        waitCount++;
+                        if (dropStart == null || !dropStart.IsActiveCell) continue;
+                        if (dropStart.GravityDropItemRow()) didAnything = true;
                     }
                 }
-                totalWaitCount += waitCount;
-                passCount++;
+
+                // --- C: Detect new matches on settled (non-dropping, non-bursting) pieces ---
+                if (CheckMatchCondition())
+                {
+                    ComboCnt++;
+                    didAnything = true;
+                }
+
+                // --- D: Exit when nothing is happening and nothing is animating ---
+                bool anyActive = false;
+                for (int i = 0; i < 81; i++)
+                {
+                    Board b = m_ListBoard[i];
+                    if (b.m_ItemBrusting || b.m_DropAnim)
+                    {
+                        anyActive = true;
+                        break;
+                    }
+                }
+
+                if (!didAnything && !anyActive)
+                    break;
+
+                yield return null;
             }
 
-            Debug.Log($"[MatchManager] Co_Drop: Completed after {passCount} passes. Waited {totalWaitCount} cycles.");
+            Debug.Log($"[MatchManager] Co_DynamicCascade: Complete after {frameCount} frames, combo={ComboCnt}");
         }
 
         /// <summary>

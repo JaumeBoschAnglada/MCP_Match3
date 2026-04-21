@@ -42,6 +42,8 @@ namespace Match3.Core
         public bool m_PanelBrusting;
         public bool m_MatchingCheck;
         public bool m_isMatchBrust;
+        /// <summary>True from when a special-item burst starts until after the brief hold that shows the new special piece.</summary>
+        public bool m_IsSpecialGenerating;
         public ItemType m_NextItemType = ItemType.None;
         /// <summary>World position toward which this board's item should animate when it forms part of a special merge group.</summary>
         public Vector3? m_FusionTargetPos;
@@ -293,6 +295,7 @@ namespace Match3.Core
             m_PanelBrusting = false;
             m_MatchingCheck = false;
             m_isMatchBrust = false;
+            m_IsSpecialGenerating = false;
             m_NextItemType = ItemType.None;
             IsPanelFixed = false;
             IsPanelCage = false;
@@ -651,6 +654,15 @@ namespace Match3.Core
             m_ItemBrusting = true;
             m_isMatchBrust = false; // Clear flag immediately so we can't be re-collected in the next cascade
 
+            // Save the pending special type NOW, before any yield.
+            // CheckMatchCondition resets m_NextItemType for all boards at the start of each
+            // check (to allow fresh detection). If that runs while this burst is animating it
+            // would wipe the pending type, leaving m_IsSpecialGenerating stuck true and
+            // blocking gravity forever. Capturing the value here (synchronously, before the
+            // first yield) is the safe place to read it.
+            ItemType pendingSpecialType = m_NextItemType;
+            m_NextItemType = ItemType.None; // clear so CheckMatchCondition's reset is a no-op
+
             var item = m_Item as Match3.Items.Item;
             ColorType burstColor = ColorType.None;
 
@@ -697,15 +709,31 @@ namespace Match3.Core
             AroundBrust();
 
             // Phase 5: Generate special item after burst if a special was earned
-            if (m_NextItemType != ItemType.None)
+            if (pendingSpecialType != ItemType.None)
             {
-                ItemType specialType = m_NextItemType;
                 ColorType specialColor = burstColor; // inherit the color of the destroyed item
-                m_NextItemType = ItemType.None;
 
-                GenItem(specialType, specialColor);
-                Debug.Log($"[Board {name}] Spawned special item {specialType}/{specialColor}");
+                GenItem(pendingSpecialType, specialColor);
+                Debug.Log($"[Board {name}] Spawned special item {pendingSpecialType}/{specialColor}");
+
+                // Hold the special in place so the player can see it before gravity moves it.
+                // m_DropAnim=true prevents this cell from being used as a gravity source/dest.
+                // m_IsSpecialGenerating keeps the global gravity pause active (set in Co_DynamicCascade).
+                m_DropAnim = true;
+                float holdElapsed = 0f;
+                const float holdDuration = 0.4f;
+                while (holdElapsed < holdDuration)
+                {
+                    holdElapsed += UnityEngine.Time.deltaTime;
+                    yield return null;
+                }
+                m_DropAnim = false;
             }
+
+            // Always release the board-wide gravity pause, whether or not a special was generated.
+            // m_IsSpecialGenerating was set in Co_DynamicCascade step A when pendingSpecialType
+            // was non-None. If we do not clear it here, gravity is blocked forever.
+            m_IsSpecialGenerating = false;
 
             Debug.Log($"[Board {name}] Co_Brust complete, m_ItemBrusting=false");
             m_ItemBrusting = false;
@@ -853,8 +881,6 @@ namespace Match3.Core
         {
             if (!IsActiveCell) return false;
 
-            Debug.Log($"[Board {name}] GravityDropItemRow starting");
-
             // Find the first empty cell in THIS column (from bottom toward destination)
             Board emptyBoard = null;
             Board current = this;
@@ -862,46 +888,33 @@ namespace Match3.Core
             while (current != null && current.IsActiveCell)
             {
                 if (current.BlocksGravityFlow)
-                {
-                    Debug.Log($"  -> Gravity blocked at {current.name}");
                     break;
-                }
 
                 if (current.m_Item == null && !current.m_DropAnim)
                 {
                     emptyBoard = current;
-                    Debug.Log($"  -> Found empty cell: {emptyBoard.name}");
                     break;
                 }
-                current = current.GravityDestination; // Move toward gravity destination (up for DROP_DIR.U)
+                current = current.GravityDestination;
             }
 
             if (emptyBoard == null)
-            {
-                Debug.Log($"  -> No empty cells found in column");
                 return false;
-            }
 
-            // Find the first filled cell above the empty one (in direction of gravity destination)
+            // Find the first filled cell above the empty one
             Board filledBoard = emptyBoard.GravityDestination;
             bool blockedByPanel = false;
             while (filledBoard != null && filledBoard.IsActiveCell)
             {
                 if (filledBoard.BlocksGravityFlow)
                 {
-                    Debug.Log($"  -> Gravity source blocked by {filledBoard.name}");
                     blockedByPanel = true;
                     break;
                 }
 
                 if (filledBoard.m_Item != null && !filledBoard.m_DropAnim && !filledBoard.m_ItemBrusting)
                 {
-                    Debug.Log($"  -> Found filled cell {filledBoard.name} above empty {emptyBoard.name}, initiating drop");
-
-                    // Move item from filled to empty
                     emptyBoard.ItemDrop(filledBoard);
-
-                    // Recursively fill the cell that just became empty (restart from bottom)
                     this.GravityDropItemRow();
                     return true;
                 }
@@ -915,13 +928,10 @@ namespace Match3.Core
                     this.GravityDropItemRow();
                     return true;
                 }
-
-                Debug.Log($"  -> No spawn beyond blocking panel for empty cell {emptyBoard.name}");
                 return false;
             }
 
-            // No filled cell found in this column - spawn new piece from the current lane first.
-            // Side-drops from adjacent lanes are only allowed when the current lane cannot spawn.
+            // No filled cell found - spawn new piece from the top of the lane
             Board topCell = emptyBoard;
             while (topCell.GravityDestination != null
                 && topCell.GravityDestination.IsActiveCell
@@ -930,25 +940,24 @@ namespace Match3.Core
                 topCell = topCell.GravityDestination;
             }
 
-            Debug.Log($"  -> No filled cell found above {emptyBoard.name}, spawning at top cell {topCell.name}");
+            // Safety guard: topCell still has an item whose drop animation is in progress.
+            // GenItem (called inside TopSpawnItem) would pool that in-flight item, leaving a
+            // stale Co_ItemDropAnimation coroutine that causes the "piezas en el aire" ghost.
+            // Return false and let the animation settle before spawning here.
+            if (topCell.m_Item != null)
+                return false;
+
             topCell.TopSpawnItem(topCell == emptyBoard);
 
-            // If spawn was blocked by the spawn line filter, no item was created — stop recursing.
             if (topCell.m_Item == null)
-            {
-                Debug.Log($"  -> Spawn blocked for column {topCell.X}, stopping gravity for this column");
                 return false;
-            }
 
-            // After spawning, the new item needs to drop down to fill emptyBoard
             if (topCell != emptyBoard && topCell.m_Item != null)
             {
-                Debug.Log($"  -> Dropping newly spawned item from {topCell.name} to {emptyBoard.name}");
                 float spawnDelay = MatchManager.Instance?.GetDropDelay(X) ?? 0f;
                 emptyBoard.ItemDrop(topCell, spawnDelay);
             }
 
-            // Recursively process remaining empty cells
             this.GravityDropItemRow();
             return true;
         }
@@ -964,8 +973,6 @@ namespace Match3.Core
                 Debug.Log($"[Board {name}] ItemDrop blocked. Source={fromBoard.name} sourceBlocked={fromBoard.BlocksGravityFlow} targetBlocked={BlocksGravityFlow}");
                 return;
             }
-
-            Debug.Log($"[Board {name}] ItemDrop: Moving item from {fromBoard.name} (world {fromBoard.transform.position.x:F1},{fromBoard.transform.position.y:F1}) to {name} (world {transform.position.x:F1},{transform.position.y:F1})");
 
             // Transfer item reference (logical ownership)
             m_Item = fromBoard.m_Item;
@@ -997,6 +1004,14 @@ namespace Match3.Core
                 float d = m_DropDelay;
                 m_DropDelay = 0f;
                 yield return new UnityEngine.WaitForSeconds(d);
+
+                // Abort if the item was pooled or moved to another cell during the delay.
+                // This can happen if a cascade re-evaluated the column while we were waiting.
+                if (item == null || !item.gameObject.activeSelf || item.m_Board != this)
+                {
+                    m_DropAnim = false;
+                    yield break;
+                }
             }
 
             Vector3 startPos = item.transform.position;
@@ -1009,6 +1024,13 @@ namespace Match3.Core
 
             while (elapsed < duration)
             {
+                // Abort if the item was pooled or moved to another cell mid-animation.
+                if (!item.gameObject.activeSelf || item.m_Board != this)
+                {
+                    m_DropAnim = false;
+                    yield break;
+                }
+
                 elapsed += UnityEngine.Time.deltaTime;
                 float t = elapsed / duration;
 
