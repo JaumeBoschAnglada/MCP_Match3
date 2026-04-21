@@ -6,11 +6,11 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/Hall.unity
-    guid: 1e93931fbc6de8c4491b81fcb8c82272
-  - enabled: 1
     path: Assets/Scenes/Gameplay.unity
     guid: 3431524a48d6e754ca610e43a5e1a9ba
+  - enabled: 1
+    path: Assets/Scenes/Hall.unity
+    guid: 1e93931fbc6de8c4491b81fcb8c82272
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0

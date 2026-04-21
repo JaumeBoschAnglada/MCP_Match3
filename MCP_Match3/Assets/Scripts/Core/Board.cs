@@ -685,14 +685,22 @@ namespace Match3.Core
                 bool burstComplete = false;
                 item.Brust(() => burstComplete = true);
 
-                // Wait for burst animation
+                // Release this cell for gravity immediately so new pieces start falling
+                // while the scale-down animation is still playing.
+                // For special-generating bursts, m_IsSpecialGenerating already pauses all
+                // gravity board-wide, so we keep m_ItemBrusting=true there to signal that
+                // this cell is still mid-burst (GenItem must not fire until after pool restore).
+                m_Item = null;
+                if (pendingSpecialType == ItemType.None)
+                    m_ItemBrusting = false;
+
+                // Wait for the animation to finish before restoring to pool
                 yield return new UnityEngine.WaitUntil(() => burstComplete);
 
                 Debug.Log($"[Board {name}] Burst animation complete, restoring to pool");
 
                 // Return item to pool
                 ObjectPool.Instance?.Restore(item.gameObject);
-                m_Item = null;
 
                 // MissionApply: notifica la pieza destruida a MissionManager
                 item.MissionApply();
@@ -716,12 +724,12 @@ namespace Match3.Core
                 GenItem(pendingSpecialType, specialColor);
                 Debug.Log($"[Board {name}] Spawned special item {pendingSpecialType}/{specialColor}");
 
-                // Hold the special in place so the player can see it before gravity moves it.
+                // Brief pause so the player can register the new special before gravity resumes.
                 // m_DropAnim=true prevents this cell from being used as a gravity source/dest.
                 // m_IsSpecialGenerating keeps the global gravity pause active (set in Co_DynamicCascade).
                 m_DropAnim = true;
                 float holdElapsed = 0f;
-                const float holdDuration = 0.4f;
+                const float holdDuration = 0.1f;
                 while (holdElapsed < holdDuration)
                 {
                     holdElapsed += UnityEngine.Time.deltaTime;

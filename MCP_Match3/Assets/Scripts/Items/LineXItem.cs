@@ -1,4 +1,5 @@
 using UnityEngine;
+using Match3.Core;
 using Match3.Data;
 
 namespace Match3.Items
@@ -31,12 +32,26 @@ namespace Match3.Items
         public override void Brust(System.Action onComplete = null)
         {
             if (m_Board == null) { onComplete?.Invoke(); return; }
-            // Walk left to edge, mark entire row
-            var left = m_Board;
-            while (left.Left != null && left.Left.IsActiveCell) left = left.Left;
-            var cur = left;
-            while (cur != null && cur.IsActiveCell) { cur.m_isMatchBrust = true; cur = cur.Right; }
+            // Propagate outward left and right from the origin with a delay per step
+            m_Board.StartCoroutine(Co_PropagateRow(m_Board));
             StartCoroutine(Co_DestroyAnim(onComplete));
+        }
+
+        private static System.Collections.IEnumerator Co_PropagateRow(Board origin)
+        {
+            var wait = new WaitForSeconds(0.06f);
+            Board left  = origin.Left;
+            Board right = origin.Right;
+            while (left != null || right != null)
+            {
+                yield return wait;
+                if (left != null && left.IsActiveCell)
+                { left.m_isMatchBrust = true; left = left.Left; }
+                else left = null;
+                if (right != null && right.IsActiveCell)
+                { right.m_isMatchBrust = true; right = right.Right; }
+                else right = null;
+            }
         }
 
         private Sprite GetSprite(ColorType c)

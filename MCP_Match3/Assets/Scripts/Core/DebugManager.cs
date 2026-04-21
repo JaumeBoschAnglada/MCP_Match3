@@ -8,6 +8,7 @@ namespace Match3.Core
         private bool m_ShowBoardInfo = false;
         private bool m_PanelVisible = false;
         private bool m_ShowTestLevels = false;
+        private bool m_LogsEnabled = true;
         private string[] m_TestLevels = null;
         private string m_SelectedLevel = "level_fase8";
         private GUIStyle m_BtnStyle;
@@ -66,7 +67,7 @@ namespace Match3.Core
                     m_SelectedLevel = m_TestLevels[m_TestLevels.Length-1];
             }
 
-            GUILayout.BeginArea(new Rect(10, y, 320, 180));
+            GUILayout.BeginArea(new Rect(10, y, 320, 225));
             GUI.color = m_IsSlowMo ? Color.yellow : Color.green;
             if (GUILayout.Button(m_IsSlowMo ? "TimeScale: 0.1x" : "TimeScale: 1.0x", m_BtnStyle, GUILayout.Height(40)))
             {
@@ -82,6 +83,12 @@ namespace Match3.Core
             if (GUILayout.Button("Niveles de Test", m_BtnStyle, GUILayout.Height(40)))
             {
                 m_ShowTestLevels = !m_ShowTestLevels;
+            }
+            GUI.color = m_LogsEnabled ? Color.green : Color.red;
+            if (GUILayout.Button(m_LogsEnabled ? "Logs: ON" : "Logs: OFF", m_BtnStyle, GUILayout.Height(40)))
+            {
+                m_LogsEnabled = !m_LogsEnabled;
+                Debug.unityLogger.logEnabled = m_LogsEnabled;
             }
             GUI.color = Color.white;
             GUILayout.EndArea();
