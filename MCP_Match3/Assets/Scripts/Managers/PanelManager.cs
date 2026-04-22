@@ -24,6 +24,8 @@ namespace Match3.Managers
         [SerializeField] private GameObject m_BreadPrefab;
         [SerializeField] private GameObject m_CrackerPrefab;
         [SerializeField] private GameObject m_WaferFloorPrefab;
+        [SerializeField] private GameObject m_WarpInPrefab;
+        [SerializeField] private GameObject m_WarpOutPrefab;
 
         private Dictionary<PanelType, GameObject> m_PrefabMap;
 
@@ -48,6 +50,8 @@ namespace Match3.Managers
                 { PanelType.Bread_Block,   m_BreadPrefab        },
                 { PanelType.Cracker,       m_CrackerPrefab      },
                 { PanelType.Wafer_floor,   m_WaferFloorPrefab   },
+                { PanelType.Warp_In,       m_WarpInPrefab       },
+                { PanelType.Warp_Out,      m_WarpOutPrefab      },
             };
         }
 
@@ -81,6 +85,7 @@ namespace Match3.Managers
                 panel.m_Board = board;
                 panel.ApplyVisualSorting();
                 board.m_ListPanel.Add(panel);
+                panel.OnPlaced();
             }
 
             return panel;

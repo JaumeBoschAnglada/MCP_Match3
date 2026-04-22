@@ -1,5 +1,5 @@
 {
-  "name": "Fase 8_1 - Gravedad desde la derecha",
+  "name": "Fase 8_1 - Gravedad Normal",
   "width": 9,
   "height": 9,
   "isUseGravity": true,
@@ -16,6 +16,36 @@
     { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
 
     { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
+    { "listinfo": [ { "paneltype": "Warp_In",      "defence": -1, "value": 1} ] },
+    { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
+    { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
+    { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
+    { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
+    { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
+    { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
+    { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
+    
+    { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
+    { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
+    { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
+    { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
+    { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
+    { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
+    { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
+    { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
+    { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
+    
+    { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
+    { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
+    { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
+    { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
+    { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
+    { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
+    { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
+    { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
+    { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
+    { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
+
     { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
     { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
     { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
@@ -46,6 +76,7 @@
     { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
 
     { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
+    { "listinfo": [ { "paneltype": "Warp_Out",     "defence": -1, "value": 1 } ] },
     { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
     { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
     { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
@@ -53,18 +84,7 @@
     { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
     { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
     { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
-    { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
-
-    { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
-    { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
-    { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
-    { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
-    { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
-    { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
-    { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
-    { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
-    { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
-
+    
     { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
     { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
     { "listinfo": [ { "paneltype": "Default_Full", "defence": -1, "value": 0 } ] },
@@ -87,21 +107,23 @@
     "Normal","Normal","Normal","Normal","Normal","Normal","Normal","Normal","Normal"
   ],
   "DropDirs": [
-    ["R"],["R"],["R"],["R"],["R"],["R"],["R"],["R"],["R"],
-    ["R"],["R"],["R"],["R"],["R"],["R"],["R"],["R"],["R"],
-    ["R"],["R"],["R"],["R"],["R"],["R"],["R"],["R"],["R"],
-    ["R"],["R"],["R"],["R"],["R"],["R"],["R"],["R"],["R"],
-    ["R"],["R"],["R"],["R"],["R"],["R"],["R"],["R"],["R"],
-    ["R"],["R"],["R"],["R"],["R"],["R"],["R"],["R"],["R"],
-    ["R"],["R"],["R"],["R"],["R"],["R"],["R"],["R"],["R"],
-    ["R"],["R"],["R"],["R"],["R"],["R"],["R"],["R"],["R"],
-    ["R"],["R"],["R"],["R"],["R"],["R"],["R"],["R"],["R"]
+    ["U"],["U"],["U"],["U"],["U"],["U"],["U"],["U"],["U"],
+    ["U"],["U"],["U"],["U"],["U"],["U"],["U"],["U"],["U"],
+    ["U"],["U"],["U"],["U"],["U"],["U"],["U"],["U"],["U"],
+    ["U"],["U"],["U"],["U"],["U"],["U"],["U"],["U"],["U"],
+    ["U"],["U"],["U"],["U"],["U"],["U"],["U"],["U"],["U"],
+    ["U"],["U"],["U"],["U"],["U"],["U"],["U"],["U"],["U"],
+    ["U"],["U"],["U"],["U"],["U"],["U"],["U"],["U"],["U"],
+    ["U"],["U"],["U"],["U"],["U"],["U"],["U"],["U"],["U"],
+    ["U"],["U"],["U"],["U"],["U"],["U"],["U"],["U"],["U"]
   ],
+  "defaultSpawnLine":  [ true, true, true, true, true, true, true, true, true ],
+  "defaultSpawnLineY": [ true, true, true, true, true, true, true, true, true ],
   "missionType": "OrderN",
   "isOrderNMission": true,
   "missionInfo": [
-    { "type": "OrderN", "kind": "Red", "count": 5 },
-    { "type": "OrderN", "kind": "Blue", "count": 5 }
+    { "type": "OrderN", "kind": "Red",  "count": 20 },
+    { "type": "OrderN", "kind": "Blue", "count": 20 }
   ],
   "limit_Move": 200,
   "scoreStar1": 200,

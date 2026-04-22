@@ -27,6 +27,7 @@ namespace Match3.Input
         private Items.Item m_SwapB;
         private bool m_IsDragging;
         private Vector2 m_DragStartPos;
+        private GravityDisplayer m_ActiveDisplayer;
 
         [Header("Settings")]
         [SerializeField] private float m_MinDragDistance = 25f;
@@ -100,6 +101,13 @@ namespace Match3.Input
                 m_SwapA = item;
                 m_IsDragging = true;
                 m_DragStartPos = screenPos;
+
+                // Show gravity arrow on the selected cell (Fase 8)
+                if (MatchManager.Instance?.m_CSD?.isUseGravity == true)
+                {
+                    m_ActiveDisplayer = item.m_Board?.GetComponent<GravityDisplayer>();
+                    m_ActiveDisplayer?.Show();
+                }
             }
         }
 
@@ -224,6 +232,8 @@ namespace Match3.Input
         /// </summary>
         private void CancelSwap()
         {
+            m_ActiveDisplayer?.Hide();
+            m_ActiveDisplayer = null;
             m_SwapA = null;
             m_SwapB = null;
             m_IsDragging = false;

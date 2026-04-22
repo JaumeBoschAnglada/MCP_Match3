@@ -414,8 +414,8 @@ Array de 81 elementos, uno por celda. Cada celda tiene una lista `listinfo` con 
 |---|---|---|
 | `paneltype` | `PanelType` (string) | Tipo del panel (ver sección 7) |
 | `defence` | `int` | Número de golpes para destruirlo. `-1` = indestructible/no aplica |
-| `value` | `int` | Valor adicional configurable por tipo de panel |
-| `addData` | `string` | Datos extra (usado por cintas transportadoras, warps, etc.) |
+| `value` | `int` | Valor adicional configurable por tipo de panel. **Para `Warp_In`/`Warp_Out`: ID que enlaza portales conectados** |
+| `addData` | `string` | Datos extra (usado por cintas transportadoras, etc.) |
 
 #### Configuración del tablero con paneles
 
@@ -428,7 +428,10 @@ Array de 81 elementos, uno por celda. Cada celda tiene una lista `listinfo` con 
 El campo `addData` es un string JSON serializado que contiene configuración extra. Se usa principalmente en:
 
 - **`ConveyerBelt`**: Contiene un objeto `ConveyerData` serializado con `conveyertype` (int) que codifica tipo, dirección de entrada y salida.
-- **`Warp_In` / `Warp_Out`**: Contiene el índice de la celda conectada.
+
+#### `value` — Enlazado de warps
+
+- **`Warp_In` / `Warp_Out`**: Dos portales con el mismo valor en `value` se enlazan automáticamente. Las piezas que caen en `Warp_Out` teletransportan a la salida de `Warp_In`.
 
 ### 3.4. `items` — Piezas iniciales
 
@@ -1561,7 +1564,7 @@ Celdas que el engine itera cada turno. Se construyen con `GetBoardDropStartSetti
 
 ### 13.5. Warps
 
-Celdas `Warp_Out` conectadas a `Warp_In`. `GetDropBoard()` y `GetTopBoard()` devuelven la celda `Warp_In`, redirigiendo el flujo a través del portal.
+Portales de teletransporte. Dos celdas `Warp_In` y `Warp_Out` se enlazan automáticamente cuando comparten el mismo valor en el campo `value`. `GetDropBoard()` y `GetTopBoard()` detectan este enlace y devuelven la celda `Warp_In`, redirigiendo el flujo de piezas a través del portal.
 
 ### 13.6. Cintas transportadoras (`ConveyerBelt`)
 

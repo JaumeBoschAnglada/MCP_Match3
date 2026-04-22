@@ -193,11 +193,18 @@ namespace Match3.Core
         /// The board in the opposite direction of gravity (toward where items move).
         /// For DROP_DIR.U (gravity up), this returns Top (y-1) to traverse toward the destination.
         /// Use this to scan a column from bottom to top when processing gravity.
+        /// Warp (Fase 8): WarpOut redirects the traversal chain to its linked WarpIn board,
+        /// so pieces appear at WarpIn's position and teleport through the portal.
         /// </summary>
         public Board GravityDestination
         {
             get
             {
+                // Warp portal: WarpOut treats WarpIn as its upstream source.
+                // The traversal jumps cross-board; pieces spawn at WarpIn and animate to the target cell.
+                if (m_IsWarpOutBoard && m_WarpBoard != null)
+                    return m_WarpBoard;
+
                 switch (CurrentDropDir)
                 {
                     case DROP_DIR.U: return Top;      // Items move upward to Top (y-1)
@@ -331,6 +338,9 @@ namespace Match3.Core
 
             // Position in local space (X right, Y down)
             transform.localPosition = new Vector3(x, -y, 0f);
+
+            // Connect GravityDisplayer arrow (Fase 8)
+            GetComponent<GravityDisplayer>()?.Init(this);
         }
 
         /// <summary>
@@ -949,6 +959,11 @@ namespace Match3.Core
             // Return false and let the animation settle before spawning here.
             if (topCell.m_Item != null)
                 return false;
+
+            // Warp (Fase 8): GravityDestination on WarpOut returns WarpIn, so topCell IS
+            // the WarpIn board when the traversal crosses a portal. TopSpawnItem runs at
+            // WarpIn's world position and ItemDrop animates the piece to its destination —
+            // that cross-board animation IS the teleport effect. No special case needed here.
 
             topCell.TopSpawnItem(topCell == emptyBoard);
 

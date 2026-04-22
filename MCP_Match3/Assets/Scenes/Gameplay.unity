@@ -1070,7 +1070,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -270, y: -102.599976}
+  m_AnchoredPosition: {x: 0, y: -102.599976}
   m_SizeDelta: {x: 540, y: 85.2}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &395481090
@@ -2416,6 +2416,8 @@ MonoBehaviour:
   m_BreadPrefab: {fileID: 2233050387531647954, guid: e64aa7c9348bdf74189a2e3cac410b93, type: 3}
   m_CrackerPrefab: {fileID: 6448239457618154208, guid: e664ef032b15d5040b4c6d8b42df583d, type: 3}
   m_WaferFloorPrefab: {fileID: 8290750159367853299, guid: 16efa57c24bf1f242afbc185959f5ab8, type: 3}
+  m_WarpInPrefab: {fileID: 7867568664318890014, guid: d0688ef9bb9a7ad446fd0ea7e3cf5a0f, type: 3}
+  m_WarpOutPrefab: {fileID: 4588796937151027334, guid: 432cb7b852a12be442da5a3530a0c9f9, type: 3}
 --- !u!1 &766910292
 GameObject:
   m_ObjectHideFlags: 0
@@ -2507,7 +2509,7 @@ MonoBehaviour:
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
-  m_HorizontalAlignment: 1
+  m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0

@@ -52,6 +52,9 @@ namespace Match3.Panels
         /// <summary>Called when an item on this cell is swapped.</summary>
         public virtual void ItemSwitch() { }
 
+        /// <summary>Called by PanelManager immediately after m_Board is assigned. Use to set board flags.</summary>
+        public virtual void OnPlaced()   { }
+
         /// <summary>
         /// Called when an adjacent match hits this panel (or directly when matched).
         /// Reduces Defence; destroys self when it reaches 0.

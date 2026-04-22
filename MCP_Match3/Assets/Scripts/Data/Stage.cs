@@ -175,7 +175,7 @@ namespace Match3.Data
         /// <summary>Additional configurable value per panel type.</summary>
         public int value;
 
-        /// <summary>Extra JSON data (conveyer belt config, warp target index, etc.).</summary>
+        /// <summary>Extra JSON data (conveyer belt config, etc.). Note: Warp linking uses `value` field instead.</summary>
         public string addData;
     }
 

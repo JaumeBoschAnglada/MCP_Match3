@@ -43,6 +43,10 @@ namespace Match3.Core
         /// <summary>Per-column piece counter; each piece that drops in column X gets index [X]++, giving a within-column cascade.</summary>
         private readonly int[] m_DropStaggerPerCol = new int[9];
         private const float DropStaggerStep = 0.1f;
+
+        // === TicTok (Fase 8) ===
+        /// <summary>Alternates m_ListDropStart iteration order each gravity pass to avoid asymmetry in lateral gravity.</summary>
+        private bool m_TicTok;
         /// <summary>Returns the stagger delay for the next piece dropping in the given column. All columns start at 0 each gravity pass.</summary>
         public float GetDropDelay(int column) => m_DropStaggerPerCol[column]++ * DropStaggerStep;
 
@@ -77,7 +81,7 @@ namespace Match3.Core
             }
 
             // Carga inicial: nivel de test de la fase actual (fase 8)
-            LoadLevel("level_fase8");
+            LoadLevel("level_fase8_1");
         }
 
         /// <summary>
@@ -454,6 +458,42 @@ namespace Match3.Core
                         || info.paneltype == PanelType.Lolly_Cage
                         || info.paneltype == PanelType.Bottle_Cage)
                         board.IsPanelCage = true;
+                }
+            }
+
+            // Second pass: link WarpIn ↔ WarpOut using matching value field
+            // Collect all Warp panels with their values
+            var warpInByValue = new System.Collections.Generic.Dictionary<int, (int index, Board board)>();
+            var warpOutByValue = new System.Collections.Generic.Dictionary<int, (int index, Board board)>();
+
+            for (int i = 0; i < 81; i++)
+            {
+                var pannels = stage.panels[i];
+                if (pannels?.listinfo == null) continue;
+
+                foreach (var info in pannels.listinfo)
+                {
+                    if (info.paneltype == PanelType.Warp_In)
+                    {
+                        if (!warpInByValue.ContainsKey(info.value))
+                            warpInByValue[info.value] = (i, m_ListBoard[i]);
+                    }
+                    else if (info.paneltype == PanelType.Warp_Out)
+                    {
+                        if (!warpOutByValue.ContainsKey(info.value))
+                            warpOutByValue[info.value] = (i, m_ListBoard[i]);
+                    }
+                }
+            }
+
+            // Link Warp_In and Warp_Out pairs with matching values
+            foreach (var warpValue in warpInByValue.Keys)
+            {
+                if (warpOutByValue.TryGetValue(warpValue, out var warpOut))
+                {
+                    var warpIn = warpInByValue[warpValue];
+                    warpIn.board.m_WarpBoard  = warpOut.board;   // WarpIn knows where to send pieces
+                    warpOut.board.m_WarpBoard = warpIn.board;    // WarpOut knows its feeder
                 }
             }
 
@@ -1040,8 +1080,14 @@ namespace Match3.Core
                 {
                     RefreshDropStartSetting();
                     System.Array.Clear(m_DropStaggerPerCol, 0, m_DropStaggerPerCol.Length);
-                    foreach (Board dropStart in m_ListDropStart)
+                    m_TicTok = !m_TicTok;
+                    int _dsCount = m_ListDropStart.Count;
+                    int _dsStart = m_TicTok ? _dsCount - 1 : 0;
+                    int _dsEnd   = m_TicTok ? -1 : _dsCount;
+                    int _dsStep  = m_TicTok ? -1 : 1;
+                    for (int _di = _dsStart; _di != _dsEnd; _di += _dsStep)
                     {
+                        Board dropStart = m_ListDropStart[_di];
                         if (dropStart == null || !dropStart.IsActiveCell) continue;
                         if (dropStart.GravityDropItemRow()) didAnything = true;
                     }
@@ -1108,8 +1154,14 @@ namespace Match3.Core
                 RefreshDropStartSetting();
                 bool anyGravityChange = false;
 
-                foreach (Board dropStart in m_ListDropStart)
+                m_TicTok = !m_TicTok;
+                int _dCount = m_ListDropStart.Count;
+                int _dStart = m_TicTok ? _dCount - 1 : 0;
+                int _dEnd   = m_TicTok ? -1 : _dCount;
+                int _dStep  = m_TicTok ? -1 : 1;
+                for (int _di = _dStart; _di != _dEnd; _di += _dStep)
                 {
+                    Board dropStart = m_ListDropStart[_di];
                     if (dropStart == null || !dropStart.IsActiveCell) continue;
 
                     if (dropStart.GravityDropItemRow())
