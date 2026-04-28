@@ -81,7 +81,7 @@ namespace Match3.Core
             }
 
             // Carga inicial: nivel de test de la fase actual (fase 8)
-            LoadLevel("level_fase8_1");
+            LoadLevel("level_fase8_2");
         }
 
         /// <summary>
@@ -199,6 +199,7 @@ namespace Match3.Core
             m_AppearColor.Clear();
             m_ListDropStart.Clear();
             m_ListDropHead.Clear();
+            m_TicTok = false;
         }
 
         /// <summary>

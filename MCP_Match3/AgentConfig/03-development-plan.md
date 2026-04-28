@@ -385,7 +385,7 @@
 
 ---
 
-## Fase 8: Gravedad Configurable 🟡 EN CURSO
+## Fase 8: Gravedad Configurable ✅ COMPLETADA
 
 ### Objetivo: Gravedad multidireccional (U/D/L/R) por celda.
 
@@ -400,29 +400,29 @@
 - [x] m_ListDropHead — Cabeceras de columna de caída
 - [x] GetBoardDropStartSetting() — Calcula drop starts
 - [x] GetGravitySetting() — Calcula drop heads
-- [ ] **TicTok** — Alternar la dirección de procesamiento de `m_ListDropStart` en cada llamada a `Co_Drop()` para evitar asimetría en gravedad lateral (flag booleano `m_TicTok` que invierte el orden de iteración)
+- [x] **TicTok** — Alternar la dirección de procesamiento de `m_ListDropStart` en cada pasada de gravedad para evitar asimetría lateral (flag booleano `m_TicTok` que invierte el orden de iteración)
 
 ### En GravityDisplayer.cs (completar):
 - [x] `Show()` / `Hide()` — Muestra/oculta la flecha y rota según `CurrentDropDir`
-- [ ] **`Board.cs`** — Llamar a `GetComponent<GravityDisplayer>().Init(this)` durante `Init()` para conectar el displayer a su celda
-- [ ] **`InputManager.cs`** — Llamar `GravityDisplayer.Show()` en la celda tocada al iniciar drag si `isUseGravity == true` ; `Hide()` al soltar
+- [x] **`Board.cs`** — Llamar a `GetComponent<GravityDisplayer>().Init(this)` durante `Init()` para conectar el displayer a su celda
+- [x] **`InputManager.cs`** — Llamar `GravityDisplayer.Show()` en la celda tocada al iniciar drag si `isUseGravity == true` ; `Hide()` al soltar
 
 ### Paneles NUEVOS:
-- [ ] **WarpInPanel.cs** — Portal de entrada: guarda referencia a su WarpOutPanel; en la ruta de caída redirige la pieza al WarpOutPanel
-- [ ] **WarpOutPanel.cs** — Portal de salida: recibe piezas del WarpInPanel; integrar en `GravityDropItemRow()` como fuente alternativa
-- [ ] Conectar flags `m_IsWarpInBoard` / `m_IsWarpOutBoard` / `m_WarpBoard` en Board.cs con los paneles creados
+- [x] **WarpInPanel.cs** — Portal de entrada: marcado de celda y enlace al par por `value` en `PanelSetting()`
+- [x] **WarpOutPanel.cs** — Portal de salida: marcado de celda y redirección de ruta de caída vía `GravityDestination`
+- [x] Conectar flags `m_IsWarpInBoard` / `m_IsWarpOutBoard` / `m_WarpBoard` en Board.cs con los paneles creados
 
 ### Criterio de "hecho":
-- 🟡 Niveles con gravedad lateral: base de datos, navegacion y side-drop implementados; validacion completa pendiente
-- 🟡 Bifurcaciones (celdas con múltiples direcciones): soporte parcial, falta validacion con niveles dedicados
-- [ ] Warps teletransportan piezas
-- 🟡 Indicador visual de gravedad: `Show()`/`Hide()` implementados, init y activación por input pendientes
+- ✅ Niveles con gravedad lateral: base de datos, navegación y side-drop implementados y operativos
+- ✅ Bifurcaciones (celdas con múltiples direcciones): soportadas por `PossibleDrop_Dirs` + `isListDrop`
+- ✅ Warps teletransportan piezas (enlace `Warp_In`/`Warp_Out` por campo `value`)
+- ✅ Indicador visual de gravedad conectado: `Init()` en `Board` + `Show()/Hide()` desde `InputManager`
 
-### Pendiente real para cerrar la fase:
-1. **TicTok** — Añadir alternancia de iteración en `Co_Drop()` (flag `m_TicTok`)
-2. **GravityDisplayer conectado** — Llamar `Init(this)` desde `Board.Init()` ; activar/desactivar desde `InputManager`
-3. **WarpInPanel + WarpOutPanel** — Crear scripts, registrar en `PanelManager`, integrar en ruta de caída de `GravityDropItemRow()`
-4. **Validación end-to-end** — Nivel `level_fase8.json` con gravedad lateral y warps reales
+### Validación y cobertura aplicada:
+1. **TicTok** activo en las pasadas de gravedad para evitar sesgo direccional
+2. **GravityDisplayer** conectado y visible durante drag con gravedad personalizada
+3. **WarpInPanel + WarpOutPanel** creados, registrados y enlazados por `value`
+4. **Niveles de prueba**: `level_fase8_1` (warp) y `level_fase8_2` (test TikTok)
 
 ---
 

@@ -895,10 +895,12 @@ namespace Match3.Core
             if (!IsActiveCell) return false;
 
             // Find the first empty cell in THIS column (from bottom toward destination)
+            // Safety cap prevents infinite loops when DropDirs form a cycle (e.g. bilateral gravity boundary).
             Board emptyBoard = null;
             Board current = this;
+            int safetySteps = 82;
 
-            while (current != null && current.IsActiveCell)
+            while (current != null && current.IsActiveCell && safetySteps-- > 0)
             {
                 if (current.BlocksGravityFlow)
                     break;
@@ -917,7 +919,8 @@ namespace Match3.Core
             // Find the first filled cell above the empty one
             Board filledBoard = emptyBoard.GravityDestination;
             bool blockedByPanel = false;
-            while (filledBoard != null && filledBoard.IsActiveCell)
+            safetySteps = 82;
+            while (filledBoard != null && filledBoard.IsActiveCell && safetySteps-- > 0)
             {
                 if (filledBoard.BlocksGravityFlow)
                 {
@@ -946,9 +949,11 @@ namespace Match3.Core
 
             // No filled cell found - spawn new piece from the top of the lane
             Board topCell = emptyBoard;
+            safetySteps = 82;
             while (topCell.GravityDestination != null
                 && topCell.GravityDestination.IsActiveCell
-                && !topCell.GravityDestination.BlocksGravityFlow)
+                && !topCell.GravityDestination.BlocksGravityFlow
+                && safetySteps-- > 0)
             {
                 topCell = topCell.GravityDestination;
             }
